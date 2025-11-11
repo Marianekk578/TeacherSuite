@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.0.11201.2 d18.0
+VisualStudioVersion = 18.0.11201.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TeacherSuite.Application", "src\TeacherSuite.Application\TeacherSuite.Application.csproj", "{064D39EE-99F3-A819-A641-FA558A5EF7D1}"
 EndProject
@@ -16,6 +16,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Elementy rozwiązania", "Elementy rozwiązania", "{452CAB8E-8D4A-4AF0-945A-2C9FDCC2A212}"
 	ProjectSection(SolutionItems) = preProject
 		documentation\ADR-000-template.md = documentation\ADR-000-template.md
+		documentation\ADR-001-clean-architecture.md = documentation\ADR-001-clean-architecture.md
 	EndProjectSection
 EndProject
 Global
