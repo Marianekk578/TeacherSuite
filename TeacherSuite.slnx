@@ -3,9 +3,9 @@
     <File Path="documentation/ADR-000-template.md" />
     <File Path="documentation/ADR-001-clean-architecture.md" />
   </Folder>
-  <Project Path="src/TeacherSuite.Application/TeacherSuite.Application.csproj" />
-  <Project Path="src/TeacherSuite.Domain/TeacherSuite.Domain.csproj" />
-  <Project Path="src/TeacherSuite.Infrastructure/TeacherSuite.Infrastructure.csproj" />
-  <Project Path="src/TeacherSuite.Web/TeacherSuite.Web.csproj" />
-  <Project Path="tests/Application.UnitTests/Application.UnitTests.csproj" />
+  <Project Path="../../../../../../../../Development/repos/TeacherSuite/src/TeacherSuite.Application/TeacherSuite.Application.csproj" />
+  <Project Path="../../../../../../../../Development/repos/TeacherSuite/src/TeacherSuite.Domain/TeacherSuite.Domain.csproj" />
+  <Project Path="../../../../../../../../Development/repos/TeacherSuite/src/TeacherSuite.Infrastructure/TeacherSuite.Infrastructure.csproj" />
+  <Project Path="../../../../../../../../Development/repos/TeacherSuite/src/TeacherSuite.Web/TeacherSuite.Web.csproj" />
+  <Project Path="../../../../../../../../Development/repos/TeacherSuite/tests/Application.UnitTests/Application.UnitTests.csproj" />
 </Solution>
