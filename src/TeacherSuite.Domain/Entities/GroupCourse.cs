@@ -8,7 +8,7 @@ public class GroupCourse : BaseAuditableEntity
     public Guid Id { get; set; }
     public Guid GroupId { get; set; }
     public Group? Group { get; set; }
-    public Guid CourseId { get; set; }
+    public int CourseId { get; set; }
     public Course? Course { get; set; }
     public DateTimeOffset StartDate { get; set; }
     public DateTimeOffset? EndDate { get; set; }
