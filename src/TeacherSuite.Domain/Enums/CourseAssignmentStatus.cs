@@ -1,4 +1,5 @@
 ﻿namespace TeacherSuite.Domain.Enums;
+
 public enum CourseAssignmentStatus
 {
     Planned = 0,
