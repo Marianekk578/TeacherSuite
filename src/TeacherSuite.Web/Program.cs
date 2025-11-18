@@ -1,4 +1,3 @@
-using TeacherSuite.Application.AgeGroups.Commands;
 using TeacherSuite.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,3 +13,5 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.Run();
