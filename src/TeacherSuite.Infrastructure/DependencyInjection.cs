@@ -11,7 +11,7 @@ public static class DependencyInjection
     public static void AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection") 
-                               ?? Environment.GetEnvironmentVariable("CONNECTION_STRINGS__DEFAULTCONNECTION")
+                               ?? Environment.GetEnvironmentVariable("CONNECTION_STRINGS__DefaultConnection")
                                ?? Environment.GetEnvironmentVariable("DefaultConnection");
 
         Guard.Against.NullOrWhiteSpace(connectionString, message: "Connection string 'DefaultConnection' not found!");

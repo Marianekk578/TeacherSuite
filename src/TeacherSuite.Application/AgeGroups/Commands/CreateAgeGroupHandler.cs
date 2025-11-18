@@ -1,18 +1,18 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using TeacherSuite.Application.AgeGroups.Common.Interfaces;
 using TeacherSuite.Application.AgeGroups.Dtos;
 using TeacherSuite.Domain.Entities;
 using TeacherSuite.Domain.Events;
-using TeacherSuite.Infrastructure.Data;
 
 namespace TeacherSuite.Application.AgeGroups.Commands;
 
 public class CreateAgeGroupHandler : IRequestHandler<CreateAgeGroupCommand, AgeGroupDto>
 {
-    private readonly ApplicationDbContext _db;
+    private readonly IApplicationDbContext _db;
     private readonly IPublisher _publisher;
 
-    public CreateAgeGroupHandler(ApplicationDbContext db, IPublisher publisher)
+    public CreateAgeGroupHandler(IApplicationDbContext db, IPublisher publisher)
     {
         _db = db;
         _publisher = publisher;
