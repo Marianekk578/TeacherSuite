@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Reflection;
+using TeacherSuite.Application.AgeGroups.Common.Interfaces;
 using TeacherSuite.Domain.Entities;
 
 namespace TeacherSuite.Infrastructure.Data
 {
-    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options), IApplicationDbContext
     {
         public DbSet<Course> Courses => Set<Course>();
         public DbSet<GroupCourse> GroupCourses => Set<GroupCourse>();

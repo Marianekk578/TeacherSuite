@@ -14,6 +14,10 @@ public class CreateAgeGroupCommandValidator : AbstractValidator<CreateAgeGroupCo
 
         RuleFor(x => x.MaxAge)
             .GreaterThanOrEqualTo(x => x.MinAge)
-            .WithMessage("Maximum age can't be greater than minimum.");
+            .WithMessage("Maximum age can't be less than minimum age.");
+
+        RuleFor(x => x.Name)
+            .NotEmpty()
+            .WithMessage("Age group name is required");
     }
 }
