@@ -1,10 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
 using TeacherSuite.Domain.Entities;
 
-namespace TeacherSuite.Application.AgeGroups.Common.Interfaces;
+namespace TeacherSuite.Domain.Interfaces;
 
 public interface IApplicationDbContext
 {
-    DbSet<AgeGroup> AgeGroups { get; }
+    IQueryable<AgeGroup> AgeGroups { get; }
+    void Add<T>(T entity) where T : class;
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

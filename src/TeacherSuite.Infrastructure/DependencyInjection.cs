@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using TeacherSuite.Domain.Interfaces;
 using TeacherSuite.Infrastructure.Data;
 
 namespace TeacherSuite.Infrastructure;
@@ -21,5 +22,7 @@ public static class DependencyInjection
             {
                 npgsql.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
             }));
+
+        services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
     }
 }

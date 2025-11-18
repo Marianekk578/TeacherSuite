@@ -1,9 +1,8 @@
 ﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
-using TeacherSuite.Application.AgeGroups.Common.Interfaces;
 using TeacherSuite.Application.AgeGroups.Dtos;
 using TeacherSuite.Domain.Entities;
 using TeacherSuite.Domain.Events;
+using TeacherSuite.Domain.Interfaces;
 
 namespace TeacherSuite.Application.AgeGroups.Commands;
 
@@ -27,7 +26,7 @@ public class CreateAgeGroupHandler : IRequestHandler<CreateAgeGroupCommand, AgeG
             MaxAge = request.MaxAge
         };
 
-        _db.AgeGroups.Add(entity);
+        _db.Add(entity);
         await _db.SaveChangesAsync(cancellationToken);
 
         await _publisher.Publish(new AgeGroupCreatedEvent(entity), cancellationToken);
