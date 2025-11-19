@@ -1,7 +1,4 @@
-﻿using MediatR;
-using Microsoft.EntityFrameworkCore;
-using TeacherSuite.Application.AgeGroups.Common.Interfaces;
-using TeacherSuite.Application.AgeGroups.Dtos;
+﻿using TeacherSuite.Application.AgeGroups.Common.Interfaces;
 using TeacherSuite.Domain.Entities;
 using TeacherSuite.Domain.Events;
 

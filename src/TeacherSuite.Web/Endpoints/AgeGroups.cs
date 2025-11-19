@@ -4,7 +4,7 @@ using TeacherSuite.Application.AgeGroups.Commands;
 using TeacherSuite.Application.AgeGroups.Dtos;
 using TeacherSuite.Application.AgeGroups.Queries;
 
-namespace TeacherSuite.Web.Enpoints;
+namespace TeacherSuite.Web.Endpoints;
 
 public class AgeGroups 
 {

@@ -2,7 +2,7 @@ using MediatR;
 using TeacherSuite.Application.AgeGroups.Commands;
 using TeacherSuite.Application.AgeGroups.Queries;
 using TeacherSuite.Infrastructure;
-using TeacherSuite.Web.Enpoints;
+using TeacherSuite.Web.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
