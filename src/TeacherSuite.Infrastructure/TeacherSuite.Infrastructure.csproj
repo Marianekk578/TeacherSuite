@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TeacherSuite.Application\TeacherSuite.Application.csproj" />
     <ProjectReference Include="..\TeacherSuite.Domain\TeacherSuite.Domain.csproj" />
   </ItemGroup>
 
