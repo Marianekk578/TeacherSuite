@@ -7,7 +7,7 @@ using TeacherSuite.Domain.Events;
 
 namespace TeacherSuite.Application.AgeGroups.Commands;
 
-public class CreateAgeGroupHandler : IRequestHandler<CreateAgeGroupCommand, AgeGroupDto>
+public class CreateAgeGroupHandler : IRequestHandler<CreateAgeGroupCommand, int>
 {
     private readonly IApplicationDbContext _db;
     private readonly IPublisher _publisher;
@@ -18,7 +18,7 @@ public class CreateAgeGroupHandler : IRequestHandler<CreateAgeGroupCommand, AgeG
         _publisher = publisher;
     }
 
-    public async Task<AgeGroupDto> Handle(CreateAgeGroupCommand request, CancellationToken cancellationToken)
+    public async Task<int> Handle(CreateAgeGroupCommand request, CancellationToken cancellationToken)
     {
         var entity = new AgeGroup
         {
@@ -32,6 +32,6 @@ public class CreateAgeGroupHandler : IRequestHandler<CreateAgeGroupCommand, AgeG
 
         await _publisher.Publish(new AgeGroupCreatedEvent(entity), cancellationToken);
 
-        return new AgeGroupDto(entity.Id, entity.Name, entity.MinAge, entity.MaxAge);
+        return entity.Id;
     }
 }
