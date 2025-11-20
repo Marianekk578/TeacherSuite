@@ -28,11 +28,11 @@ public class CreateTeacherHandler : IRequestHandler<CreateTeacherCommand, Guid>
             DateOfBirth = request.DateOfBirth
         };
 
-         _context.Teachers.Add(entity);
+        _context.Teachers.Add(entity);
         await _context.SaveChangesAsync(cancellationToken);
 
         await _publisher.Publish(new TeacherCreatedEvent(entity), cancellationToken);
 
-        return await Task.FromResult(entity.Id);
+        return entity.Id;
     }
 }

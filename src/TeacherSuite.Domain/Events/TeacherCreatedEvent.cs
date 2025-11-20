@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using TeacherSuite.Domain.Entities;
 
-namespace TeacherSuite.Application.Teachers.EventHandlers;
+namespace TeacherSuite.Domain.Events;
 
 public record TeacherCreatedEvent : INotification
 {

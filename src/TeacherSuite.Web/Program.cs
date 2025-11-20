@@ -17,7 +17,7 @@ builder.Services.AddScoped<Teachers>();
 var app = builder.Build();
 
 app.MapGet("/AgeGroups", async (AgeGroups endpoints, ISender sender, [AsParameters] GetAgeGroupsQuery query) =>
-await endpoints.GetAgeGroups(sender, query));
+    await endpoints.GetAgeGroups(sender, query));
 
 app.MapPost("/AgeGroups", async (AgeGroups endpoints, ISender sender, CreateAgeGroupCommand command) =>
     await endpoints.CreateAgeGroups(sender, command));
