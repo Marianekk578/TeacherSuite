@@ -1,5 +1,4 @@
-﻿using MediatR;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using TeacherSuite.Domain.Events;
 
 namespace TeacherSuite.Application.AgeGroups.EventHandlers;

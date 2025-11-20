@@ -4,6 +4,8 @@ using TeacherSuite.Domain.Events;
 
 namespace TeacherSuite.Application.AgeGroups.Commands;
 
+public record CreateAgeGroupCommand(string Name, int MinAge, int MaxAge) : IRequest<int>;
+
 public class CreateAgeGroupHandler : IRequestHandler<CreateAgeGroupCommand, int>
 {
     private readonly IApplicationDbContext _db;

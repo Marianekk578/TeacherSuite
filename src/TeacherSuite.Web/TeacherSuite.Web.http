@@ -27,3 +27,15 @@ Content-Type: application/json
 }
 
 ### 
+
+// Teachers
+
+POST {{Web_HostAddress}}/Teachers
+Content-Type: application/json
+{
+  "FirstName": "Jan",
+  "LastName": "Kowalski",
+  "Email": "janek@testmail.pl",
+  "PhoneNumber": "123456789",
+  "DateOfBirth": "2000-01-01T00:00:00Z"
+}
