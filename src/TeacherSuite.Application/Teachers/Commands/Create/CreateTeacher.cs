@@ -1,6 +1,7 @@
 ﻿using TeacherSuite.Application.AgeGroups.Common.Interfaces;
 using TeacherSuite.Application.Teachers.EventHandlers;
 using TeacherSuite.Domain.Entities;
+using TeacherSuite.Domain.Events;
 
 namespace TeacherSuite.Application.Teachers.Commands.Create;
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using TeacherSuite.Domain.Events;
 
 namespace TeacherSuite.Application.Teachers.EventHandlers;
 

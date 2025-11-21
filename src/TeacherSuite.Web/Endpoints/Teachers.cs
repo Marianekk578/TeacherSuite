@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using TeacherSuite.Application.Teachers.Commands.Create;
+using TeacherSuite.Application.Teachers.Queries.Get;
 
 namespace TeacherSuite.Web.Endpoints;
 
@@ -11,5 +12,16 @@ public class Teachers
         var id = await sender.Send(command);
 
         return TypedResults.Created($"/{nameof(Teachers)}/{id}", id);
+    }
+    public async Task<IResult> GetTeacherAssignedToGroup(ISender sender, GetTeacherAssignedToGroupQuery query)
+    {
+        var teacher = await sender.Send(query);
+        return teacher is null ? Results.NotFound() : Results.Ok(teacher);
+    }
+
+    public async Task<IResult> GetAllTeachers(ISender sender, GetAllTeachersQuery query)
+    {
+        var teachers = await sender.Send(query);
+        return Results.Ok(teachers);
     }
 }
