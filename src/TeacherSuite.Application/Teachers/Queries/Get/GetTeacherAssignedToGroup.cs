@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using TeacherSuite.Application.AgeGroups.Common.Interfaces;
+﻿using TeacherSuite.Application.AgeGroups.Common.Interfaces;
 using TeacherSuite.Application.Teachers.Dtos;
 
 namespace TeacherSuite.Application.Teachers.Queries.Get;

@@ -6,16 +6,16 @@ public class CreateTeacherCommandValidator : AbstractValidator<CreateTeacherComm
     {
         RuleFor(x => x.FirstName)
             .NotEmpty()
-            .WithMessage("Teacher firstname is required");
+            .WithMessage("Teacher first name is required");
 
         RuleFor(x => x.LastName)
             .NotEmpty()
-            .WithMessage("Teacher lastname is required");
+            .WithMessage("Teacher last name is required");
 
         RuleFor(x => x.Email)
-            .EmailAddress()
-            .NotEmpty()
-            .WithMessage("A valid email address is required");
+            .Cascade(CascadeMode.Stop)
+            .NotEmpty().WithMessage("Email address is required")
+            .EmailAddress().WithMessage("A valid email address is required");
 
         RuleFor(x => x.PhoneNumber)
             .NotEmpty()
