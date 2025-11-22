@@ -7,7 +7,7 @@ public class TeacherCreatedEventHandler(ILogger<TeacherCreatedEventHandler> logg
 {
     public Task Handle(TeacherCreatedEvent notification, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Teacher created: {Firstname} {Lastname}", notification.Teacher.FirstName, notification.Teacher.LastName);
+        logger.LogInformation("Teacher created: {FirstName} {LastName}", notification.Teacher.FirstName, notification.Teacher.LastName);
 
         return Task.CompletedTask;
     }

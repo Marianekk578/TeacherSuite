@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using TeacherSuite.Application.Teachers.Commands.Create;
+using TeacherSuite.Application.Teachers.Commands.Update;
 using TeacherSuite.Application.Teachers.Queries.Get;
 
 namespace TeacherSuite.Web.Endpoints;
@@ -23,5 +24,14 @@ public class Teachers
     {
         var teachers = await sender.Send(query);
         return Results.Ok(teachers);
+    }
+
+    public async Task<IResult> UpdateTeacher(ISender sender, Guid id, UpdateTeacherCommand command)
+    {
+        var commandWithId = command with { Id = id };
+
+        await sender.Send(commandWithId);
+
+        return TypedResults.NoContent();
     }
 }

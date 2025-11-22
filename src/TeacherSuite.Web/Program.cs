@@ -2,6 +2,7 @@ using MediatR;
 using TeacherSuite.Application.AgeGroups.Commands;
 using TeacherSuite.Application.AgeGroups.Queries;
 using TeacherSuite.Application.Teachers.Commands.Create;
+using TeacherSuite.Application.Teachers.Commands.Update;
 using TeacherSuite.Application.Teachers.Queries.Get;
 using TeacherSuite.Infrastructure;
 using TeacherSuite.Web.Endpoints;
@@ -28,6 +29,9 @@ app.MapPost("/Teachers", async (Teachers endpoints, ISender sender, CreateTeache
 
 app.MapGet("/Teachers/assigned", async (Teachers endpoints, ISender sender, [AsParameters] GetTeacherAssignedToGroupQuery query) =>
     await endpoints.GetTeacherAssignedToGroup(sender, query));
+
+app.MapPut("/Teachers/{id:guid}", async (Teachers endpoints, ISender sender, Guid id, UpdateTeacherCommand command) =>
+    await endpoints.UpdateTeacher(sender, id, command));
 
 app.MapGet("/Teachers", async (Teachers endpoints, ISender sender, [AsParameters] GetAllTeachersQuery query) =>
     await endpoints.GetAllTeachers(sender, query));
