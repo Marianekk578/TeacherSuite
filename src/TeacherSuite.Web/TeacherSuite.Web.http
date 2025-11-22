@@ -1,4 +1,29 @@
-@TeacherSuite.Web_HostAddress = http://localhost:5282
+@Web_HostAddress = http://localhost:5282
 
 
 ###
+GET {{Web_HostAddress}}/AgeGroups
+
+###
+
+POST {{Web_HostAddress}}/AgeGroups
+Content-Type: application/json
+
+{
+  "Name": "Grupa",
+  "MinAge": 7,
+  "MaxAge": 9
+}
+
+###
+
+POST {{Web_HostAddress}}/AgeGroups
+Content-Type: application/json
+
+{
+  "Name": "Niepoprawna grupa",
+  "MinAge": 8,
+  "MaxAge": 7
+}
+
+### 
