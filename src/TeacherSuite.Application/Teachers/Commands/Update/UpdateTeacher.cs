@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TeacherSuite.Application.AgeGroups.Common.Interfaces;
+﻿using TeacherSuite.Application.AgeGroups.Common.Interfaces;
 
 namespace TeacherSuite.Application.Teachers.Commands.Update;
 

@@ -1,16 +1,16 @@
 ﻿namespace TeacherSuite.Application.Teachers.Commands.Update;
 
-public class UpdateTacherCommandValidator : AbstractValidator<UpdateTeacherCommand>
+public class UpdateTeacherCommandValidator : AbstractValidator<UpdateTeacherCommand>
 {
-    public UpdateTacherCommandValidator()
+    public UpdateTeacherCommandValidator()
     {
         RuleFor(x => x.Id)
             .NotEmpty()
-            .WithMessage("Reacher Id is required");
+            .WithMessage("Teacher id is required");
 
         RuleFor(x => x.FirstName)
-        .NotEmpty()
-        .WithMessage("Teacher first name is required");
+            .NotEmpty()
+            .WithMessage("Teacher first name is required");
 
         RuleFor(x => x.LastName)
             .NotEmpty()
