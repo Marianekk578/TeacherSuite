@@ -6,20 +6,18 @@ using TeacherSuite.Application.AgeGroups.Queries;
 
 namespace TeacherSuite.Web.Endpoints;
 
-public class AgeGroups 
+public class AgeGroups
 {
     public async Task<Ok<List<AgeGroupDto>>> GetAgeGroups(ISender sender, [AsParameters] GetAgeGroupsQuery query)
     {
-        var result =  await sender.Send(query);
+        var result = await sender.Send(query);
         return TypedResults.Ok(result);
     }
 
     public async Task<Created<int>> CreateAgeGroups(ISender sender, CreateAgeGroupCommand command)
     {
-        {
-            var id = await sender.Send(command);
+        var id = await sender.Send(command);
 
-            return TypedResults.Created($"/{nameof(AgeGroups)}/{id}", id);
-        }
+        return TypedResults.Created($"/{nameof(AgeGroups)}/{id}", id);
     }
 }

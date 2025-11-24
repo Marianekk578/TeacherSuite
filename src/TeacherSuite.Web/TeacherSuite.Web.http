@@ -27,3 +27,31 @@ Content-Type: application/json
 }
 
 ### 
+
+// Teachers
+
+POST {{Web_HostAddress}}/Teachers
+Content-Type: application/json
+{
+  "FirstName": "Mary",
+  "LastName": "Jane",
+  "Email": "MJ@testmail.pl",
+  "PhoneNumber": "123456789",
+  "DateOfBirth": "2005-01-01T00:00:00Z"
+}
+
+###
+
+GET {{Web_HostAddress}}/Teachers
+
+###
+PUT {{Web_HostAddress}}/Teachers/019aa778-a110-7e13-a65b-e0363ba405e2
+Content-Type: application/json
+
+{
+  "FirstName": "Marian",
+  "LastName": "Jane",
+  "Email": "MJ@testmail.pl",
+  "PhoneNumber": "123456789",
+  "DateOfBirth": "2005-01-01T00:00:00Z"
+}
