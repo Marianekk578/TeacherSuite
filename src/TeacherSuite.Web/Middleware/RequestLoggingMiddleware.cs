@@ -14,13 +14,16 @@ public class RequestLoggingMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var requestId = Guid.NewGuid().ToString();
+        var requestId = context.TraceIdentifier;
+
+        var sanitizedMethod = SanitizeForLog(context.Request.Method);
+        var sanitizedPath = SanitizeForLog(context.Request.Path.ToString());
 
         _logger.LogInformation(
             "Handling request {RequestId}: {Method} {Path} started at {Time}",
             requestId,
-            context.Request.Method,
-            context.Request.Path,
+            sanitizedMethod,
+            sanitizedPath,
             DateTime.UtcNow);
 
         var sw = Stopwatch.StartNew();
@@ -28,7 +31,6 @@ public class RequestLoggingMiddleware
         try
         {
             await _next(context);
-
         }
         finally
         {
@@ -36,11 +38,21 @@ public class RequestLoggingMiddleware
             _logger.LogInformation(
                 "Finished handling request {RequestId}: {Method} {Path} completed at {Time} took {ElapsedMilliseconds} ms",
                 requestId,
-                context.Request.Method,
-                context.Request.Path,
+                sanitizedMethod,
+                sanitizedPath,
                 DateTime.UtcNow,
                 sw.ElapsedMilliseconds);
         }
+    }
+
+    /// <summary>
+    /// Sanitizes a string for safe logging by removing carriage returns and newlines.
+    /// </summary>
+    private static string SanitizeForLog(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return "";
+        return input.Replace("\r", "").Replace("\n", "");
     }
 }
 
