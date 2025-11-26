@@ -4,7 +4,7 @@ namespace TeacherSuite.Application.Teachers.Dtos;
 
 public class TeacherDto
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; init; }
     public string? FirstName { get; init; }
     public string? LastName { get; init; }
 

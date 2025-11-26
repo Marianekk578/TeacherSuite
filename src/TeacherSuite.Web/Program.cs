@@ -6,6 +6,7 @@ using TeacherSuite.Application.Teachers.Commands.Update;
 using TeacherSuite.Application.Teachers.Queries.Get;
 using TeacherSuite.Infrastructure;
 using TeacherSuite.Web.Endpoints;
+using TeacherSuite.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,8 @@ builder.Services.AddScoped<Teachers>();
 
 var app = builder.Build();
 
+app.UseRequestLogging();
+
 app.MapGet("/AgeGroups", async (AgeGroups endpoints, ISender sender, [AsParameters] GetAgeGroupsQuery query) =>
     await endpoints.GetAgeGroups(sender, query));
 
@@ -25,7 +28,7 @@ app.MapPost("/AgeGroups", async (AgeGroups endpoints, ISender sender, CreateAgeG
     await endpoints.CreateAgeGroups(sender, command));
 
 app.MapPost("/Teachers", async (Teachers endpoints, ISender sender, CreateTeacherCommand command) =>
-    await endpoints.CreateTeachers(sender, command));
+    await endpoints.CreateTeacher(sender, command));
 
 app.MapGet("/Teachers/assigned", async (Teachers endpoints, ISender sender, [AsParameters] GetTeacherAssignedToGroupQuery query) =>
     await endpoints.GetTeacherAssignedToGroup(sender, query));
