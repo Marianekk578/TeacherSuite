@@ -25,10 +25,10 @@ app.MapGet("/AgeGroups", async (AgeGroups endpoints, ISender sender, [AsParamete
     await endpoints.GetAgeGroups(sender, query));
 
 app.MapPost("/AgeGroups", async (AgeGroups endpoints, ISender sender, CreateAgeGroupCommand command) =>
-    await endpoints.CreateAgeGroups(sender, command));
+    await endpoints.CreateAgeGroup(sender, command));
 
 app.MapPost("/Teachers", async (Teachers endpoints, ISender sender, CreateTeacherCommand command) =>
-    await endpoints.CreateTeacher(sender, command));
+    await endpoints.CreateTeachers(sender, command));
 
 app.MapGet("/Teachers/assigned", async (Teachers endpoints, ISender sender, [AsParameters] GetTeacherAssignedToGroupQuery query) =>
     await endpoints.GetTeacherAssignedToGroup(sender, query));
