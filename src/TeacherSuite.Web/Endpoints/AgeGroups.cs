@@ -14,7 +14,7 @@ public class AgeGroups
         return TypedResults.Ok(result);
     }
 
-    public async Task<Created<int>> CreateAgeGroups(ISender sender, CreateAgeGroupCommand command)
+    public async Task<Created<int>> CreateAgeGroup(ISender sender, CreateAgeGroupCommand command)
     {
         var id = await sender.Send(command);
 
