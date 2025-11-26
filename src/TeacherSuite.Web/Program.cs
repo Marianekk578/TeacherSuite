@@ -6,6 +6,7 @@ using TeacherSuite.Application.Teachers.Commands.Update;
 using TeacherSuite.Application.Teachers.Queries.Get;
 using TeacherSuite.Infrastructure;
 using TeacherSuite.Web.Endpoints;
+using TeacherSuite.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,5 +43,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseRequestLogging();
 
 app.Run();
