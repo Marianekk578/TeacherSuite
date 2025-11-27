@@ -55,3 +55,39 @@ Content-Type: application/json
   "PhoneNumber": "123456789",
   "DateOfBirth": "2005-01-01T00:00:00Z"
 }
+
+###
+
+// Courses
+
+GET {{Web_HostAddress}}/Courses
+
+###
+
+GET {{Web_HostAddress}}/Courses/1
+
+###
+
+POST {{Web_HostAddress}}/Courses
+Content-Type: application/json
+
+{
+  "Name": "Introduction to Programming",
+  "Description": "A beginner course for learning programming basics",
+  "AgeGroupID": 1
+}
+
+###
+
+PUT {{Web_HostAddress}}/Courses/1
+Content-Type: application/json
+
+{
+  "Name": "Advanced Programming",
+  "Description": "An advanced course for experienced programmers",
+  "AgeGroupID": 1
+}
+
+###
+
+DELETE {{Web_HostAddress}}/Courses/1
