@@ -17,9 +17,9 @@ public class Courses
         return TypedResults.Created($"/{nameof(Courses)}/{id}", id);
     }
 
-    public async Task<Ok<List<CourseDto>>> GetAllCourses(ISender sender)
+    public async Task<Ok<List<CourseDto>>> GetAllCourses(ISender sender, GetAllCoursesQuery query)
     {
-        var courses = await sender.Send(new GetAllCoursesQuery());
+        var courses = await sender.Send(query);
         return TypedResults.Ok(courses);
     }
 
