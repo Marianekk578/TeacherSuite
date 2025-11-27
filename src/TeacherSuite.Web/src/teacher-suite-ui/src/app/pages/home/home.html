@@ -1,0 +1,99 @@
+<div class="home-container">
+  <div class="hero-section">
+    <!-- AI-Generated Logo SVG -->
+    <div class="logo-container">
+      <svg class="logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <!-- Background Circle -->
+        <defs>
+          <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+          </linearGradient>
+          <linearGradient id="bookGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#fff;stop-opacity:0.9" />
+            <stop offset="100%" style="stop-color:#f0f0f0;stop-opacity:0.8" />
+          </linearGradient>
+        </defs>
+        
+        <!-- Main Circle Background -->
+        <circle cx="100" cy="100" r="90" fill="url(#logoGradient)"/>
+        
+        <!-- Book Shape -->
+        <g transform="translate(50, 55)">
+          <!-- Book spine -->
+          <rect x="45" y="10" width="10" height="80" fill="url(#bookGradient)" rx="2"/>
+          
+          <!-- Left page -->
+          <path d="M45 10 Q25 15, 15 20 L15 85 Q25 80, 45 75 Z" fill="url(#bookGradient)"/>
+          
+          <!-- Right page -->
+          <path d="M55 10 Q75 15, 85 20 L85 85 Q75 80, 55 75 Z" fill="url(#bookGradient)"/>
+          
+          <!-- Page lines (left) -->
+          <line x1="25" y1="30" x2="40" y2="25" stroke="#667eea" stroke-width="2" stroke-linecap="round"/>
+          <line x1="25" y1="45" x2="40" y2="40" stroke="#667eea" stroke-width="2" stroke-linecap="round"/>
+          <line x1="25" y1="60" x2="40" y2="55" stroke="#667eea" stroke-width="2" stroke-linecap="round"/>
+          
+          <!-- Page lines (right) -->
+          <line x1="60" y1="25" x2="75" y2="30" stroke="#667eea" stroke-width="2" stroke-linecap="round"/>
+          <line x1="60" y1="40" x2="75" y2="45" stroke="#667eea" stroke-width="2" stroke-linecap="round"/>
+          <line x1="60" y1="55" x2="75" y2="60" stroke="#667eea" stroke-width="2" stroke-linecap="round"/>
+        </g>
+        
+        <!-- Teacher Cap -->
+        <g transform="translate(100, 40)">
+          <polygon points="-30,0 0,-20 30,0 0,8" fill="#fff"/>
+          <line x1="0" y1="-20" x2="35" y2="-10" stroke="#fff" stroke-width="3"/>
+          <circle cx="35" cy="-10" r="4" fill="#fff"/>
+        </g>
+      </svg>
+    </div>
+    
+    <h1 class="title">TeacherSuite</h1>
+    <p class="subtitle">Comprehensive Education Management System</p>
+  </div>
+  
+  <div class="info-section">
+    <div class="info-card">
+      <div class="info-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+      </div>
+      <h3>Teachers</h3>
+      <p>Manage teacher profiles, assignments, and qualifications with ease.</p>
+    </div>
+    
+    <div class="info-card">
+      <div class="info-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+        </svg>
+      </div>
+      <h3>Courses</h3>
+      <p>Organize curriculum, schedules, and learning materials efficiently.</p>
+    </div>
+    
+    <div class="info-card">
+      <div class="info-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <circle cx="19" cy="11" r="2"></circle>
+          <path d="M19 8v1"></path>
+          <path d="M19 13v1"></path>
+        </svg>
+      </div>
+      <h3>Age Groups</h3>
+      <p>Categorize and manage students by age groups for better organization.</p>
+    </div>
+  </div>
+  
+  <div class="footer-info">
+    <p>Select an option from the navigation menu to get started.</p>
+  </div>
+</div>
