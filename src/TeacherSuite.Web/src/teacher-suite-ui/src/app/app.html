@@ -1,5 +1,4 @@
 <div class="app-layout">
-  <!-- Left Navigation Sidebar -->
   <nav class="sidebar">
     <div class="sidebar-header">
       <a routerLink="/" class="logo-link">
@@ -7,7 +6,7 @@
       </a>
     </div>
     
-    <ul class="nav-menu">
+    <ul class="nav-menu" role="list">
       <li>
         <a routerLink="/teachers" routerLinkActive="active" class="nav-link">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -43,8 +42,7 @@
     </ul>
   </nav>
   
-  <!-- Main Content Area -->
-  <main class="main-content">
+  <main class="main-content" aria-label="Main content">
     <router-outlet></router-outlet>
   </main>
 </div>
