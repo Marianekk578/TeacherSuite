@@ -6,5 +6,6 @@ namespace TeacherSuite.Application.AgeGroups.Common.Interfaces;
 public interface IApplicationDbContext
 {
     DbSet<AgeGroup> AgeGroups { get; }
+    DbSet<ProgrammingLanguage> ProgrammingLanguages { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
