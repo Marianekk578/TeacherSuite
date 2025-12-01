@@ -62,16 +62,18 @@ export class Teachers implements OnInit {
   }
 
   openEditModal(teacher: Teacher) {
+    // Note: Edit is limited because the GET /Teachers endpoint only returns
+    // firstName and lastName. To enable full edit functionality, we would need
+    // a GET /Teachers/{id} endpoint that returns email, phoneNumber, and dateOfBirth.
+    // For now, we only populate the fields we have from the list.
     this.editMode.set(true);
     this.currentTeacherId.set(teacher.id);
-    // We need to fetch full details for editing, but since we only have firstName/lastName
-    // we'll use what we have. In a real app, we'd fetch full teacher details first.
     this.formData.set({
       firstName: teacher.firstName,
       lastName: teacher.lastName,
       email: '', // Would need to fetch from a detail endpoint
-      phoneNumber: '',
-      dateOfBirth: ''
+      phoneNumber: '', // Would need to fetch from a detail endpoint
+      dateOfBirth: '' // Would need to fetch from a detail endpoint
     });
     this.showModal.set(true);
   }

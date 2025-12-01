@@ -8,12 +8,6 @@ export interface Teacher {
   lastName: string;
 }
 
-export interface TeacherDetails extends Teacher {
-  email: string;
-  phoneNumber: string;
-  dateOfBirth: string;
-}
-
 export interface CreateTeacherCommand {
   firstName: string;
   lastName: string;

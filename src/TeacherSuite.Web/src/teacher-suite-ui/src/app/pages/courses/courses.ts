@@ -64,12 +64,18 @@ export class Courses implements OnInit {
   }
 
   openCreateModal() {
+    // Ensure age groups are loaded before allowing course creation
+    if (this.ageGroups().length === 0) {
+      this.error.set('Please wait for age groups to load before creating a course');
+      return;
+    }
+    
     this.editMode.set(false);
     this.currentCourseId.set(null);
     this.formData.set({
       name: '',
       description: '',
-      ageGroupID: this.ageGroups()[0]?.id || 0
+      ageGroupID: this.ageGroups()[0].id
     });
     this.showModal.set(true);
   }
