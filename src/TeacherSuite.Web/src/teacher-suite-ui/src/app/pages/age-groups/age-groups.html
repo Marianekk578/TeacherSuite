@@ -1,13 +1,136 @@
-<div class="placeholder-page">
-  <div class="placeholder-content">
-    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-      <circle cx="9" cy="7" r="4"></circle>
-      <circle cx="19" cy="11" r="2"></circle>
-      <path d="M19 8v1"></path>
-      <path d="M19 13v1"></path>
-    </svg>
-    <h1>Age Groups</h1>
-    <p>This page is under construction. Age group management features coming soon.</p>
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Age Groups</h1>
+      <p>Manage student age categories</p>
+    </div>
+    <button class="btn btn-primary" (click)="openCreateModal()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Add Age Group
+    </button>
   </div>
+
+  @if (error()) {
+    <div class="alert alert-error">
+      {{ error() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Loading age groups...</p>
+    </div>
+  } @else {
+    @if (ageGroups().length === 0) {
+      <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <circle cx="19" cy="11" r="2"></circle>
+          <path d="M19 8v1"></path>
+          <path d="M19 13v1"></path>
+        </svg>
+        <h2>No age groups yet</h2>
+        <p>Create age groups to organize students by age range</p>
+        <button class="btn btn-primary" (click)="openCreateModal()">Add Age Group</button>
+      </div>
+    } @else {
+      <div class="age-groups-grid">
+        @for (ageGroup of ageGroups(); track ageGroup.id) {
+          <div class="age-group-card">
+            <div class="age-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <circle cx="19" cy="11" r="2"></circle>
+                <path d="M19 8v1"></path>
+                <path d="M19 13v1"></path>
+              </svg>
+            </div>
+            <h3>{{ ageGroup.name }}</h3>
+            <div class="age-range">
+              <div class="age-badge">
+                <span class="age-label">Min Age</span>
+                <span class="age-value">{{ ageGroup.minAge }}</span>
+              </div>
+              <div class="age-divider">—</div>
+              <div class="age-badge">
+                <span class="age-label">Max Age</span>
+                <span class="age-value">{{ ageGroup.maxAge }}</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
 </div>
+
+@if (showModal()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Create New Age Group</h2>
+        <button class="btn-close" (click)="closeModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      
+      <form (ngSubmit)="submitForm()" class="modal-form">
+        <div class="form-group">
+          <label for="name">Group Name *</label>
+          <input 
+            type="text" 
+            id="name" 
+            [(ngModel)]="formData().name"
+            name="name"
+            required
+            placeholder="e.g., Toddlers, Teens, Adults"
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="minAge">Minimum Age *</label>
+            <input 
+              type="number" 
+              id="minAge" 
+              [(ngModel)]="formData().minAge"
+              name="minAge"
+              required
+              min="0"
+              max="120"
+              placeholder="0"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="maxAge">Maximum Age *</label>
+            <input 
+              type="number" 
+              id="maxAge" 
+              [(ngModel)]="formData().maxAge"
+              name="maxAge"
+              required
+              min="0"
+              max="120"
+              placeholder="18"
+            />
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
