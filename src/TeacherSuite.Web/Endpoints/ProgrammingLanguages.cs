@@ -26,11 +26,11 @@ public class ProgrammingLanguages
         return TypedResults.Created($"/{nameof(ProgrammingLanguages)}/{id}", id);
     }
 
-    public async Task<Results<NoContent, NotFound>> UpdateProgrammingLanguage(ISender sender, int id, UpdateProgrammingLanguageCommand command)
+    public async Task<Results<NoContent, NotFound, BadRequest>> UpdateProgrammingLanguage(ISender sender, int id, UpdateProgrammingLanguageCommand command)
     {
         if (id != command.Id)
         {
-            return TypedResults.NotFound();
+            return TypedResults.BadRequest();
         }
 
         var result = await sender.Send(command);
