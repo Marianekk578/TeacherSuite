@@ -1,0 +1,29 @@
+{
+  "/api/*": {
+    "target": "https://localhost:7048",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api": ""
+    }
+  },
+  "/Teachers": {
+    "target": "https://localhost:7048",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
+  "/Courses": {
+    "target": "https://localhost:7048",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
+  "/AgeGroups": {
+    "target": "https://localhost:7048",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  }
+}
