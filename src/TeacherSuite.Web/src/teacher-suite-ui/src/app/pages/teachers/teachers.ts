@@ -17,6 +17,7 @@ export class Teachers implements OnInit {
   showModal = false;
   isEditMode = false;
   currentTeacherId: string | null = null;
+  modalError: string | null = null;
   
   teacherForm: CreateTeacherDto | UpdateTeacherDto = {
     firstName: '',
@@ -61,6 +62,7 @@ export class Teachers implements OnInit {
   openAddModal() {
     this.isEditMode = false;
     this.currentTeacherId = null;
+    this.modalError = null;
     this.teacherForm = {
       firstName: '',
       lastName: '',
@@ -74,6 +76,7 @@ export class Teachers implements OnInit {
   openEditModal(teacher: Teacher) {
     this.isEditMode = true;
     this.currentTeacherId = teacher.id;
+    this.modalError = null;
     this.teacherForm = {
       firstName: teacher.firstName,
       lastName: teacher.lastName,
@@ -88,9 +91,51 @@ export class Teachers implements OnInit {
     this.showModal = false;
     this.isEditMode = false;
     this.currentTeacherId = null;
+    this.modalError = null;
   }
 
   saveTeacher() {
+    // Client-side validation
+    this.modalError = null;
+    
+    if (!this.teacherForm.firstName?.trim()) {
+      this.modalError = 'First name is required';
+      this.cdr.detectChanges();
+      return;
+    }
+    
+    if (!this.teacherForm.lastName?.trim()) {
+      this.modalError = 'Last name is required';
+      this.cdr.detectChanges();
+      return;
+    }
+    
+    if (!this.teacherForm.email?.trim()) {
+      this.modalError = 'Email is required';
+      this.cdr.detectChanges();
+      return;
+    }
+    
+    // Email format validation
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(this.teacherForm.email)) {
+      this.modalError = 'Please enter a valid email address';
+      this.cdr.detectChanges();
+      return;
+    }
+    
+    if (!this.teacherForm.phoneNumber?.trim()) {
+      this.modalError = 'Phone number is required';
+      this.cdr.detectChanges();
+      return;
+    }
+    
+    if (!this.teacherForm.dateOfBirth) {
+      this.modalError = 'Date of birth is required';
+      this.cdr.detectChanges();
+      return;
+    }
+    
     if (this.isEditMode && this.currentTeacherId) {
       this.teacherService.updateTeacher(this.currentTeacherId, this.teacherForm).subscribe({
         next: () => {
@@ -98,8 +143,9 @@ export class Teachers implements OnInit {
           this.closeModal();
         },
         error: (error) => {
-          this.error = 'Failed to update teacher. Please try again.';
+          this.modalError = 'Failed to update teacher. Please check your input and try again.';
           console.error('Error updating teacher:', error);
+          this.cdr.detectChanges();
         }
       });
     } else {
@@ -109,8 +155,9 @@ export class Teachers implements OnInit {
           this.closeModal();
         },
         error: (error) => {
-          this.error = 'Failed to create teacher. Please try again.';
+          this.modalError = 'Failed to create teacher. Please check your input and try again.';
           console.error('Error creating teacher:', error);
+          this.cdr.detectChanges();
         }
       });
     }

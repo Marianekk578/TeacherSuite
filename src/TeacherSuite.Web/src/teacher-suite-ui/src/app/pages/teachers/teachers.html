@@ -90,6 +90,10 @@
       <button class="modal-close" (click)="closeModal()">&times;</button>
     </div>
     <form class="modal-body" (ngSubmit)="saveTeacher()">
+      <div *ngIf="modalError" class="alert alert-error modal-alert">
+        {{ modalError }}
+        <button type="button" class="alert-close" (click)="modalError = null">&times;</button>
+      </div>
       <div class="form-row">
         <div class="form-group">
           <label for="firstName">First Name *</label>
@@ -122,6 +126,7 @@
           [(ngModel)]="teacherForm.email" 
           name="email" 
           required 
+          pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
           placeholder="teacher@example.com"
         />
       </div>
@@ -133,7 +138,7 @@
           [(ngModel)]="teacherForm.phoneNumber" 
           name="phoneNumber" 
           required 
-          placeholder="+1 (555) 123-4567"
+          placeholder="+48 123 456 789"
         />
       </div>
       <div class="form-group">
