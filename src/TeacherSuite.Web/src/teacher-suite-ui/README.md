@@ -4,7 +4,28 @@ This project was generated using [Angular CLI](https://github.com/angular/angula
 
 ## Development server
 
-To start a local development server, run:
+### Running the Full Stack
+
+The Angular frontend needs to communicate with the .NET backend API. Follow these steps:
+
+1. **Start the backend API** (from the repository root):
+   ```bash
+   cd src/TeacherSuite.Web
+   dotnet run --launch-profile https
+   ```
+   The API will run on `https://localhost:7030`
+
+2. **Start the frontend dev server** (from this directory):
+   ```bash
+   npm start
+   ```
+   The frontend will run on `http://localhost:4200/`
+
+The frontend is configured with a proxy (`proxy.conf.json`) that automatically forwards API requests (e.g., `/Teachers`, `/Courses`, `/AgeGroups`) to the backend at `https://localhost:7030`.
+
+### Running Frontend Only
+
+To start just the frontend development server without the backend:
 
 ```bash
 ng serve
