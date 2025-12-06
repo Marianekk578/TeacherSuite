@@ -73,7 +73,7 @@ export class Teachers implements OnInit {
       lastName: teacher.lastName,
       email: teacher.email,
       phoneNumber: teacher.phoneNumber,
-      dateOfBirth: teacher.dateOfBirth.split('T')[0]
+      dateOfBirth: teacher.dateOfBirth?.split('T')[0] || ''
     };
     this.showModal = true;
   }
@@ -97,7 +97,7 @@ export class Teachers implements OnInit {
         }
       });
     } else {
-      this.teacherService.createTeacher(this.teacherForm as CreateTeacherDto).subscribe({
+      this.teacherService.createTeacher(this.teacherForm).subscribe({
         next: () => {
           this.loadTeachers();
           this.closeModal();
