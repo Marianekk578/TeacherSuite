@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TeacherService, Teacher, CreateTeacherDto, UpdateTeacherDto } from '../../services/teacher.service';
@@ -29,7 +29,10 @@ export class Teachers implements OnInit {
   showDeleteConfirm = false;
   teacherToDelete: Teacher | null = null;
 
-  constructor(private teacherService: TeacherService) {}
+  constructor(
+    private teacherService: TeacherService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.loadTeachers();
@@ -38,16 +41,19 @@ export class Teachers implements OnInit {
   loadTeachers() {
     this.loading = true;
     this.error = null;
+    this.cdr.detectChanges();
     
     this.teacherService.getAllTeachers().subscribe({
       next: (teachers) => {
         this.teachers = teachers;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         this.error = 'Failed to load teachers. Please try again.';
         this.loading = false;
         console.error('Error loading teachers:', error);
+        this.cdr.detectChanges();
       }
     });
   }

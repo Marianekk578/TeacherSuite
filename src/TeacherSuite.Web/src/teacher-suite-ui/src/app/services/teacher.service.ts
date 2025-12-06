@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, from, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, from } from 'rxjs';
 
 export interface Teacher {
   id: string;
@@ -42,11 +41,10 @@ export class TeacherService {
           }
           return response.json();
         })
-    ).pipe(
-      catchError((error) => {
-        console.error('Error fetching teachers:', error);
-        return throwError(() => error);
-      })
+        .catch((error) => {
+          console.error('Error fetching teachers:', error);
+          throw error;
+        })
     );
   }
 
@@ -70,11 +68,10 @@ export class TeacherService {
           }
           return response.json();
         })
-    ).pipe(
-      catchError((error) => {
-        console.error('Error creating teacher:', error);
-        return throwError(() => error);
-      })
+        .catch((error) => {
+          console.error('Error creating teacher:', error);
+          throw error;
+        })
     );
   }
 
@@ -97,11 +94,10 @@ export class TeacherService {
             throw new Error('Failed to update teacher');
           }
         })
-    ).pipe(
-      catchError((error) => {
-        console.error('Error updating teacher:', error);
-        return throwError(() => error);
-      })
+        .catch((error) => {
+          console.error('Error updating teacher:', error);
+          throw error;
+        })
     );
   }
 
@@ -115,11 +111,10 @@ export class TeacherService {
             throw new Error('Failed to delete teacher');
           }
         })
-    ).pipe(
-      catchError((error) => {
-        console.error('Error deleting teacher:', error);
-        return throwError(() => error);
-      })
+        .catch((error) => {
+          console.error('Error deleting teacher:', error);
+          throw error;
+        })
     );
   }
 
