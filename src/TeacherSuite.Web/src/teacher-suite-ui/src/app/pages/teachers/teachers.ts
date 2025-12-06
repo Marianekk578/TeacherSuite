@@ -141,7 +141,20 @@ export class Teachers implements OnInit {
   }
 
   formatDate(dateString: string): string {
+    if (!dateString) return 'N/A';
+    
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return 'Invalid Date';
+    }
+    
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      timeZone: 'UTC'
+    });
   }
 }
