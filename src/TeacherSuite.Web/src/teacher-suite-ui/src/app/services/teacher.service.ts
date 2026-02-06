@@ -105,7 +105,7 @@ export class TeacherService {
       })
         .then((response) => {
           if (!response.ok) {
-            throw new Error(`Failed to delete teachers: ${response.status} ${response.statusText}`);
+            throw new Error(`Failed to delete teacher: ${response.status} ${response.statusText}`);
           }
         })
         .catch((error) => {

@@ -180,7 +180,9 @@ export class Teachers implements OnInit {
   }
 
   getFullName(teacher: Teacher): string {
-    return `${teacher.firstName} ${teacher.lastName}`.trim();
+    const firstName = teacher.firstName ?? '';
+    const lastName = teacher.lastName ?? '';
+    return `${firstName} ${lastName}`.trim();
   }
 
   formatDate(dateString: string): string {
