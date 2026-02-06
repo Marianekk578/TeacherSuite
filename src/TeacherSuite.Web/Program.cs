@@ -5,6 +5,7 @@ using TeacherSuite.Application.Courses.Commands.Create;
 using TeacherSuite.Application.Courses.Commands.Update;
 using TeacherSuite.Application.Courses.Queries;
 using TeacherSuite.Application.Teachers.Commands.Create;
+using TeacherSuite.Application.Teachers.Commands.Delete;
 using TeacherSuite.Application.Teachers.Commands.Update;
 using TeacherSuite.Application.Teachers.Queries.Get;
 using TeacherSuite.Infrastructure;
@@ -42,6 +43,9 @@ app.MapPut("/Teachers/{id:guid}", async (Teachers endpoints, ISender sender, Gui
 
 app.MapGet("/Teachers", async (Teachers endpoints, ISender sender, [AsParameters] GetAllTeachersQuery query) =>
     await endpoints.GetAllTeachers(sender, query));
+
+app.MapDelete("/Teachers/{id:guid}", async (Teachers endpoints, ISender sender, Guid id) =>
+    await endpoints.DeleteTeacher(sender, id));
 
 // Course endpoints
 app.MapGet("/Courses", async (Courses endpoints, ISender sender, [AsParameters] GetAllCoursesQuery query) =>

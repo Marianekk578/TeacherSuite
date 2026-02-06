@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
 using TeacherSuite.Application.Teachers.Commands.Create;
+using TeacherSuite.Application.Teachers.Commands.Delete;
 using TeacherSuite.Application.Teachers.Commands.Update;
 using TeacherSuite.Application.Teachers.Queries.Get;
 
@@ -32,6 +33,12 @@ public class Teachers
 
         await sender.Send(commandWithId);
 
+        return TypedResults.NoContent();
+    }
+
+    public async Task<NoContent> DeleteTeacher(ISender sender, Guid id)
+    {
+        await sender.Send(new DeleteTeacherCommand(id));
         return TypedResults.NoContent();
     }
 }

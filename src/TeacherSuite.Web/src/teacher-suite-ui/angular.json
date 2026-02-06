@@ -64,7 +64,8 @@
               "buildTarget": "teacher-suite-ui:build:production"
             },
             "development": {
-              "buildTarget": "teacher-suite-ui:build:development"
+              "buildTarget": "teacher-suite-ui:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
