@@ -1,7 +1,7 @@
 <div class="teachers-page">
   <div class="page-header">
     <h1>Teachers</h1>
-    <button class="btn btn-primary" (click)="openAddModal()">
+    <button aria-label="AddTeacher" class="btn btn-primary" (click)="openAddModal()">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="12" y1="5" x2="12" y2="19"></line>
         <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -83,13 +83,13 @@
 </div>
 
 <!-- Add/Edit Modal -->
-<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+<div class="modal-overlay" *ngIf="showModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" (click)="closeModal()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>{{ isEditMode ? 'Edit Teacher' : 'Add New Teacher' }}</h2>
+      <h2 id="modalTitle">{{ isEditMode ? 'Edit Teacher' : 'Add New Teacher' }}</h2>
       <button class="modal-close" (click)="closeModal()">&times;</button>
     </div>
-    <form class="modal-body" (ngSubmit)="saveTeacher()">
+    <form class="modal-body" [formGroup]="teacherForm" (ngSubmit)="saveTeacher()">
       <div *ngIf="modalError" class="alert alert-error modal-alert">
         {{ modalError }}
         <button type="button" class="alert-close" (click)="modalError = null">&times;</button>
@@ -100,8 +100,7 @@
           <input 
             type="text" 
             id="firstName" 
-            [(ngModel)]="teacherForm.firstName" 
-            name="firstName" 
+            formControlName="firstName"
             required 
             placeholder="Enter first name"
           />
@@ -111,8 +110,7 @@
           <input 
             type="text" 
             id="lastName" 
-            [(ngModel)]="teacherForm.lastName" 
-            name="lastName" 
+            formControlName="lastName"
             required 
             placeholder="Enter last name"
           />
@@ -123,10 +121,8 @@
         <input 
           type="email" 
           id="email" 
-          [(ngModel)]="teacherForm.email" 
-          name="email" 
+          formControlName="email"
           required 
-          pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
           placeholder="teacher@example.com"
         />
       </div>
@@ -135,8 +131,7 @@
         <input 
           type="tel" 
           id="phoneNumber" 
-          [(ngModel)]="teacherForm.phoneNumber" 
-          name="phoneNumber" 
+          formControlName="phoneNumber"
           required 
           placeholder="+48 123 456 789"
         />
@@ -146,8 +141,8 @@
         <input 
           type="date" 
           id="dateOfBirth" 
-          [(ngModel)]="teacherForm.dateOfBirth" 
-          name="dateOfBirth" 
+          formControlName="dateOfBirth"
+          [max]="getCurrentDate()"
           required
         />
       </div>
@@ -161,9 +156,9 @@
 
 <!-- Delete Confirmation Modal -->
 <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
-  <div class="modal modal-small" (click)="$event.stopPropagation()">
+  <div class="modal modal-small" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>Confirm Delete</h2>
+      <h2 id="deleteConfirmTitle">Confirm Delete</h2>
       <button class="modal-close" (click)="cancelDelete()">&times;</button>
     </div>
     <div class="modal-body">

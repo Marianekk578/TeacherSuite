@@ -37,7 +37,7 @@ export class TeacherService {
       fetch(this.apiUrl)
         .then((response) => {
           if (!response.ok) {
-            throw new Error('Failed to fetch teachers');
+            throw new Error(`Failed to fetch teachers: ${response.status} ${response.statusText}`);
           }
           return response.json();
         })
@@ -64,7 +64,7 @@ export class TeacherService {
       })
         .then((response) => {
           if (!response.ok) {
-            throw new Error('Failed to create teacher');
+            throw new Error(`Failed to create teacher: ${response.status} ${response.statusText}`);
           }
           return response.json();
         })
@@ -91,7 +91,7 @@ export class TeacherService {
       })
         .then((response) => {
           if (!response.ok) {
-            throw new Error('Failed to update teacher');
+            throw new Error(`Failed to update teacher: ${response.status} ${response.statusText}`);
           }
         })
         .catch((error) => {
@@ -108,7 +108,7 @@ export class TeacherService {
       })
         .then((response) => {
           if (!response.ok) {
-            throw new Error('Failed to delete teacher');
+            throw new Error(`Failed to delete teachers: ${response.status} ${response.statusText}`);
           }
         })
         .catch((error) => {

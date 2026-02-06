@@ -1,11 +1,18 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators
+} from '@angular/forms';
 import { TeacherService, Teacher, CreateTeacherDto, UpdateTeacherDto } from '../../services/teacher.service';
 
 @Component({
   selector: 'app-teachers',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './teachers.html',
   styleUrl: './teachers.scss',
 })
@@ -18,22 +25,25 @@ export class Teachers implements OnInit {
   isEditMode = false;
   currentTeacherId: string | null = null;
   modalError: string | null = null;
-  
-  teacherForm: CreateTeacherDto | UpdateTeacherDto = {
-    firstName: '',
-    lastName: '',
-    email: '',
-    phoneNumber: '',
-    dateOfBirth: ''
-  };
+
+  teacherForm: FormGroup;
 
   showDeleteConfirm = false;
   teacherToDelete: Teacher | null = null;
 
   constructor(
     private teacherService: TeacherService,
-    private cdr: ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef,
+    private fb: FormBuilder
+  ) {
+    this.teacherForm = this.fb.group({
+      firstName: ['', [Validators.required]],
+      lastName: ['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email]],
+      phoneNumber: ['', [Validators.required]],
+      dateOfBirth: ['', [Validators.required, this.dateOfBirthValidator.bind(this)]]
+    });
+  }
 
   ngOnInit() {
     this.loadTeachers();
@@ -63,13 +73,13 @@ export class Teachers implements OnInit {
     this.isEditMode = false;
     this.currentTeacherId = null;
     this.modalError = null;
-    this.teacherForm = {
+    this.teacherForm.reset({
       firstName: '',
       lastName: '',
       email: '',
       phoneNumber: '',
       dateOfBirth: ''
-    };
+    });
     this.showModal = true;
   }
 
@@ -77,13 +87,13 @@ export class Teachers implements OnInit {
     this.isEditMode = true;
     this.currentTeacherId = teacher.id;
     this.modalError = null;
-    this.teacherForm = {
+    this.teacherForm.reset({
       firstName: teacher.firstName,
       lastName: teacher.lastName,
       email: teacher.email,
       phoneNumber: teacher.phoneNumber,
       dateOfBirth: teacher.dateOfBirth?.split('T')[0] || ''
-    };
+    });
     this.showModal = true;
   }
 
@@ -94,50 +104,30 @@ export class Teachers implements OnInit {
     this.modalError = null;
   }
 
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscapeKey(event: Event) {
+    if (this.showModal) {
+      this.closeModal();
+    }
+    if (this.showDeleteConfirm) {
+      this.cancelDelete();
+    }
+  }
+
   saveTeacher() {
-    // Client-side validation
     this.modalError = null;
-    
-    if (!this.teacherForm.firstName?.trim()) {
-      this.modalError = 'First name is required';
+
+    if (this.teacherForm.invalid) {
+      this.teacherForm.markAllAsTouched();
+      this.modalError = this.getFormErrorMessage();
       this.cdr.detectChanges();
       return;
     }
-    
-    if (!this.teacherForm.lastName?.trim()) {
-      this.modalError = 'Last name is required';
-      this.cdr.detectChanges();
-      return;
-    }
-    
-    if (!this.teacherForm.email?.trim()) {
-      this.modalError = 'Email is required';
-      this.cdr.detectChanges();
-      return;
-    }
-    
-    // Email format validation
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(this.teacherForm.email)) {
-      this.modalError = 'Please enter a valid email address';
-      this.cdr.detectChanges();
-      return;
-    }
-    
-    if (!this.teacherForm.phoneNumber?.trim()) {
-      this.modalError = 'Phone number is required';
-      this.cdr.detectChanges();
-      return;
-    }
-    
-    if (!this.teacherForm.dateOfBirth) {
-      this.modalError = 'Date of birth is required';
-      this.cdr.detectChanges();
-      return;
-    }
-    
+
+    const teacherPayload = this.teacherForm.getRawValue() as CreateTeacherDto | UpdateTeacherDto;
+
     if (this.isEditMode && this.currentTeacherId) {
-      this.teacherService.updateTeacher(this.currentTeacherId, this.teacherForm).subscribe({
+      this.teacherService.updateTeacher(this.currentTeacherId, teacherPayload).subscribe({
         next: () => {
           this.loadTeachers();
           this.closeModal();
@@ -149,7 +139,7 @@ export class Teachers implements OnInit {
         }
       });
     } else {
-      this.teacherService.createTeacher(this.teacherForm).subscribe({
+      this.teacherService.createTeacher(teacherPayload).subscribe({
         next: () => {
           this.loadTeachers();
           this.closeModal();
@@ -198,7 +188,6 @@ export class Teachers implements OnInit {
     
     const date = new Date(dateString);
     
-    // Check if date is valid
     if (isNaN(date.getTime())) {
       return 'Invalid Date';
     }
@@ -209,5 +198,92 @@ export class Teachers implements OnInit {
       day: 'numeric',
       timeZone: 'UTC'
     });
+  }
+
+  getCurrentDate(): string {
+    const today = new Date();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${today.getFullYear()}-${month}-${day}`;
+  }
+
+  private dateOfBirthValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) {
+      return null;
+    }
+
+    const date = new Date(control.value);
+    if (isNaN(date.getTime())) {
+      return { invalidDate: true };
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (date >= today) {
+      return { futureDate: true };
+    }
+
+    const oldestAllowed = new Date();
+    oldestAllowed.setFullYear(oldestAllowed.getFullYear() - 122);
+
+    if (date <= oldestAllowed) {
+      return { tooOld: true };
+    }
+
+    const youngestAllowed = new Date();
+    youngestAllowed.setFullYear(youngestAllowed.getFullYear() - 18);
+
+    if (date > youngestAllowed) {
+      return { tooYoung: true };
+    }
+
+    return null;
+  }
+
+  private getFormErrorMessage(): string | null {
+    const controls = this.teacherForm.controls;
+
+    if (controls['firstName']?.errors?.['required']) {
+      return 'First name is required';
+    }
+
+    if (controls['lastName']?.errors?.['required']) {
+      return 'Last name is required';
+    }
+
+    if (controls['email']?.errors?.['required']) {
+      return 'Email is required';
+    }
+
+    if (controls['email']?.errors?.['email']) {
+      return 'Please enter a valid email address';
+    }
+
+    if (controls['phoneNumber']?.errors?.['required']) {
+      return 'Phone number is required';
+    }
+
+    if (controls['dateOfBirth']?.errors?.['required']) {
+      return 'Date of birth is required';
+    }
+
+    if (controls['dateOfBirth']?.errors?.['futureDate']) {
+      return 'How can you predict when someone will be born?';
+    }
+
+    if (controls['dateOfBirth']?.errors?.['tooOld']) {
+      return 'I dont think you can beat Jeanne Calment, she lived 122 years.';
+    }
+
+    if (controls['dateOfBirth']?.errors?.['tooYoung']) {
+      return 'I know students who are older.';
+    }
+
+    if (controls['dateOfBirth']?.errors?.['invalidDate']) {
+      return 'Date of birth is invalid.';
+    }
+
+    return 'Please fix the errors in the form.';
   }
 }
