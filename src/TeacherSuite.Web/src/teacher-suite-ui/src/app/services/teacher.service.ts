@@ -42,7 +42,6 @@ export class TeacherService {
           return response.json();
         })
         .catch((error) => {
-          console.error('Error fetching teachers:', error);
           throw error;
         })
     );
@@ -69,7 +68,6 @@ export class TeacherService {
           return response.json();
         })
         .catch((error) => {
-          console.error('Error creating teacher:', error);
           throw error;
         })
     );
@@ -95,7 +93,6 @@ export class TeacherService {
           }
         })
         .catch((error) => {
-          console.error('Error updating teacher:', error);
           throw error;
         })
     );
@@ -112,7 +109,6 @@ export class TeacherService {
           }
         })
         .catch((error) => {
-          console.error('Error deleting teacher:', error);
           throw error;
         })
     );
