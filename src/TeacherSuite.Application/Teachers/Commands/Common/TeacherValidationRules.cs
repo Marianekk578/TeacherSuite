@@ -1,13 +1,15 @@
-﻿namespace TeacherSuite.Application.Teachers.Commands.Common;
+﻿using System.Linq.Expressions;
+
+namespace TeacherSuite.Application.Teachers.Commands.Common;
 
 public static class TeacherValidationRules
 {
     public static void ApplyCommonRules<T>(AbstractValidator<T> validator,
-        System.Linq.Expressions.Expression<Func<T, string?>> firstNameSelector,
-        System.Linq.Expressions.Expression<Func<T, string?>> lastNameSelector,
-        System.Linq.Expressions.Expression<Func<T, string>> emailSelector,
-        System.Linq.Expressions.Expression<Func<T, string>> phoneNumberSelector,
-        System.Linq.Expressions.Expression<Func<T, DateTimeOffset>> dateOfBirthSelector)
+        Expression<Func<T, string?>> firstNameSelector,
+        Expression<Func<T, string?>> lastNameSelector,
+        Expression<Func<T, string>> emailSelector,
+        Expression<Func<T, string>> phoneNumberSelector,
+        Expression<Func<T, DateTimeOffset>> dateOfBirthSelector)
     {
         validator.RuleFor(firstNameSelector)
             .NotEmpty()
