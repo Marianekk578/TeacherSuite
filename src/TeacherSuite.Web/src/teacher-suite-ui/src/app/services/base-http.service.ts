@@ -1,4 +1,5 @@
 import { Observable, from } from 'rxjs';
+import { convertToUtcIsoString } from '../utils/date-utils';
 
 export abstract class BaseHttpService {
   protected abstract readonly baseUrl: string;
@@ -76,9 +77,6 @@ export abstract class BaseHttpService {
   }
 
   protected convertToUtcIsoString(dateString: string): string {
-    // dateString is in YYYY-MM-DD format from the date input
-    // Create a date at midnight UTC to avoid timezone issues
-    const date = new Date(dateString + 'T00:00:00.000Z');
-    return date.toISOString();
+    return convertToUtcIsoString(dateString);
   }
 }

@@ -53,7 +53,7 @@ export function getDateOfBirthErrorMessage(errors: ValidationErrors | null): str
   }
 
   if (errors['tooOld']) {
-    return 'I dont think you can beat Jeanne Calment, she lived 122 years.';
+    return "I don't think you can beat Jeanne Calment, she lived 122 years.";
   }
 
   if (errors['tooYoung']) {
