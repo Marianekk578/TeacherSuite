@@ -1,3 +1,5 @@
+using TeacherSuite.Application.Courses.Commands.Common;
+
 namespace TeacherSuite.Application.Courses.Commands.Update;
 
 public class UpdateCourseCommandValidator : AbstractValidator<UpdateCourseCommand>
@@ -8,12 +10,8 @@ public class UpdateCourseCommandValidator : AbstractValidator<UpdateCourseComman
             .GreaterThan(0)
             .WithMessage("Course id is required");
 
-        RuleFor(x => x.Name)
-            .NotEmpty()
-            .WithMessage("Course name is required");
-
-        RuleFor(x => x.AgeGroupID)
-            .GreaterThan(0)
-            .WithMessage("A valid age group is required");
+        CourseValidationRules.ApplyCommonRules(this,
+            x => x.Name,
+            x => x.AgeGroupID);
     }
 }
