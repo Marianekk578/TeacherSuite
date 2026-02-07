@@ -1,4 +1,4 @@
-﻿using TeacherSuite.Application.AgeGroups.Common.Interfaces;
+﻿using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Domain.Entities;
 using TeacherSuite.Domain.Events;
 
@@ -8,12 +8,12 @@ public record CreateAgeGroupCommand(string Name, int MinAge, int MaxAge) : IRequ
 
 public class CreateAgeGroupHandler : IRequestHandler<CreateAgeGroupCommand, int>
 {
-    private readonly IApplicationDbContext _db;
+    private readonly IApplicationDbContext _context;
     private readonly IPublisher _publisher;
 
-    public CreateAgeGroupHandler(IApplicationDbContext db, IPublisher publisher)
+    public CreateAgeGroupHandler(IApplicationDbContext context, IPublisher publisher)
     {
-        _db = db;
+        _context = context;
         _publisher = publisher;
     }
 
@@ -26,8 +26,8 @@ public class CreateAgeGroupHandler : IRequestHandler<CreateAgeGroupCommand, int>
             MaxAge = request.MaxAge
         };
 
-        _db.AgeGroups.Add(entity);
-        await _db.SaveChangesAsync(cancellationToken);
+        _context.AgeGroups.Add(entity);
+        await _context.SaveChangesAsync(cancellationToken);
 
         await _publisher.Publish(new AgeGroupCreatedEvent(entity), cancellationToken);
 

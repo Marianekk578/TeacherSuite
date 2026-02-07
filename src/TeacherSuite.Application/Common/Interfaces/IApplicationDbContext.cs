@@ -1,6 +1,6 @@
 ﻿using TeacherSuite.Domain.Entities;
 
-namespace TeacherSuite.Application.AgeGroups.Common.Interfaces;
+namespace TeacherSuite.Application.Common.Interfaces;
 
 public interface IApplicationDbContext
 {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Reflection;
-using TeacherSuite.Application.AgeGroups.Common.Interfaces;
+using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Domain.Entities;
 
 namespace TeacherSuite.Infrastructure.Data
