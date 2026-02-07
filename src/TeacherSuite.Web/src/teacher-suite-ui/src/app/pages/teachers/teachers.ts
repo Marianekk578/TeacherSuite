@@ -1,14 +1,14 @@
 import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  AbstractControl,
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
-  ValidationErrors,
   Validators
 } from '@angular/forms';
 import { TeacherService, Teacher, CreateTeacherDto, UpdateTeacherDto } from '../../services/teacher.service';
+import { formatDate, getCurrentDate } from '../../utils/date-utils';
+import { dateOfBirthValidator, getDateOfBirthErrorMessage } from '../../utils/form-validators';
 
 @Component({
   selector: 'app-teachers',
@@ -41,7 +41,7 @@ export class Teachers implements OnInit {
       lastName: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       phoneNumber: ['', [Validators.required]],
-      dateOfBirth: ['', [Validators.required, this.dateOfBirthValidator.bind(this)]]
+      dateOfBirth: ['', [Validators.required, dateOfBirthValidator]]
     });
   }
 
@@ -186,61 +186,11 @@ export class Teachers implements OnInit {
   }
 
   formatDate(dateString: string): string {
-    if (!dateString) return 'N/A';
-    
-    const date = new Date(dateString);
-    
-    if (isNaN(date.getTime())) {
-      return 'Invalid Date';
-    }
-    
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric',
-      timeZone: 'UTC'
-    });
+    return formatDate(dateString);
   }
 
   getCurrentDate(): string {
-    const today = new Date();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${today.getFullYear()}-${month}-${day}`;
-  }
-
-  private dateOfBirthValidator(control: AbstractControl): ValidationErrors | null {
-    if (!control.value) {
-      return null;
-    }
-
-    const date = new Date(control.value);
-    if (isNaN(date.getTime())) {
-      return { invalidDate: true };
-    }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    if (date >= today) {
-      return { futureDate: true };
-    }
-
-    const oldestAllowed = new Date();
-    oldestAllowed.setFullYear(oldestAllowed.getFullYear() - 122);
-
-    if (date <= oldestAllowed) {
-      return { tooOld: true };
-    }
-
-    const youngestAllowed = new Date();
-    youngestAllowed.setFullYear(youngestAllowed.getFullYear() - 18);
-
-    if (date > youngestAllowed) {
-      return { tooYoung: true };
-    }
-
-    return null;
+    return getCurrentDate();
   }
 
   private getFormErrorMessage(): string | null {
@@ -266,24 +216,9 @@ export class Teachers implements OnInit {
       return 'Phone number is required';
     }
 
-    if (controls['dateOfBirth']?.errors?.['required']) {
-      return 'Date of birth is required';
-    }
-
-    if (controls['dateOfBirth']?.errors?.['futureDate']) {
-      return 'How can you predict when someone will be born?';
-    }
-
-    if (controls['dateOfBirth']?.errors?.['tooOld']) {
-      return 'I dont think you can beat Jeanne Calment, she lived 122 years.';
-    }
-
-    if (controls['dateOfBirth']?.errors?.['tooYoung']) {
-      return 'I know students who are older.';
-    }
-
-    if (controls['dateOfBirth']?.errors?.['invalidDate']) {
-      return 'Date of birth is invalid.';
+    const dateError = getDateOfBirthErrorMessage(controls['dateOfBirth']?.errors);
+    if (dateError) {
+      return dateError;
     }
 
     return 'Please fix the errors in the form.';
