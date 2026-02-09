@@ -1,4 +1,4 @@
-using TeacherSuite.Application.AgeGroups.Common.Interfaces;
+using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Domain.Entities;
 using TeacherSuite.Domain.Events;
 

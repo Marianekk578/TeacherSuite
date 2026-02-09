@@ -23,10 +23,10 @@ public class Courses
         return TypedResults.Ok(courses);
     }
 
-    public async Task<IResult> GetCourseById(ISender sender, int id)
+    public async Task<Results<Ok<CourseDto>, NotFound>> GetCourseById(ISender sender, int id)
     {
         var course = await sender.Send(new GetCourseByIdQuery(id));
-        return course is null ? Results.NotFound() : Results.Ok(course);
+        return course is null ? TypedResults.NotFound() : TypedResults.Ok(course);
     }
 
     public async Task<NoContent> UpdateCourse(ISender sender, int id, UpdateCourseCommand command)

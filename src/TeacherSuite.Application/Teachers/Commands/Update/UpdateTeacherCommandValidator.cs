@@ -1,4 +1,6 @@
-﻿namespace TeacherSuite.Application.Teachers.Commands.Update;
+﻿using TeacherSuite.Application.Teachers.Commands.Common;
+
+namespace TeacherSuite.Application.Teachers.Commands.Update;
 
 public class UpdateTeacherCommandValidator : AbstractValidator<UpdateTeacherCommand>
 {
@@ -8,26 +10,11 @@ public class UpdateTeacherCommandValidator : AbstractValidator<UpdateTeacherComm
             .NotEmpty()
             .WithMessage("Teacher id is required");
 
-        RuleFor(x => x.FirstName)
-            .NotEmpty()
-            .WithMessage("Teacher first name is required");
-
-        RuleFor(x => x.LastName)
-            .NotEmpty()
-            .WithMessage("Teacher last name is required");
-
-        RuleFor(x => x.Email)
-            .Cascade(CascadeMode.Stop)
-            .NotEmpty().WithMessage("Email address is required")
-            .EmailAddress().WithMessage("A valid email address is required");
-
-        RuleFor(x => x.PhoneNumber)
-            .NotEmpty()
-            .WithMessage("Phone number is required");
-
-        RuleFor(x => x.DateOfBirth)
-            .LessThan(DateTimeOffset.Now)
-            .NotEmpty()
-            .WithMessage("A valid date of birth is required");
+        TeacherValidationRules.ApplyCommonRules(this,
+            x => x.FirstName,
+            x => x.LastName,
+            x => x.Email,
+            x => x.PhoneNumber,
+            x => x.DateOfBirth);
     }
 }

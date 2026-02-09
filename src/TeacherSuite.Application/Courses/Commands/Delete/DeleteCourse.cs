@@ -1,4 +1,4 @@
-using TeacherSuite.Application.AgeGroups.Common.Interfaces;
+using TeacherSuite.Application.Common.Interfaces;
 
 namespace TeacherSuite.Application.Courses.Commands.Delete;
 

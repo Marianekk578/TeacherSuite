@@ -1,4 +1,4 @@
-﻿using TeacherSuite.Application.AgeGroups.Common.Interfaces;
+﻿using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Application.AgeGroups.Dtos;
 
 namespace TeacherSuite.Application.AgeGroups.Queries;

@@ -3,31 +3,33 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using TeacherSuite.Application.Teachers.Commands.Create;
 using TeacherSuite.Application.Teachers.Commands.Delete;
 using TeacherSuite.Application.Teachers.Commands.Update;
+using TeacherSuite.Application.Teachers.Dtos;
 using TeacherSuite.Application.Teachers.Queries.Get;
 
 namespace TeacherSuite.Web.Endpoints;
 
 public class Teachers
 {
-    public async Task<Created<Guid>> CreateTeachers(ISender sender, CreateTeacherCommand command)
+    public async Task<Created<Guid>> CreateTeacher(ISender sender, CreateTeacherCommand command)
     {
         var id = await sender.Send(command);
 
         return TypedResults.Created($"/{nameof(Teachers)}/{id}", id);
     }
-    public async Task<IResult> GetTeacherAssignedToGroup(ISender sender, GetTeacherAssignedToGroupQuery query)
+
+    public async Task<Results<Ok<TeacherDto>, NotFound>> GetTeacherAssignedToGroup(ISender sender, GetTeacherAssignedToGroupQuery query)
     {
         var teacher = await sender.Send(query);
-        return teacher is null ? Results.NotFound() : Results.Ok(teacher);
+        return teacher is null ? TypedResults.NotFound() : TypedResults.Ok(teacher);
     }
 
-    public async Task<IResult> GetAllTeachers(ISender sender, GetAllTeachersQuery query)
+    public async Task<Ok<List<TeacherDto>>> GetAllTeachers(ISender sender, GetAllTeachersQuery query)
     {
         var teachers = await sender.Send(query);
-        return Results.Ok(teachers);
+        return TypedResults.Ok(teachers);
     }
 
-    public async Task<IResult> UpdateTeacher(ISender sender, Guid id, UpdateTeacherCommand command)
+    public async Task<NoContent> UpdateTeacher(ISender sender, Guid id, UpdateTeacherCommand command)
     {
         var commandWithId = command with { Id = id };
 

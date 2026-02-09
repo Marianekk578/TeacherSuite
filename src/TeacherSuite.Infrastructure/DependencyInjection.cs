@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using TeacherSuite.Application.AgeGroups.Common.Interfaces;
+using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Infrastructure.Data;
 
 namespace TeacherSuite.Infrastructure;

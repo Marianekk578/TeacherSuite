@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable, from } from 'rxjs';
+import { Observable } from 'rxjs';
+import { ApiService } from './api.service';
 
 export interface Teacher {
   id: string;
@@ -29,94 +30,36 @@ export interface UpdateTeacherDto {
 @Injectable({
   providedIn: 'root',
 })
-export class TeacherService {
+export class TeacherService extends ApiService {
   private readonly apiUrl = '/Teachers';
 
   getAllTeachers(): Observable<Teacher[]> {
-    return from(
-      fetch(this.apiUrl)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`Failed to fetch teachers: ${response.status} ${response.statusText}`);
-          }
-          return response.json();
-        })
-        .catch((error) => {
-          throw error;
-        })
-    );
+    return this.get<Teacher[]>(this.apiUrl);
   }
 
   createTeacher(teacher: CreateTeacherDto): Observable<string> {
     const teacherData = {
       ...teacher,
-      dateOfBirth: this.convertToUtcIsoString(teacher.dateOfBirth)
+      dateOfBirth: this.convertToUtcIsoString(teacher.dateOfBirth),
     };
-    
-    return from(
-      fetch(this.apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(teacherData),
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`Failed to create teacher: ${response.status} ${response.statusText}`);
-          }
-          return response.json();
-        })
-        .catch((error) => {
-          throw error;
-        })
-    );
+
+    return this.post<string>(this.apiUrl, teacherData);
   }
 
   updateTeacher(id: string, teacher: UpdateTeacherDto): Observable<void> {
     const teacherData = {
       ...teacher,
-      dateOfBirth: this.convertToUtcIsoString(teacher.dateOfBirth)
+      dateOfBirth: this.convertToUtcIsoString(teacher.dateOfBirth),
     };
-    
-    return from(
-      fetch(`${this.apiUrl}/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(teacherData),
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`Failed to update teacher: ${response.status} ${response.statusText}`);
-          }
-        })
-        .catch((error) => {
-          throw error;
-        })
-    );
+
+    return this.put(`${this.apiUrl}/${id}`, teacherData);
   }
 
   deleteTeacher(id: string): Observable<void> {
-    return from(
-      fetch(`${this.apiUrl}/${id}`, {
-        method: 'DELETE',
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`Failed to delete teacher: ${response.status} ${response.statusText}`);
-          }
-        })
-        .catch((error) => {
-          throw error;
-        })
-    );
+    return this.delete(`${this.apiUrl}/${id}`);
   }
 
   private convertToUtcIsoString(dateString: string): string {
-    // dateString is in YYYY-MM-DD format from the date input
-    // Create a date at midnight UTC to avoid timezone issues
     const date = new Date(dateString + 'T00:00:00.000Z');
     return date.toISOString();
   }
