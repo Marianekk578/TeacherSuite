@@ -105,11 +105,11 @@ public class GlobalExceptionHandlerMiddlewareTests
         Assert.NotNull(problemDetails);
         Assert.Equal(500, problemDetails.Status);
     }
+}
 
-    private class TestLogger<T> : ILogger<T>
-    {
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
-        public bool IsEnabled(LogLevel logLevel) => true;
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) { }
-    }
+internal class TestLogger<T> : ILogger<T>
+{
+    public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+    public bool IsEnabled(LogLevel logLevel) => true;
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) { }
 }
