@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
 using TeacherSuite.Application.Common;
 
 namespace TeacherSuite.Web.Middleware;
@@ -8,13 +7,16 @@ public class GlobalExceptionHandlerMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<GlobalExceptionHandlerMiddleware> _logger;
+    private readonly IWebHostEnvironment _env;
 
     public GlobalExceptionHandlerMiddleware(
         RequestDelegate next,
-        ILogger<GlobalExceptionHandlerMiddleware> logger)
+        ILogger<GlobalExceptionHandlerMiddleware> logger,
+        IWebHostEnvironment env)
     {
         _next = next;
         _logger = logger;
+        _env = env;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -38,23 +40,23 @@ public class GlobalExceptionHandlerMiddleware
         switch (exception)
         {
             case ValidationException validationException:
-                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 await context.Response.WriteAsJsonAsync(CreateValidationProblemDetails(context, validationException));
                 break;
 
             case Ardalis.GuardClauses.NotFoundException notFoundException:
-                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
                 await context.Response.WriteAsJsonAsync(CreateNotFoundProblemDetails(context, notFoundException));
                 break;
 
             default:
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 await context.Response.WriteAsJsonAsync(CreateInternalServerErrorProblemDetails(context, exception));
                 break;
         }
     }
 
-    private static ValidationProblemDetails CreateValidationProblemDetails(
+    private ValidationProblemDetails CreateValidationProblemDetails(
         HttpContext context,
         ValidationException exception)
     {
@@ -62,7 +64,7 @@ public class GlobalExceptionHandlerMiddleware
         {
             Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1",
             Title = "One or more validation errors occurred.",
-            Status = (int)HttpStatusCode.BadRequest,
+            Status = StatusCodes.Status400BadRequest,
             Instance = context.Request.Path,
             Detail = "Please refer to the errors property for additional details."
         };
@@ -70,7 +72,7 @@ public class GlobalExceptionHandlerMiddleware
         return problemDetails;
     }
 
-    private static ProblemDetails CreateNotFoundProblemDetails(
+    private ProblemDetails CreateNotFoundProblemDetails(
         HttpContext context,
         Ardalis.GuardClauses.NotFoundException exception)
     {
@@ -78,9 +80,9 @@ public class GlobalExceptionHandlerMiddleware
         {
             Type = "https://tools.ietf.org/html/rfc9110#section-15.5.5",
             Title = "The specified resource was not found.",
-            Status = (int)HttpStatusCode.NotFound,
+            Status = StatusCodes.Status404NotFound,
             Instance = context.Request.Path,
-            Detail = exception.Message
+            Detail = _env.IsDevelopment() ? exception.Message : "The requested resource was not found."
         };
 
         return problemDetails;
@@ -94,7 +96,7 @@ public class GlobalExceptionHandlerMiddleware
         {
             Type = "https://tools.ietf.org/html/rfc9110#section-15.6.1",
             Title = "An error occurred while processing your request.",
-            Status = (int)HttpStatusCode.InternalServerError,
+            Status = StatusCodes.Status500InternalServerError,
             Instance = context.Request.Path,
             Detail = "An unexpected error occurred. Please try again later."
         };

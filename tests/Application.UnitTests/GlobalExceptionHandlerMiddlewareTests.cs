@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
@@ -17,13 +19,15 @@ public class GlobalExceptionHandlerMiddlewareTests
         var context = new DefaultHttpContext();
         context.Response.Body = new MemoryStream();
         var logger = new TestLogger<GlobalExceptionHandlerMiddleware>();
+        var env = new TestWebHostEnvironment();
         
         var middleware = new GlobalExceptionHandlerMiddleware(
             next: (innerHttpContext) => throw new ValidationException(new[]
             {
                 new FluentValidation.Results.ValidationFailure("Name", "Name is required")
             }),
-            logger: logger);
+            logger: logger,
+            env: env);
 
         // Act
         await middleware.InvokeAsync(context);
@@ -42,7 +46,6 @@ public class GlobalExceptionHandlerMiddlewareTests
         Assert.NotNull(problemDetails);
         Assert.Equal(400, problemDetails.Status);
         Assert.NotNull(problemDetails.Errors);
-        // The key might be case-sensitive or might not match exactly, so just check there's at least one error
         Assert.True(problemDetails.Errors.Count > 0, $"Expected at least one error. Response: {responseBody}");
     }
 
@@ -53,10 +56,12 @@ public class GlobalExceptionHandlerMiddlewareTests
         var context = new DefaultHttpContext();
         context.Response.Body = new MemoryStream();
         var logger = new TestLogger<GlobalExceptionHandlerMiddleware>();
+        var env = new TestWebHostEnvironment();
         
         var middleware = new GlobalExceptionHandlerMiddleware(
             next: (innerHttpContext) => throw new Ardalis.GuardClauses.NotFoundException("1", "Entity not found"),
-            logger: logger);
+            logger: logger,
+            env: env);
 
         // Act
         await middleware.InvokeAsync(context);
@@ -83,10 +88,12 @@ public class GlobalExceptionHandlerMiddlewareTests
         var context = new DefaultHttpContext();
         context.Response.Body = new MemoryStream();
         var logger = new TestLogger<GlobalExceptionHandlerMiddleware>();
+        var env = new TestWebHostEnvironment();
         
         var middleware = new GlobalExceptionHandlerMiddleware(
             next: (innerHttpContext) => throw new InvalidOperationException("Something went wrong"),
-            logger: logger);
+            logger: logger,
+            env: env);
 
         // Act
         await middleware.InvokeAsync(context);
@@ -112,4 +119,14 @@ internal class TestLogger<T> : ILogger<T>
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
     public bool IsEnabled(LogLevel logLevel) => true;
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) { }
+}
+
+internal class TestWebHostEnvironment : IWebHostEnvironment
+{
+    public string WebRootPath { get; set; } = string.Empty;
+    public IFileProvider WebRootFileProvider { get; set; } = null!;
+    public string ApplicationName { get; set; } = "TestApp";
+    public IFileProvider ContentRootFileProvider { get; set; } = null!;
+    public string ContentRootPath { get; set; } = string.Empty;
+    public string EnvironmentName { get; set; } = "Development";
 }
