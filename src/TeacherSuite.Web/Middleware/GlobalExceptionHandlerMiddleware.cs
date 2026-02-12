@@ -7,16 +7,13 @@ public class GlobalExceptionHandlerMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<GlobalExceptionHandlerMiddleware> _logger;
-    private readonly IWebHostEnvironment _env;
 
     public GlobalExceptionHandlerMiddleware(
         RequestDelegate next,
-        ILogger<GlobalExceptionHandlerMiddleware> logger,
-        IWebHostEnvironment env)
+        ILogger<GlobalExceptionHandlerMiddleware> logger)
     {
         _next = next;
         _logger = logger;
-        _env = env;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -76,13 +73,15 @@ public class GlobalExceptionHandlerMiddleware
         HttpContext context,
         Ardalis.GuardClauses.NotFoundException exception)
     {
+        var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+        
         var problemDetails = new ProblemDetails
         {
             Type = "https://tools.ietf.org/html/rfc9110#section-15.5.5",
             Title = "The specified resource was not found.",
             Status = StatusCodes.Status404NotFound,
             Instance = context.Request.Path,
-            Detail = _env.IsDevelopment() ? exception.Message : "The requested resource was not found."
+            Detail = isDevelopment ? exception.Message : "The requested resource was not found."
         };
 
         return problemDetails;
