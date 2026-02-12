@@ -31,31 +31,30 @@ public class GlobalExceptionHandlerMiddleware
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        var (statusCode, problemDetails) = exception switch
-        {
-            ValidationException validationException => (
-                HttpStatusCode.BadRequest,
-                CreateValidationProblemDetails(context, validationException)
-            ),
-            Ardalis.GuardClauses.NotFoundException notFoundException => (
-                HttpStatusCode.NotFound,
-                CreateNotFoundProblemDetails(context, notFoundException)
-            ),
-            _ => (
-                HttpStatusCode.InternalServerError,
-                CreateInternalServerErrorProblemDetails(context, exception)
-            )
-        };
-
         _logger.LogError(exception, "An exception occurred: {Message}", exception.Message);
 
-        context.Response.StatusCode = (int)statusCode;
         context.Response.ContentType = "application/problem+json";
 
-        await context.Response.WriteAsJsonAsync(problemDetails);
+        switch (exception)
+        {
+            case ValidationException validationException:
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                await context.Response.WriteAsJsonAsync(CreateValidationProblemDetails(context, validationException));
+                break;
+
+            case Ardalis.GuardClauses.NotFoundException notFoundException:
+                context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                await context.Response.WriteAsJsonAsync(CreateNotFoundProblemDetails(context, notFoundException));
+                break;
+
+            default:
+                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                await context.Response.WriteAsJsonAsync(CreateInternalServerErrorProblemDetails(context, exception));
+                break;
+        }
     }
 
-    private static ProblemDetails CreateValidationProblemDetails(
+    private static ValidationProblemDetails CreateValidationProblemDetails(
         HttpContext context,
         ValidationException exception)
     {

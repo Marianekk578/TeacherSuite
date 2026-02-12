@@ -19,4 +19,9 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\TeacherSuite.Web\TeacherSuite.Web.csproj" />
+    <ProjectReference Include="..\..\src\TeacherSuite.Application\TeacherSuite.Application.csproj" />
+  </ItemGroup>
+
 </Project>
