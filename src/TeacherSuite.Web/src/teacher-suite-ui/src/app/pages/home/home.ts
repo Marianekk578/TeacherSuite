@@ -13,4 +13,11 @@ export class Home {
   navigateTo(path: string): void {
     this.router.navigate([path]);
   }
+
+  handleKeyboardNavigation(event: KeyboardEvent, path: string): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      this.navigateTo(path);
+    }
+  }
 }
