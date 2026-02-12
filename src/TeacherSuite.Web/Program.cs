@@ -14,6 +14,7 @@ builder.Services.AddScoped<Courses>();
 
 var app = builder.Build();
 
+app.UseGlobalExceptionHandler();
 app.UseRequestLogging();
 
 app.MapAgeGroupEndpoints();
@@ -28,3 +29,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.Run();
+
+// Make the implicit Program class public for testing
+public partial class Program { }
