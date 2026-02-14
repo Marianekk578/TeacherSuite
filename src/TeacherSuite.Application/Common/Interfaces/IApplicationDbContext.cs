@@ -7,5 +7,6 @@ public interface IApplicationDbContext
     DbSet<AgeGroup> AgeGroups { get; }
     DbSet<Teacher> Teachers { get; }
     DbSet<Course> Courses { get; }
+    DbSet<Group> Groups { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
