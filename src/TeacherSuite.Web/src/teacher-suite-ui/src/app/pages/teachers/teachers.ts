@@ -211,7 +211,7 @@ export class Teachers implements OnInit {
 
   isLanguageAssigned(language: ProgrammingLanguage): boolean {
     if (!this.languageTeacher?.programmingLanguages) return false;
-    return this.languageTeacher.programmingLanguages.some(l => l.id === language.id);
+    return this.languageTeacher.programmingLanguages.some(lang => lang.id === language.id);
   }
 
   toggleLanguage(language: ProgrammingLanguage) {
@@ -221,7 +221,7 @@ export class Teachers implements OnInit {
       this.programmingLanguageService.unassignFromTeacher(this.languageTeacher.id, language.id).subscribe({
         next: () => {
           if (this.languageTeacher) {
-            this.languageTeacher.programmingLanguages = this.languageTeacher.programmingLanguages.filter(l => l.id !== language.id);
+            this.languageTeacher.programmingLanguages = this.languageTeacher.programmingLanguages.filter(lang => lang.id !== language.id);
           }
           this.loadTeachers();
           this.cdr.detectChanges();

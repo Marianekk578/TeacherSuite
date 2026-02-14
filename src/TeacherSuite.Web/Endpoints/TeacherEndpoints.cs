@@ -26,7 +26,7 @@ public static class TeacherEndpoints
         app.MapDelete("/Teachers/{id:guid}", async (Teachers endpoints, ISender sender, Guid id) =>
             await endpoints.DeleteTeacher(sender, id));
 
-        app.MapPost("/Teachers/{id:guid}/programming-languages/{programmingLanguageId:int}", async (Teachers endpoints, ISender sender, Guid id, int programmingLanguageId) =>
+        app.MapPut("/Teachers/{id:guid}/programming-languages/{programmingLanguageId:int}", async (Teachers endpoints, ISender sender, Guid id, int programmingLanguageId) =>
             await endpoints.AssignProgrammingLanguage(sender, id, programmingLanguageId));
 
         app.MapDelete("/Teachers/{id:guid}/programming-languages/{programmingLanguageId:int}", async (Teachers endpoints, ISender sender, Guid id, int programmingLanguageId) =>

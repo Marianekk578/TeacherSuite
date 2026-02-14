@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, from } from 'rxjs';
+import { Observable, from, map } from 'rxjs';
 import { ApiService } from './api.service';
 
 export interface ProgrammingLanguage {
@@ -42,26 +42,10 @@ export class ProgrammingLanguageService extends ApiService {
   }
 
   assignToTeacher(teacherId: string, programmingLanguageId: number): Observable<void> {
-    return from(
-      fetch(`/Teachers/${teacherId}/programming-languages/${programmingLanguageId}`, {
-        method: 'POST',
-      }).then((response) => {
-        if (!response.ok) {
-          throw new Error(`Request failed: ${response.status} ${response.statusText}`);
-        }
-      })
-    );
+    return this.put(`/Teachers/${teacherId}/programming-languages/${programmingLanguageId}`, {});
   }
 
   unassignFromTeacher(teacherId: string, programmingLanguageId: number): Observable<void> {
-    return from(
-      fetch(`/Teachers/${teacherId}/programming-languages/${programmingLanguageId}`, {
-        method: 'DELETE',
-      }).then((response) => {
-        if (!response.ok) {
-          throw new Error(`Request failed: ${response.status} ${response.statusText}`);
-        }
-      })
-    );
+    return this.delete(`/Teachers/${teacherId}/programming-languages/${programmingLanguageId}`);
   }
 }
