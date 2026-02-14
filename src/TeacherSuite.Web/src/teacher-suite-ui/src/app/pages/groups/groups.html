@@ -1,0 +1,153 @@
+<div class="groups-page">
+  <div class="page-header">
+    <h1>Groups</h1>
+    <button aria-label="AddGroup" class="btn btn-primary" (click)="openAddModal()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Add Group
+    </button>
+  </div>
+
+  <div *ngIf="error" class="alert alert-error">
+    {{ error }}
+    <button class="alert-close" (click)="error = null">&times;</button>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading groups...</p>
+  </div>
+
+  <div *ngIf="!loading && groups.length === 0" class="empty-state">
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    <h2>No Groups Yet</h2>
+    <p>Start by adding your first group to the system.</p>
+    <button class="btn btn-primary" (click)="openAddModal()">Add First Group</button>
+  </div>
+
+  <div *ngIf="!loading && groups.length > 0" class="groups-grid">
+    <div class="group-card" *ngFor="let group of groups">
+      <div class="group-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+      </div>
+      <div class="group-info">
+        <h3>{{ group.name }}</h3>
+        <div class="group-details">
+          <div class="detail-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>{{ getTeacherName(group) }}</span>
+          </div>
+          <div class="detail-item" *ngIf="group.ageGroup">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>{{ group.ageGroup.name }} ({{ group.ageGroup.minAge }}-{{ group.ageGroup.maxAge }} yrs)</span>
+          </div>
+        </div>
+      </div>
+      <div class="group-actions">
+        <button class="btn-icon btn-icon-edit" (click)="openEditModal(group)" title="Edit">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+        </button>
+        <button class="btn-icon btn-icon-delete" type="button" (click)="confirmDelete(group)" title="Delete">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" *ngIf="showModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="modalTitle">{{ isEditMode ? 'Edit Group' : 'Add New Group' }}</h2>
+      <button class="modal-close" (click)="closeModal()">&times;</button>
+    </div>
+    <form class="modal-body" [formGroup]="groupForm" (ngSubmit)="saveGroup()">
+      <div *ngIf="modalError" class="alert alert-error modal-alert">
+        {{ modalError }}
+        <button type="button" class="alert-close" (click)="modalError = null">&times;</button>
+      </div>
+      <div class="form-group">
+        <label for="name">Group Name *</label>
+        <input 
+          type="text" 
+          id="name" 
+          formControlName="name"
+          required 
+          placeholder="Enter group name"
+        />
+      </div>
+      <div class="form-group">
+        <label for="teacherId">Teacher *</label>
+        <select 
+          id="teacherId" 
+          formControlName="teacherId"
+          required
+        >
+          <option [ngValue]="null">Select a teacher</option>
+          <option *ngFor="let teacher of teachers" [ngValue]="teacher.id">
+            {{ teacher.firstName }} {{ teacher.lastName }}
+          </option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="ageGroupID">Age Group *</label>
+        <select 
+          id="ageGroupID" 
+          formControlName="ageGroupID"
+          required
+        >
+          <option [ngValue]="null">Select an age group</option>
+          <option *ngFor="let ageGroup of ageGroups" [ngValue]="ageGroup.id">
+            {{ ageGroup.name }} ({{ ageGroup.minAge }}-{{ ageGroup.maxAge }} years)
+          </option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Create' }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+  <div class="modal modal-small" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="deleteConfirmTitle">Confirm Delete</h2>
+      <button class="modal-close" (click)="cancelDelete()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to delete <strong>{{ groupToDelete?.name }}</strong>? This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="cancelDelete()">Cancel</button>
+        <button type="button" class="btn btn-danger" (click)="deleteGroup()">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
