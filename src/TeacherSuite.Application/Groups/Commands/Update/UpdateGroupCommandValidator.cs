@@ -13,6 +13,6 @@ public class UpdateGroupCommandValidator : AbstractValidator<UpdateGroupCommand>
         GroupValidationRules.ApplyCommonRules(this,
             x => x.Name,
             x => x.TeacherId,
-            x => x.AgeGroupID);
+            x => x.CourseId);
     }
 }

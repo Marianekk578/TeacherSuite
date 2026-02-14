@@ -8,5 +8,6 @@ public interface IApplicationDbContext
     DbSet<Teacher> Teachers { get; }
     DbSet<Course> Courses { get; }
     DbSet<Group> Groups { get; }
+    DbSet<GroupCourse> GroupCourses { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

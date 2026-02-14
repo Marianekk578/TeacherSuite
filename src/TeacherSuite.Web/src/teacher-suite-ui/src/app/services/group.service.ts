@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 import { Teacher } from './teacher.service';
-import { AgeGroup } from './course.service';
+import { Course } from './course.service';
 
 export interface Group {
   id: string;
@@ -10,19 +10,19 @@ export interface Group {
   teacherId: string;
   ageGroupID: number;
   teacher?: Teacher;
-  ageGroup?: AgeGroup;
+  course?: Course;
 }
 
 export interface CreateGroupDto {
   name: string;
   teacherId: string;
-  ageGroupID: number;
+  courseId: number;
 }
 
 export interface UpdateGroupDto {
   name: string;
   teacherId: string;
-  ageGroupID: number;
+  courseId: number;
 }
 
 @Injectable({
@@ -31,7 +31,7 @@ export interface UpdateGroupDto {
 export class GroupService extends ApiService {
   private readonly apiUrl = '/Groups';
   private readonly teacherUrl = '/Teachers';
-  private readonly ageGroupUrl = '/AgeGroups';
+  private readonly courseUrl = '/Courses';
 
   getAllGroups(): Observable<Group[]> {
     return this.get<Group[]>(this.apiUrl);
@@ -57,7 +57,7 @@ export class GroupService extends ApiService {
     return this.get<Teacher[]>(this.teacherUrl);
   }
 
-  getAllAgeGroups(): Observable<AgeGroup[]> {
-    return this.get<AgeGroup[]>(this.ageGroupUrl);
+  getAllCourses(): Observable<Course[]> {
+    return this.get<Course[]>(this.courseUrl);
   }
 }

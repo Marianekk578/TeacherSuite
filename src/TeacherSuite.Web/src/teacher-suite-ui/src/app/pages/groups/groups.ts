@@ -8,7 +8,7 @@ import {
 } from '@angular/forms';
 import { GroupService, Group, CreateGroupDto, UpdateGroupDto } from '../../services/group.service';
 import { Teacher } from '../../services/teacher.service';
-import { AgeGroup } from '../../services/course.service';
+import { Course } from '../../services/course.service';
 
 @Component({
   selector: 'app-groups',
@@ -19,7 +19,7 @@ import { AgeGroup } from '../../services/course.service';
 export class Groups implements OnInit {
   groups: Group[] = [];
   teachers: Teacher[] = [];
-  ageGroups: AgeGroup[] = [];
+  courses: Course[] = [];
   loading = false;
   error: string | null = null;
 
@@ -41,14 +41,14 @@ export class Groups implements OnInit {
     this.groupForm = this.fb.group({
       name: ['', [Validators.required]],
       teacherId: [null, [Validators.required]],
-      ageGroupID: [null, [Validators.required]]
+      courseId: [null, [Validators.required]]
     });
   }
 
   ngOnInit() {
     this.loadGroups();
     this.loadTeachers();
-    this.loadAgeGroups();
+    this.loadCourses();
   }
 
   loadGroups() {
@@ -83,14 +83,14 @@ export class Groups implements OnInit {
     });
   }
 
-  loadAgeGroups() {
-    this.groupService.getAllAgeGroups().subscribe({
-      next: (ageGroups) => {
-        this.ageGroups = ageGroups;
+  loadCourses() {
+    this.groupService.getAllCourses().subscribe({
+      next: (courses) => {
+        this.courses = courses;
         this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('Error loading age groups:', error);
+        console.error('Error loading courses:', error);
       }
     });
   }
@@ -102,7 +102,7 @@ export class Groups implements OnInit {
     this.groupForm.reset({
       name: '',
       teacherId: null,
-      ageGroupID: null
+      courseId: null
     });
     this.showModal = true;
   }
@@ -114,7 +114,7 @@ export class Groups implements OnInit {
     this.groupForm.reset({
       name: group.name,
       teacherId: group.teacherId,
-      ageGroupID: group.ageGroupID
+      courseId: group.course?.id ?? null
     });
     this.showModal = true;
   }
@@ -221,8 +221,8 @@ export class Groups implements OnInit {
       return 'A teacher must be assigned to the group';
     }
 
-    if (controls['ageGroupID']?.errors?.['required']) {
-      return 'Age group is required';
+    if (controls['courseId']?.errors?.['required']) {
+      return 'A course must be assigned to the group';
     }
 
     return 'Please fix the errors in the form.';

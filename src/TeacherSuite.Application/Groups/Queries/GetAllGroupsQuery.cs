@@ -21,6 +21,7 @@ public class GetAllGroupsQueryHandler : IRequestHandler<GetAllGroupsQuery, List<
         return await _db.Groups
             .Include(g => g.Teacher)
             .Include(g => g.AgeGroup)
+            .Include(g => g.GroupCourses).ThenInclude(gc => gc.Course)
             .ProjectTo<GroupDto>(_mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
     }
