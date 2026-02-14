@@ -59,6 +59,14 @@ export class TeacherService extends ApiService {
     return this.delete(`${this.apiUrl}/${id}`);
   }
 
+  seedTestTeachers(): Observable<number> {
+    return this.post<number>(`${this.apiUrl}/seed-test`, {});
+  }
+
+  deleteTestTeachers(): Observable<number> {
+    return this.post<number>(`${this.apiUrl}/delete-test`, {});
+  }
+
   private convertToUtcIsoString(dateString: string): string {
     const date = new Date(dateString + 'T00:00:00.000Z');
     return date.toISOString();

@@ -1,13 +1,29 @@
 <div class="teachers-page">
   <div class="page-header">
     <h1>Teachers</h1>
-    <button aria-label="AddTeacher" class="btn btn-primary" (click)="openAddModal()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19"></line>
-        <line x1="5" y1="12" x2="19" y2="12"></line>
-      </svg>
-      Add Teacher
-    </button>
+    <div class="page-header-actions">
+      <button
+        aria-label="Create1000Teachers"
+        class="btn btn-secondary"
+        (click)="seedTestTeachers()"
+        [disabled]="seedingInProgress || deletingTestInProgress">
+        {{ seedingInProgress ? 'Creating...' : 'Create 1000 Teachers' }}
+      </button>
+      <button
+        aria-label="Delete1000Teachers"
+        class="btn btn-danger"
+        (click)="deleteTestTeachers()"
+        [disabled]="seedingInProgress || deletingTestInProgress">
+        {{ deletingTestInProgress ? 'Deleting...' : 'Delete 1000 Teachers' }}
+      </button>
+      <button aria-label="AddTeacher" class="btn btn-primary" (click)="openAddModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Add Teacher
+      </button>
+    </div>
   </div>
 
   <div *ngIf="error" class="alert alert-error">

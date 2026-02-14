@@ -31,6 +31,9 @@ export class Teachers implements OnInit {
   showDeleteConfirm = false;
   teacherToDelete: Teacher | null = null;
 
+  seedingInProgress = false;
+  deletingTestInProgress = false;
+
   constructor(
     private teacherService: TeacherService,
     private cdr: ChangeDetectorRef,
@@ -177,6 +180,44 @@ export class Teachers implements OnInit {
         }
       });
     }
+  }
+
+  seedTestTeachers() {
+    this.seedingInProgress = true;
+    this.error = null;
+    this.cdr.detectChanges();
+
+    this.teacherService.seedTestTeachers().subscribe({
+      next: (count) => {
+        this.seedingInProgress = false;
+        this.loadTeachers();
+      },
+      error: (error) => {
+        this.error = 'Failed to seed test teachers. Please try again.';
+        this.seedingInProgress = false;
+        console.error('Error seeding test teachers:', error);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  deleteTestTeachers() {
+    this.deletingTestInProgress = true;
+    this.error = null;
+    this.cdr.detectChanges();
+
+    this.teacherService.deleteTestTeachers().subscribe({
+      next: (count) => {
+        this.deletingTestInProgress = false;
+        this.loadTeachers();
+      },
+      error: (error) => {
+        this.error = 'Failed to delete test teachers. Please try again.';
+        this.deletingTestInProgress = false;
+        console.error('Error deleting test teachers:', error);
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   getFullName(teacher: Teacher): string {

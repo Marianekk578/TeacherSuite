@@ -1,6 +1,8 @@
 using MediatR;
 using TeacherSuite.Application.Teachers.Commands.Create;
 using TeacherSuite.Application.Teachers.Commands.Delete;
+using TeacherSuite.Application.Teachers.Commands.DeleteTestTeachers;
+using TeacherSuite.Application.Teachers.Commands.SeedTestTeachers;
 using TeacherSuite.Application.Teachers.Commands.Update;
 using TeacherSuite.Application.Teachers.Queries.Get;
 
@@ -24,5 +26,11 @@ public static class TeacherEndpoints
 
         app.MapDelete("/Teachers/{id:guid}", async (Teachers endpoints, ISender sender, Guid id) =>
             await endpoints.DeleteTeacher(sender, id));
+
+        app.MapPost("/Teachers/seed-test", async (Teachers endpoints, ISender sender) =>
+            await endpoints.SeedTestTeachers(sender));
+
+        app.MapPost("/Teachers/delete-test", async (Teachers endpoints, ISender sender) =>
+            await endpoints.DeleteTestTeachers(sender));
     }
 }
