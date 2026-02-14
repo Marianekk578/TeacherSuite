@@ -25,14 +25,12 @@ public class SeedTestTeachersHandler(ISender sender) : IRequestHandler<SeedTestT
             });
 
         var commands = faker.Generate(request.Count);
-        var created = 0;
 
         foreach (var command in commands)
         {
             await sender.Send(command, cancellationToken);
-            created++;
         }
 
-        return created;
+        return commands.Count;
     }
 }

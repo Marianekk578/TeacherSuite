@@ -15,14 +15,11 @@ public class DeleteTestTeachersHandler(IApplicationDbContext context, ISender se
             .Select(t => t.Id)
             .ToListAsync(cancellationToken);
 
-        var deleted = 0;
-
         foreach (var id in testTeacherIds)
         {
             await sender.Send(new DeleteTeacherCommand(id), cancellationToken);
-            deleted++;
         }
 
-        return deleted;
+        return testTeacherIds.Count;
     }
 }
