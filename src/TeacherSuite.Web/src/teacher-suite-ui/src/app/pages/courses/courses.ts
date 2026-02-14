@@ -187,11 +187,6 @@ export class Courses implements OnInit {
     }
   }
 
-  getAgeGroupName(ageGroupId: number): string {
-    const ageGroup = this.ageGroups.find(ag => ag.id === ageGroupId);
-    return ageGroup ? ageGroup.name || 'Unknown' : 'Unknown';
-  }
-
   private getFormErrorMessage(): string | null {
     const controls = this.courseForm.controls;
 

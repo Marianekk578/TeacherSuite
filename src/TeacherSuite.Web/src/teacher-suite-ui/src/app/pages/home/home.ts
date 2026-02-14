@@ -15,7 +15,7 @@ export class Home {
   }
 
   handleKeyboardNavigation(event: KeyboardEvent, path: string): void {
-    if (event.key === 'Enter' || event.key === ' ') {
+    if (event.key === 'Enter') {
       event.preventDefault();
       this.navigateTo(path);
     }
