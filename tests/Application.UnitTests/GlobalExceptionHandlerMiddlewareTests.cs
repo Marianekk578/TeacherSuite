@@ -30,10 +30,11 @@ public class GlobalExceptionHandlerMiddlewareTests
 
         // Assert
         Assert.Equal((int)HttpStatusCode.BadRequest, context.Response.StatusCode);
-        Assert.Contains("application/json", context.Response.ContentType);
+        Assert.Contains("application/problem+json", context.Response.ContentType);
         
         context.Response.Body.Seek(0, SeekOrigin.Begin);
-        var responseBody = await new StreamReader(context.Response.Body).ReadToEndAsync();
+        using var reader = new StreamReader(context.Response.Body);
+        var responseBody = await reader.ReadToEndAsync();
         var problemDetails = JsonSerializer.Deserialize<ValidationProblemDetails>(responseBody, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
@@ -62,10 +63,11 @@ public class GlobalExceptionHandlerMiddlewareTests
 
         // Assert
         Assert.Equal((int)HttpStatusCode.NotFound, context.Response.StatusCode);
-        Assert.Contains("application/json", context.Response.ContentType);
+        Assert.Contains("application/problem+json", context.Response.ContentType);
         
         context.Response.Body.Seek(0, SeekOrigin.Begin);
-        var responseBody = await new StreamReader(context.Response.Body).ReadToEndAsync();
+        using var reader = new StreamReader(context.Response.Body);
+        var responseBody = await reader.ReadToEndAsync();
         var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(responseBody, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
@@ -92,10 +94,11 @@ public class GlobalExceptionHandlerMiddlewareTests
 
         // Assert
         Assert.Equal((int)HttpStatusCode.InternalServerError, context.Response.StatusCode);
-        Assert.Contains("application/json", context.Response.ContentType);
+        Assert.Contains("application/problem+json", context.Response.ContentType);
         
         context.Response.Body.Seek(0, SeekOrigin.Begin);
-        var responseBody = await new StreamReader(context.Response.Body).ReadToEndAsync();
+        using var reader = new StreamReader(context.Response.Body);
+        var responseBody = await reader.ReadToEndAsync();
         var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(responseBody, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true

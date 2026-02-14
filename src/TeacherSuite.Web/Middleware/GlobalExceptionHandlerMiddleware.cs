@@ -32,6 +32,13 @@ public class GlobalExceptionHandlerMiddleware
     {
         _logger.LogError(exception, "An exception occurred: {Message}", exception.Message);
 
+        if (context.Response.HasStarted)
+        {
+            _logger.LogWarning("The response has already started, the global exception handler will not modify the response.");
+            return;
+        }
+        context.Response.Clear();
+
         context.Response.ContentType = "application/problem+json";
 
         switch (exception)
