@@ -59,7 +59,7 @@
   </div>
 
   <div class="info-section">
-    <div class="info-card">
+    <div class="info-card" (click)="navigateTo('teachers')" (keydown)="handleKeyboardNavigation($event, 'teachers')" role="button" tabindex="0">
       <div class="info-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -72,7 +72,7 @@
       <p>Manage teacher profiles, assignments, and qualifications with ease.</p>
     </div>
 
-    <div class="info-card">
+    <div class="info-card" (click)="navigateTo('courses')" (keydown)="handleKeyboardNavigation($event, 'courses')" role="button" tabindex="0">
       <div class="info-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -83,7 +83,7 @@
       <p>Organize curriculum, schedules, and learning materials efficiently.</p>
     </div>
 
-    <div class="info-card">
+    <div class="info-card" (click)="navigateTo('age-groups')" (keydown)="handleKeyboardNavigation($event, 'age-groups')" role="button" tabindex="0">
       <div class="info-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -99,6 +99,6 @@
   </div>
 
   <div class="footer-info">
-    <p>Select an option from the navigation menu to get started.</p>
+    <p>Click on any card above to get started.</p>
   </div>
 </div>

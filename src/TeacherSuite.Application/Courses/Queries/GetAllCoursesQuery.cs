@@ -19,6 +19,7 @@ public class GetAllCoursesQueryHandler : IRequestHandler<GetAllCoursesQuery, Lis
     public async Task<List<CourseDto>> Handle(GetAllCoursesQuery request, CancellationToken cancellationToken)
     {
         return await _db.Courses
+            .Include(c => c.AgeGroup)
             .ProjectTo<CourseDto>(_mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
     }

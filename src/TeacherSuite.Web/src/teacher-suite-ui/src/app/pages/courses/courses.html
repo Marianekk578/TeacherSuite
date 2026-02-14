@@ -1,10 +1,135 @@
-<div class="placeholder-page">
-  <div class="placeholder-content">
-    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+<div class="courses-page">
+  <div class="page-header">
+    <h1>Courses</h1>
+    <button aria-label="AddCourse" class="btn btn-primary" (click)="openAddModal()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Add Course
+    </button>
+  </div>
+
+  <div *ngIf="error" class="alert alert-error">
+    {{ error }}
+    <button class="alert-close" (click)="error = null">&times;</button>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading courses...</p>
+  </div>
+
+  <div *ngIf="!loading && courses.length === 0" class="empty-state">
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
     </svg>
-    <h1>Courses</h1>
-    <p>This page is under construction. Course management features coming soon.</p>
+    <h2>No Courses Yet</h2>
+    <p>Start by adding your first course to the system.</p>
+    <button class="btn btn-primary" (click)="openAddModal()">Add First Course</button>
+  </div>
+
+  <div *ngIf="!loading && courses.length > 0" class="courses-list">
+    <div class="course-tile" *ngFor="let course of courses">
+      <div class="course-content">
+        <div class="course-header">
+          <h3>{{ course.name }}</h3>
+          <div class="course-actions">
+            <button class="btn-icon btn-icon-edit" (click)="openEditModal(course)" title="Edit">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+            </button>
+            <button class="btn-icon btn-icon-delete" type="button" (click)="confirmDelete(course)" title="Delete">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <p class="course-description">{{ course.description }}</p>
+        <div class="course-tags">
+          <span class="age-group-tag" *ngIf="course.ageGroup">
+            #{{ course.ageGroup.name }}
+          </span>
+          <span class="age-group-tag age-group-missing" *ngIf="!course.ageGroup && course.ageGroupID">
+            #Age group unavailable
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" *ngIf="showModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="modalTitle">{{ isEditMode ? 'Edit Course' : 'Add New Course' }}</h2>
+      <button class="modal-close" (click)="closeModal()">&times;</button>
+    </div>
+    <form class="modal-body" [formGroup]="courseForm" (ngSubmit)="saveCourse()">
+      <div *ngIf="modalError" class="alert alert-error modal-alert">
+        {{ modalError }}
+        <button type="button" class="alert-close" (click)="modalError = null">&times;</button>
+      </div>
+      <div class="form-group">
+        <label for="name">Course Name *</label>
+        <input 
+          type="text" 
+          id="name" 
+          formControlName="name"
+          required 
+          placeholder="Enter course name"
+        />
+      </div>
+      <div class="form-group">
+        <label for="description">Description *</label>
+        <textarea 
+          id="description" 
+          formControlName="description"
+          required 
+          placeholder="Enter course description"
+          rows="4"
+        ></textarea>
+      </div>
+      <div class="form-group">
+        <label for="ageGroupID">Age Group *</label>
+        <select 
+          id="ageGroupID" 
+          formControlName="ageGroupID"
+          required
+        >
+          <option [ngValue]="null">Select an age group</option>
+          <option *ngFor="let ageGroup of ageGroups" [ngValue]="ageGroup.id">
+            {{ ageGroup.name }} ({{ ageGroup.minAge }}-{{ ageGroup.maxAge }} years)
+          </option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Create' }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+  <div class="modal modal-small" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="deleteConfirmTitle">Confirm Delete</h2>
+      <button class="modal-close" (click)="cancelDelete()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to delete <strong>{{ courseToDelete?.name }}</strong>? This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="cancelDelete()">Cancel</button>
+        <button type="button" class="btn btn-danger" (click)="deleteCourse()">Delete</button>
+      </div>
+    </div>
   </div>
 </div>
