@@ -22,22 +22,19 @@ public class UpdateGroupHandler(IApplicationDbContext context) : IRequestHandler
         entity.TeacherId = request.TeacherId;
         entity.AgeGroupID = course.AgeGroupID;
 
-        var existingGroupCourse = entity.GroupCourses.FirstOrDefault();
-        if (existingGroupCourse != null)
+        foreach (var existing in entity.GroupCourses.ToList())
         {
-            existingGroupCourse.CourseId = request.CourseId;
+            context.GroupCourses.Remove(existing);
         }
-        else
+
+        var groupCourse = new GroupCourse
         {
-            var groupCourse = new GroupCourse
-            {
-                GroupId = entity.Id,
-                CourseId = request.CourseId,
-                StartDate = DateTimeOffset.UtcNow,
-                IsActive = true
-            };
-            context.GroupCourses.Add(groupCourse);
-        }
+            GroupId = entity.Id,
+            CourseId = request.CourseId,
+            StartDate = DateTimeOffset.UtcNow,
+            IsActive = true
+        };
+        context.GroupCourses.Add(groupCourse);
 
         await context.SaveChangesAsync(cancellationToken);
         return Unit.Value;
