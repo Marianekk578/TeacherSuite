@@ -14,6 +14,7 @@ builder.Services.AddScoped<Courses>();
 
 var app = builder.Build();
 
+app.UseGlobalExceptionHandler();
 app.UseRequestLogging();
 
 app.MapAgeGroupEndpoints();
