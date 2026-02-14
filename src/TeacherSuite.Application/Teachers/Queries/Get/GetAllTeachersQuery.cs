@@ -19,6 +19,8 @@ public class GetAllTeachersQueryHandler : IRequestHandler<GetAllTeachersQuery, L
     public async Task<List<TeacherDto>> Handle(GetAllTeachersQuery request, CancellationToken cancellationToken)
     {
         return await _db.Teachers
+            .Include(t => t.TeacherProgrammingLanguages)
+                .ThenInclude(tpl => tpl.ProgrammingLanguage)
             .ProjectTo<TeacherDto>(_mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
     }

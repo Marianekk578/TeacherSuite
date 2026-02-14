@@ -11,6 +11,7 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddScoped<AgeGroups>();
 builder.Services.AddScoped<Teachers>();
 builder.Services.AddScoped<Courses>();
+builder.Services.AddScoped<ProgrammingLanguages>();
 
 var app = builder.Build();
 
@@ -20,6 +21,7 @@ app.UseRequestLogging();
 app.MapAgeGroupEndpoints();
 app.MapTeacherEndpoints();
 app.MapCourseEndpoints();
+app.MapProgrammingLanguageEndpoints();
 
 if (app.Environment.IsDevelopment())
 {
