@@ -13,5 +13,10 @@
     "target": "https://localhost:7030",
     "secure": false,
     "changeOrigin": true
+  },
+  "/ProgrammingLanguages": {
+    "target": "https://localhost:7030",
+    "secure": false,
+    "changeOrigin": true
   }
 }

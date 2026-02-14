@@ -39,6 +39,9 @@
       </div>
       <div class="teacher-info">
         <h3>{{ getFullName(teacher) }}</h3>
+        <div class="teacher-languages" *ngIf="teacher.programmingLanguages && teacher.programmingLanguages.length > 0">
+          <span class="language-label" *ngFor="let lang of teacher.programmingLanguages">#{{ lang.name }}</span>
+        </div>
         <div class="teacher-details">
           <div class="detail-item">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -65,6 +68,12 @@
         </div>
       </div>
       <div class="teacher-actions">
+        <button class="btn-icon btn-icon-lang" (click)="openLanguageModal(teacher)" title="Manage Languages">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+        </button>
         <button class="btn-icon btn-icon-edit" (click)="openEditModal(teacher)" title="Edit">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -166,6 +175,30 @@
       <div class="modal-actions">
         <button type="button" class="btn btn-secondary" (click)="cancelDelete()">Cancel</button>
         <button type="button" class="btn btn-danger" (click)="deleteTeacher()">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Language Assignment Modal -->
+<div class="modal-overlay" *ngIf="showLanguageModal" (click)="closeLanguageModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="languageModalTitle" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="languageModalTitle">Manage Languages — {{ languageTeacher ? getFullName(languageTeacher) : '' }}</h2>
+      <button class="modal-close" (click)="closeLanguageModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p *ngIf="allProgrammingLanguages.length === 0" class="no-languages-message">No programming languages available. Add some from the Programming Languages page first.</p>
+      <div class="language-toggle-list" *ngIf="allProgrammingLanguages.length > 0">
+        <div class="language-toggle-item" *ngFor="let lang of allProgrammingLanguages" 
+             [class.assigned]="isLanguageAssigned(lang)"
+             (click)="toggleLanguage(lang)">
+          <span class="language-toggle-label">#{{ lang.name }}</span>
+          <span class="language-toggle-status">{{ isLanguageAssigned(lang) ? '✓' : '+' }}</span>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeLanguageModal()">Close</button>
       </div>
     </div>
   </div>

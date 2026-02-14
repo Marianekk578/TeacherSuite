@@ -9,6 +9,12 @@ export interface Teacher {
   email: string;
   phoneNumber: string;
   dateOfBirth: string;
+  programmingLanguages: TeacherProgrammingLanguage[];
+}
+
+export interface TeacherProgrammingLanguage {
+  id: number;
+  name: string;
 }
 
 export interface CreateTeacherDto {
