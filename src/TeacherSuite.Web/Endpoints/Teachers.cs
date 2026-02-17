@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
+using TeacherSuite.Application.Teachers.Commands.AssignProgrammingLanguage;
 using TeacherSuite.Application.Teachers.Commands.Create;
 using TeacherSuite.Application.Teachers.Commands.Delete;
 using TeacherSuite.Application.Teachers.Commands.DeleteTestTeachers;
@@ -56,5 +57,17 @@ public class Teachers
     {
         var count = await sender.Send(new DeleteTestTeachersCommand());
         return TypedResults.Ok(count);
+    }
+
+    public async Task<NoContent> AssignProgrammingLanguage(ISender sender, Guid teacherId, int programmingLanguageId)
+    {
+        await sender.Send(new AssignProgrammingLanguageCommand(teacherId, programmingLanguageId));
+        return TypedResults.NoContent();
+    }
+
+    public async Task<NoContent> UnassignProgrammingLanguage(ISender sender, Guid teacherId, int programmingLanguageId)
+    {
+        await sender.Send(new UnassignProgrammingLanguageCommand(teacherId, programmingLanguageId));
+        return TypedResults.NoContent();
     }
 }
