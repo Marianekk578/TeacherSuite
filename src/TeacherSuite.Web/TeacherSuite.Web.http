@@ -95,3 +95,45 @@ Content-Type: application/json
 ###
 
 DELETE {{Web_HostAddress}}/Courses/1
+
+###
+
+// Programming Languages
+
+GET {{Web_HostAddress}}/ProgrammingLanguages
+
+###
+
+GET {{Web_HostAddress}}/ProgrammingLanguages/1
+
+###
+
+POST {{Web_HostAddress}}/ProgrammingLanguages
+Content-Type: application/json
+
+{
+  "Name": "Python"
+}
+
+###
+
+PUT {{Web_HostAddress}}/ProgrammingLanguages/1
+Content-Type: application/json
+
+{
+  "Name": "C#"
+}
+
+###
+
+DELETE {{Web_HostAddress}}/ProgrammingLanguages/1
+
+###
+
+// Assign / Unassign Programming Language to Teacher
+
+PUT {{Web_HostAddress}}/Teachers/019aa778-a110-7e13-a65b-e0363ba405e2/programming-languages/1
+
+###
+
+DELETE {{Web_HostAddress}}/Teachers/019aa778-a110-7e13-a65b-e0363ba405e2/programming-languages/1
