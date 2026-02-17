@@ -1,10 +1,14 @@
-﻿using TeacherSuite.Application.Common.Interfaces;
+﻿using TeacherSuite.Application.Common;
+using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Domain.Entities;
 using TeacherSuite.Domain.Events;
 
 namespace TeacherSuite.Application.Teachers.Commands.Create;
 
-public record CreateTeacherCommand(string? FirstName, string? LastName, string Email, string PhoneNumber, DateTimeOffset DateOfBirth) : IRequest<Guid>;
+public record CreateTeacherCommand(string? FirstName, string? LastName, string Email, string PhoneNumber, DateTimeOffset DateOfBirth) : IRequest<Guid>, ICacheInvalidatingCommand
+{
+    public IEnumerable<string> CacheKeysToInvalidate => [CacheKeys.AllTeachers];
+}
 
 public class CreateTeacherHandler : IRequestHandler<CreateTeacherCommand, Guid>
 {

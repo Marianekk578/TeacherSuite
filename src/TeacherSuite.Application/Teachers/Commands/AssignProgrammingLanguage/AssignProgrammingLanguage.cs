@@ -1,9 +1,13 @@
+using TeacherSuite.Application.Common;
 using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Domain.Entities;
 
 namespace TeacherSuite.Application.Teachers.Commands.AssignProgrammingLanguage;
 
-public record AssignProgrammingLanguageCommand(Guid TeacherId, int ProgrammingLanguageId) : IRequest<Unit>;
+public record AssignProgrammingLanguageCommand(Guid TeacherId, int ProgrammingLanguageId) : IRequest<Unit>, ICacheInvalidatingCommand
+{
+    public IEnumerable<string> CacheKeysToInvalidate => [CacheKeys.AllTeachers];
+}
 
 public class AssignProgrammingLanguageHandler(IApplicationDbContext context) : IRequestHandler<AssignProgrammingLanguageCommand, Unit>
 {

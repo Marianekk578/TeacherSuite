@@ -1,8 +1,12 @@
-﻿using TeacherSuite.Application.Common.Interfaces;
+﻿using TeacherSuite.Application.Common;
+using TeacherSuite.Application.Common.Interfaces;
 
 namespace TeacherSuite.Application.Teachers.Commands.Update;
 
-public record UpdateTeacherCommand(Guid Id, string? FirstName, string? LastName, string Email, string PhoneNumber, DateTimeOffset DateOfBirth) : IRequest<Unit>;
+public record UpdateTeacherCommand(Guid Id, string? FirstName, string? LastName, string Email, string PhoneNumber, DateTimeOffset DateOfBirth) : IRequest<Unit>, ICacheInvalidatingCommand
+{
+    public IEnumerable<string> CacheKeysToInvalidate => [CacheKeys.AllTeachers];
+}
 
 public class UpdateTeacherHandler(IApplicationDbContext context) : IRequestHandler<UpdateTeacherCommand, Unit>
 {

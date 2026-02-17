@@ -1,9 +1,13 @@
-﻿using TeacherSuite.Application.Common.Interfaces;
+﻿using TeacherSuite.Application.Common;
+using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Application.Teachers.Dtos;
 
 namespace TeacherSuite.Application.Teachers.Queries.Get;
 
-public record GetAllTeachersQuery : IRequest<List<TeacherDto>>;
+public record GetAllTeachersQuery : IRequest<List<TeacherDto>>, ICacheableQuery
+{
+    public string CacheKey => CacheKeys.AllTeachers;
+}
 
 public class GetAllTeachersQueryHandler : IRequestHandler<GetAllTeachersQuery, List<TeacherDto>>
 {
