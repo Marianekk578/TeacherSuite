@@ -191,6 +191,7 @@ export class Teachers implements OnInit {
       next: (count) => {
         this.seedingInProgress = false;
         this.loadTeachers();
+        this.cdr.detectChanges();
       },
       error: (error) => {
         this.error = 'Failed to seed test teachers. Please try again.';
@@ -210,6 +211,7 @@ export class Teachers implements OnInit {
       next: (count) => {
         this.deletingTestInProgress = false;
         this.loadTeachers();
+        this.cdr.detectChanges();
       },
       error: (error) => {
         this.error = 'Failed to delete test teachers. Please try again.';

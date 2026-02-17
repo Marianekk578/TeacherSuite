@@ -3,14 +3,14 @@
     <h1>Teachers</h1>
     <div class="page-header-actions">
       <button
-        aria-label="Create1000Teachers"
+        aria-label="CreateTestTeachers"
         class="btn btn-secondary"
         (click)="seedTestTeachers()"
         [disabled]="seedingInProgress || deletingTestInProgress">
         {{ seedingInProgress ? 'Creating...' : 'Create 1000 Teachers' }}
       </button>
       <button
-        aria-label="Delete1000Teachers"
+        aria-label="DeleteTestTeachers"
         class="btn btn-danger"
         (click)="deleteTestTeachers()"
         [disabled]="seedingInProgress || deletingTestInProgress">
