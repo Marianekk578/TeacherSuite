@@ -157,9 +157,15 @@ export class ProgrammingLanguages implements OnInit {
           this.cancelDelete();
         },
         error: (error) => {
-          this.error = 'Failed to delete programming language. Please try again.';
+          const status = error?.status as number | undefined;
+          if (status === 409) {
+            this.error = 'Programming language is already assigned to at least one teacher, it must not be deleted.';
+          } else {
+            this.error = 'Failed to delete programming language. Please try again.';
+          }
           console.error('Error deleting programming language:', error);
           this.cancelDelete();
+          this.cdr.detectChanges();
         }
       });
     }
