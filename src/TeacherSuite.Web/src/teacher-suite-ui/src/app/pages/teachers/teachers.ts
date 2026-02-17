@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener, signal, computed, effect, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
@@ -53,7 +53,6 @@ export class Teachers implements OnInit, OnDestroy {
 
   private readonly searchSubject = new Subject<string>();
   private subscriptions: Subscription[] = [];
-  private skipNextUrlSync = false;
 
   constructor(
     private teacherService: TeacherService,
@@ -68,16 +67,6 @@ export class Teachers implements OnInit, OnDestroy {
       phoneNumber: ['', [Validators.required]],
       dateOfBirth: ['', [Validators.required, this.dateOfBirthValidator.bind(this)]]
     });
-
-    effect(() => {
-      const s = this.search();
-      const p = this.page();
-      const ps = this.pageSize();
-      if (!this.skipNextUrlSync) {
-        this.syncUrlParams(s, p, ps);
-      }
-      this.loadTeachers();
-    });
   }
 
   ngOnInit() {
@@ -86,8 +75,7 @@ export class Teachers implements OnInit, OnDestroy {
         debounceTime(300),
         distinctUntilChanged()
       ).subscribe(value => {
-        this.search.set(value);
-        this.page.set(1);
+        this.navigateWithParams({ search: value, page: 1 });
       })
     );
 
@@ -97,11 +85,10 @@ export class Teachers implements OnInit, OnDestroy {
         const p = parseInt(params['page'], 10) || 1;
         const ps = parseInt(params['pageSize'], 10) || 12;
 
-        this.skipNextUrlSync = true;
         this.search.set(s);
         this.page.set(p);
         this.pageSize.set(ps);
-        this.skipNextUrlSync = false;
+        this.loadTeachers();
       })
     );
   }
@@ -118,7 +105,7 @@ export class Teachers implements OnInit, OnDestroy {
 
   goToPage(p: number) {
     if (p < 1 || p > this.totalPages()) return;
-    this.page.set(p);
+    this.navigateWithParams({ page: p });
   }
 
   get visiblePages(): number[] {
@@ -133,7 +120,11 @@ export class Teachers implements OnInit, OnDestroy {
     return pages;
   }
 
-  private syncUrlParams(search: string, page: number, pageSize: number) {
+  private navigateWithParams(overrides: { search?: string; page?: number; pageSize?: number }) {
+    const search = overrides.search ?? this.search();
+    const page = overrides.page ?? this.page();
+    const pageSize = overrides.pageSize ?? this.pageSize();
+
     const queryParams: Record<string, string | undefined> = {};
     if (search) queryParams['search'] = search;
     if (page > 1) queryParams['page'] = String(page);
@@ -142,7 +133,6 @@ export class Teachers implements OnInit, OnDestroy {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams,
-      replaceUrl: false,
     });
   }
 
