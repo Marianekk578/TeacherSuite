@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener, signal, computed, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
@@ -8,7 +8,10 @@ import {
   ValidationErrors,
   Validators
 } from '@angular/forms';
-import { TeacherService, Teacher, CreateTeacherDto, UpdateTeacherDto } from '../../services/teacher.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { TeacherService, Teacher, CreateTeacherDto, UpdateTeacherDto, PagedResult } from '../../services/teacher.service';
 import { ProgrammingLanguageService, ProgrammingLanguage } from '../../services/programming-language.service';
 
 @Component({
@@ -17,11 +20,21 @@ import { ProgrammingLanguageService, ProgrammingLanguage } from '../../services/
   templateUrl: './teachers.html',
   styleUrl: './teachers.scss',
 })
-export class Teachers implements OnInit {
+export class Teachers implements OnInit, OnDestroy {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
+  readonly search = signal('');
+  readonly page = signal(1);
+  readonly pageSize = signal(12);
+
+  readonly totalCount = signal(0);
+  readonly totalPages = computed(() => Math.ceil(this.totalCount() / this.pageSize()) || 1);
+
   teachers: Teacher[] = [];
   loading = false;
   error: string | null = null;
-  
+
   showModal = false;
   isEditMode = false;
   currentTeacherId: string | null = null;
@@ -38,6 +51,10 @@ export class Teachers implements OnInit {
   languageTeacher: Teacher | null = null;
   allProgrammingLanguages: ProgrammingLanguage[] = [];
 
+  private readonly searchSubject = new Subject<string>();
+  private subscriptions: Subscription[] = [];
+  private skipNextUrlSync = false;
+
   constructor(
     private teacherService: TeacherService,
     private programmingLanguageService: ProgrammingLanguageService,
@@ -51,20 +68,97 @@ export class Teachers implements OnInit {
       phoneNumber: ['', [Validators.required]],
       dateOfBirth: ['', [Validators.required, this.dateOfBirthValidator.bind(this)]]
     });
+
+    effect(() => {
+      const s = this.search();
+      const p = this.page();
+      const ps = this.pageSize();
+      if (!this.skipNextUrlSync) {
+        this.syncUrlParams(s, p, ps);
+      }
+      this.loadTeachers();
+    });
   }
 
   ngOnInit() {
-    this.loadTeachers();
+    this.subscriptions.push(
+      this.searchSubject.pipe(
+        debounceTime(300),
+        distinctUntilChanged()
+      ).subscribe(value => {
+        this.search.set(value);
+        this.page.set(1);
+      })
+    );
+
+    this.subscriptions.push(
+      this.route.queryParams.subscribe(params => {
+        const s = params['search'] ?? '';
+        const p = parseInt(params['page'], 10) || 1;
+        const ps = parseInt(params['pageSize'], 10) || 12;
+
+        this.skipNextUrlSync = true;
+        this.search.set(s);
+        this.page.set(p);
+        this.pageSize.set(ps);
+        this.skipNextUrlSync = false;
+      })
+    );
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach(s => s.unsubscribe());
+    this.searchSubject.complete();
+  }
+
+  onSearchInput(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(value);
+  }
+
+  goToPage(p: number) {
+    if (p < 1 || p > this.totalPages()) return;
+    this.page.set(p);
+  }
+
+  get visiblePages(): number[] {
+    const total = this.totalPages();
+    const current = this.page();
+    const pages: number[] = [];
+    const start = Math.max(1, current - 2);
+    const end = Math.min(total, current + 2);
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  private syncUrlParams(search: string, page: number, pageSize: number) {
+    const queryParams: Record<string, string | undefined> = {};
+    if (search) queryParams['search'] = search;
+    if (page > 1) queryParams['page'] = String(page);
+    if (pageSize !== 12) queryParams['pageSize'] = String(pageSize);
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      replaceUrl: false,
+    });
   }
 
   loadTeachers() {
     this.loading = true;
     this.error = null;
     this.cdr.detectChanges();
-    
-    this.teacherService.getAllTeachers().subscribe({
-      next: (teachers) => {
-        this.teachers = teachers;
+
+    this.teacherService.getAllTeachers({
+      search: this.search(),
+      page: this.page(),
+      pageSize: this.pageSize()
+    }).subscribe({
+      next: (result: PagedResult<Teacher>) => {
+        this.teachers = result.items;
+        this.totalCount.set(result.totalCount);
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -305,16 +399,16 @@ export class Teachers implements OnInit {
 
   formatDate(dateString: string): string {
     if (!dateString) return 'N/A';
-    
+
     const date = new Date(dateString);
-    
+
     if (isNaN(date.getTime())) {
       return 'Invalid Date';
     }
-    
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
+
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
       day: 'numeric',
       timeZone: 'UTC'
     });
