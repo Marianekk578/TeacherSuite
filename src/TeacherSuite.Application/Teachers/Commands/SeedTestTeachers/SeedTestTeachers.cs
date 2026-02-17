@@ -13,14 +13,16 @@ public class SeedTestTeachersHandler(ISender sender) : IRequestHandler<SeedTestT
             .CustomInstantiator(f =>
             {
                 var firstName = f.Name.FirstName();
+                var birthDate = DateTime.SpecifyKind(
+                    f.Date.Between(DateTime.Now.AddYears(-65), DateTime.Now.AddYears(-18)),
+                    DateTimeKind.Utc);
+
                 return new CreateTeacherCommand(
                     firstName,
                     "Testowski",
                     $"{firstName.ToLower()}.testowski{f.UniqueIndex}@testoowski.pl",
                     f.Phone.PhoneNumber("+48 ### ### ###"),
-                    new DateTimeOffset(f.Date.Between(
-                        DateTime.Now.AddYears(-65),
-                        DateTime.Now.AddYears(-18)), TimeSpan.Zero)
+                    new DateTimeOffset(birthDate)
                 );
             });
 
