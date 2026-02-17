@@ -32,6 +32,8 @@ export class Teachers implements OnInit {
   showDeleteConfirm = false;
   teacherToDelete: Teacher | null = null;
 
+  seedingInProgress = false;
+  deletingTestInProgress = false;
   showLanguageModal = false;
   languageTeacher: Teacher | null = null;
   allProgrammingLanguages: ProgrammingLanguage[] = [];
@@ -188,6 +190,26 @@ export class Teachers implements OnInit {
     }
   }
 
+
+  seedTestTeachers() {
+    this.seedingInProgress = true;
+    this.error = null;
+    this.cdr.detectChanges();
+
+    this.teacherService.seedTestTeachers().subscribe({
+      next: (count) => {
+        this.seedingInProgress = false;
+        this.loadTeachers();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.error = 'Failed to seed test teachers. Please try again.';
+        this.seedingInProgress = false;
+        console.error('Error seeding test teachers:', error);
+      }
+    });
+  }
+
   openLanguageModal(teacher: Teacher) {
     this.languageTeacher = teacher;
     this.programmingLanguageService.getAllProgrammingLanguages().subscribe({
@@ -199,6 +221,27 @@ export class Teachers implements OnInit {
       error: (error) => {
         this.error = 'Failed to load programming languages. Please try again.';
         console.error('Error loading programming languages:', error);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+
+  deleteTestTeachers() {
+    this.deletingTestInProgress = true;
+    this.error = null;
+    this.cdr.detectChanges();
+
+    this.teacherService.deleteTestTeachers().subscribe({
+      next: (count) => {
+        this.deletingTestInProgress = false;
+        this.loadTeachers();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.error = 'Failed to delete test teachers. Please try again.';
+        this.deletingTestInProgress = false;
+        console.error('Error deleting test teachers:', error);
         this.cdr.detectChanges();
       }
     });
@@ -251,6 +294,7 @@ export class Teachers implements OnInit {
         }
       });
     }
+
   }
 
   getFullName(teacher: Teacher): string {
