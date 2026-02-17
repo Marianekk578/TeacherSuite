@@ -13,6 +13,7 @@ public class DeleteTestTeachersHandler(IApplicationDbContext context, ISender se
         var testTeacherIds = await context.Teachers
             .Where(t => t.LastName == "Testowski")
             .Select(t => t.Id)
+            .Take(1000)
             .ToListAsync(cancellationToken);
 
         foreach (var id in testTeacherIds)
