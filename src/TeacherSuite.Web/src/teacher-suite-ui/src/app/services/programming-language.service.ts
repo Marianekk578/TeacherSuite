@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, from, map } from 'rxjs';
+import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 
 export interface ProgrammingLanguage {
