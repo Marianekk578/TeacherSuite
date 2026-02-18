@@ -19,9 +19,6 @@ public class GetGroupByIdQueryHandler : IRequestHandler<GetGroupByIdQuery, Group
     public async Task<GroupDto?> Handle(GetGroupByIdQuery request, CancellationToken cancellationToken)
     {
         return await _db.Groups
-            .Include(g => g.Teacher)
-            .Include(g => g.AgeGroup)
-            .Include(g => g.GroupCourses).ThenInclude(gc => gc.Course)
             .Where(g => g.Id == request.Id)
             .ProjectTo<GroupDto>(_mapper.ConfigurationProvider)
             .SingleOrDefaultAsync(cancellationToken);
