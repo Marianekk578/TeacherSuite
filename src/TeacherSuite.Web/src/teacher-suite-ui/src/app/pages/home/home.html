@@ -109,6 +109,17 @@
       <h3>Age Groups</h3>
       <p>Categorize and manage students by age groups for better organization.</p>
     </div>
+
+    <div class="info-card" (click)="navigateTo('programming-languages')" (keydown)="handleKeyboardNavigation($event, 'programming-languages')" role="button" tabindex="0">
+      <div class="info-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 18 22 12 16 6"></polyline>
+          <polyline points="8 6 2 12 8 18"></polyline>
+        </svg>
+      </div>
+      <h3>Programming Languages</h3>
+      <p>Track programming languages known by teachers and used in courses.</p>
+    </div>
   </div>
 
   <div class="footer-info">

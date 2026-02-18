@@ -53,6 +53,11 @@ public class GlobalExceptionHandlerMiddleware
                 await context.Response.WriteAsJsonAsync(CreateNotFoundProblemDetails(context, notFoundException));
                 break;
 
+            case ConflictException conflictException:
+                context.Response.StatusCode = StatusCodes.Status409Conflict;
+                await context.Response.WriteAsJsonAsync(CreateConflictProblemDetails(context, conflictException));
+                break;
+
             default:
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 await context.Response.WriteAsJsonAsync(CreateInternalServerErrorProblemDetails(context, exception));
@@ -105,6 +110,22 @@ public class GlobalExceptionHandlerMiddleware
             Status = StatusCodes.Status500InternalServerError,
             Instance = context.Request.Path,
             Detail = "An unexpected error occurred. Please try again later."
+        };
+
+        return problemDetails;
+    }
+
+    private static ProblemDetails CreateConflictProblemDetails(
+        HttpContext context,
+        ConflictException exception)
+    {
+        var problemDetails = new ProblemDetails
+        {
+            Type = "https://tools.ietf.org/html/rfc9110#section-15.5.10",
+            Title = "The request could not be completed due to a conflict with the current state of the resource.",
+            Status = StatusCodes.Status409Conflict,
+            Instance = context.Request.Path,
+            Detail = exception.Message
         };
 
         return problemDetails;

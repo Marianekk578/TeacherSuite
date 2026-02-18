@@ -9,6 +9,7 @@ import {
   Validators
 } from '@angular/forms';
 import { TeacherService, Teacher, CreateTeacherDto, UpdateTeacherDto } from '../../services/teacher.service';
+import { ProgrammingLanguageService, ProgrammingLanguage } from '../../services/programming-language.service';
 
 @Component({
   selector: 'app-teachers',
@@ -31,8 +32,15 @@ export class Teachers implements OnInit {
   showDeleteConfirm = false;
   teacherToDelete: Teacher | null = null;
 
+  seedingInProgress = false;
+  deletingTestInProgress = false;
+  showLanguageModal = false;
+  languageTeacher: Teacher | null = null;
+  allProgrammingLanguages: ProgrammingLanguage[] = [];
+
   constructor(
     private teacherService: TeacherService,
+    private programmingLanguageService: ProgrammingLanguageService,
     private cdr: ChangeDetectorRef,
     private fb: FormBuilder
   ) {
@@ -112,6 +120,9 @@ export class Teachers implements OnInit {
     if (this.showDeleteConfirm) {
       this.cancelDelete();
     }
+    if (this.showLanguageModal) {
+      this.closeLanguageModal();
+    }
   }
 
   saveTeacher() {
@@ -177,6 +188,113 @@ export class Teachers implements OnInit {
         }
       });
     }
+  }
+
+
+  seedTestTeachers() {
+    this.seedingInProgress = true;
+    this.error = null;
+    this.cdr.detectChanges();
+
+    this.teacherService.seedTestTeachers().subscribe({
+      next: (count) => {
+        this.seedingInProgress = false;
+        this.loadTeachers();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.error = 'Failed to seed test teachers. Please try again.';
+        this.seedingInProgress = false;
+        console.error('Error seeding test teachers:', error);
+      }
+    });
+  }
+
+  openLanguageModal(teacher: Teacher) {
+    this.languageTeacher = teacher;
+    this.programmingLanguageService.getAllProgrammingLanguages().subscribe({
+      next: (languages) => {
+        this.allProgrammingLanguages = languages;
+        this.showLanguageModal = true;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.error = 'Failed to load programming languages. Please try again.';
+        console.error('Error loading programming languages:', error);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+
+  deleteTestTeachers() {
+    this.deletingTestInProgress = true;
+    this.error = null;
+    this.cdr.detectChanges();
+
+    this.teacherService.deleteTestTeachers().subscribe({
+      next: (count) => {
+        this.deletingTestInProgress = false;
+        this.loadTeachers();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.error = 'Failed to delete test teachers. Please try again.';
+        this.deletingTestInProgress = false;
+        console.error('Error deleting test teachers:', error);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  closeLanguageModal() {
+    this.showLanguageModal = false;
+    this.languageTeacher = null;
+  }
+
+  isLanguageAssigned(language: ProgrammingLanguage): boolean {
+    if (!this.languageTeacher?.programmingLanguages) return false;
+    return this.languageTeacher.programmingLanguages.some(lang => lang.id === language.id);
+  }
+
+  toggleLanguage(language: ProgrammingLanguage) {
+    if (!this.languageTeacher) return;
+
+    if (this.isLanguageAssigned(language)) {
+      this.programmingLanguageService.unassignFromTeacher(this.languageTeacher.id, language.id).subscribe({
+        next: () => {
+          if (this.languageTeacher) {
+            this.languageTeacher.programmingLanguages = this.languageTeacher.programmingLanguages.filter(lang => lang.id !== language.id);
+          }
+          this.loadTeachers();
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          this.error = 'Failed to unassign programming language. Please try again.';
+          console.error('Error unassigning language:', error);
+          this.cdr.detectChanges();
+        }
+      });
+    } else {
+      this.programmingLanguageService.assignToTeacher(this.languageTeacher.id, language.id).subscribe({
+        next: () => {
+          if (this.languageTeacher) {
+            this.languageTeacher.programmingLanguages = [
+              ...this.languageTeacher.programmingLanguages,
+              { id: language.id, name: language.name }
+            ];
+          }
+          this.loadTeachers();
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          this.error = 'Failed to assign programming language. Please try again.';
+          console.error('Error assigning language:', error);
+          this.cdr.detectChanges();
+        }
+      });
+    }
+
   }
 
   getFullName(teacher: Teacher): string {

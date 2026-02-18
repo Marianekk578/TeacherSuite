@@ -1,6 +1,9 @@
 using MediatR;
+using TeacherSuite.Application.Teachers.Commands.AssignProgrammingLanguage;
 using TeacherSuite.Application.Teachers.Commands.Create;
 using TeacherSuite.Application.Teachers.Commands.Delete;
+using TeacherSuite.Application.Teachers.Commands.DeleteTestTeachers;
+using TeacherSuite.Application.Teachers.Commands.SeedTestTeachers;
 using TeacherSuite.Application.Teachers.Commands.Update;
 using TeacherSuite.Application.Teachers.Queries.Get;
 
@@ -24,5 +27,17 @@ public static class TeacherEndpoints
 
         app.MapDelete("/Teachers/{id:guid}", async (Teachers endpoints, ISender sender, Guid id) =>
             await endpoints.DeleteTeacher(sender, id));
+
+        app.MapPost("/Teachers/seed-test", async (Teachers endpoints, ISender sender) =>
+            await endpoints.SeedTestTeachers(sender));
+
+        app.MapPost("/Teachers/delete-test", async (Teachers endpoints, ISender sender) =>
+            await endpoints.DeleteTestTeachers(sender));
+
+        app.MapPut("/Teachers/{id:guid}/programming-languages/{programmingLanguageId:int}", async (Teachers endpoints, ISender sender, Guid id, int programmingLanguageId) =>
+            await endpoints.AssignProgrammingLanguage(sender, id, programmingLanguageId));
+
+        app.MapDelete("/Teachers/{id:guid}/programming-languages/{programmingLanguageId:int}", async (Teachers endpoints, ISender sender, Guid id, int programmingLanguageId) =>
+            await endpoints.UnassignProgrammingLanguage(sender, id, programmingLanguageId));
     }
 }

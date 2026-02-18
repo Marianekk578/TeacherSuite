@@ -9,6 +9,12 @@ export interface Teacher {
   email: string;
   phoneNumber: string;
   dateOfBirth: string;
+  programmingLanguages: TeacherProgrammingLanguage[];
+}
+
+export interface TeacherProgrammingLanguage {
+  id: number;
+  name: string;
 }
 
 export interface CreateTeacherDto {
@@ -57,6 +63,14 @@ export class TeacherService extends ApiService {
 
   deleteTeacher(id: string): Observable<void> {
     return this.delete(`${this.apiUrl}/${id}`);
+  }
+
+  seedTestTeachers(): Observable<number> {
+    return this.post<number>(`${this.apiUrl}/seed-test`, {});
+  }
+
+  deleteTestTeachers(): Observable<number> {
+    return this.post<number>(`${this.apiUrl}/delete-test`, {});
   }
 
   private convertToUtcIsoString(dateString: string): string {
