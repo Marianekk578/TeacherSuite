@@ -157,9 +157,8 @@ export class Teachers implements OnInit, OnDestroy {
         this.totalCount.set(result.totalCount);
         this.loading = false;
 
-        const lastPage = Math.ceil(result.totalCount / result.pageSize) || 1;
-        if (this.page() > lastPage && result.totalCount > 0) {
-          this.navigateWithParams({ page: lastPage });
+        if (this.page() > this.totalPages() && result.totalCount > 0) {
+          this.navigateWithParams({ page: this.totalPages() });
           return;
         }
 
