@@ -2,6 +2,7 @@ using TeacherSuite.Application.Common;
 using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Domain.Entities;
 using TeacherSuite.Domain.Enums;
+using ValidationException = TeacherSuite.Application.Common.ValidationException;
 
 namespace TeacherSuite.Application.Groups.Commands.AssignCourse;
 
@@ -32,7 +33,7 @@ public class AssignCourseToGroupHandler(IApplicationDbContext context) : IReques
 
         if (request.Status != CourseAssignmentStatus.Planned && request.Status != CourseAssignmentStatus.Active)
         {
-            throw new TeacherSuite.Application.Common.ValidationException(new[]
+            throw new ValidationException(new[]
             {
                 new FluentValidation.Results.ValidationFailure("Status", "Only Planned or Active status is allowed when assigning a course.")
             });
