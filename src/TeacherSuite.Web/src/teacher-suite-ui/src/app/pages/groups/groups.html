@@ -50,6 +50,15 @@
             </svg>
             <span>{{ getTeacherName(group) }}</span>
           </div>
+          <div class="detail-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span>{{ getAgeGroupName(group) }}</span>
+          </div>
         </div>
         <div class="group-actions">
           <button class="btn-icon btn-icon-edit" (click)="openEditModal(group)" title="Edit">
@@ -126,6 +135,19 @@
           </option>
         </select>
       </div>
+      <div class="form-group">
+        <label for="ageGroupID">Age Group *</label>
+        <select 
+          id="ageGroupID" 
+          formControlName="ageGroupID"
+          required
+        >
+          <option [ngValue]="null">Select an age group</option>
+          <option *ngFor="let ag of ageGroups" [ngValue]="ag.id">
+            {{ ag.name }} ({{ ag.minAge }}-{{ ag.maxAge }} years)
+          </option>
+        </select>
+      </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
         <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Create' }}</button>
@@ -167,7 +189,7 @@
         <label for="courseId">Course *</label>
         <select id="courseId" formControlName="courseId" required>
           <option [ngValue]="null">Select a course</option>
-          <option *ngFor="let course of courses" [ngValue]="course.id">
+          <option *ngFor="let course of courseModalFilteredCourses" [ngValue]="course.id">
             {{ course.name }}
           </option>
         </select>

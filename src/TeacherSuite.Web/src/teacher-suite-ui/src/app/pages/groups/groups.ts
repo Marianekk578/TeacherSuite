@@ -8,7 +8,7 @@ import {
 } from '@angular/forms';
 import { GroupService, Group, CreateGroupDto, UpdateGroupDto, GroupCourseAssignment } from '../../services/group.service';
 import { Teacher } from '../../services/teacher.service';
-import { Course } from '../../services/course.service';
+import { Course, AgeGroup } from '../../services/course.service';
 
 @Component({
   selector: 'app-groups',
@@ -20,6 +20,7 @@ export class Groups implements OnInit {
   groups: Group[] = [];
   teachers: Teacher[] = [];
   courses: Course[] = [];
+  ageGroups: AgeGroup[] = [];
   loading = false;
   error: string | null = null;
 
@@ -37,6 +38,7 @@ export class Groups implements OnInit {
   courseModalGroupId: string | null = null;
   courseModalGroupName: string | null = null;
   courseModalError: string | null = null;
+  courseModalFilteredCourses: Course[] = [];
   courseForm: FormGroup;
 
   showStatusModal = false;
@@ -60,7 +62,8 @@ export class Groups implements OnInit {
   ) {
     this.groupForm = this.fb.group({
       name: ['', [Validators.required]],
-      teacherId: [null, [Validators.required]]
+      teacherId: [null, [Validators.required]],
+      ageGroupID: [null, [Validators.required]]
     });
     this.courseForm = this.fb.group({
       courseId: [null, [Validators.required]],
@@ -75,6 +78,7 @@ export class Groups implements OnInit {
     this.loadGroups();
     this.loadTeachers();
     this.loadCourses();
+    this.loadAgeGroups();
   }
 
   loadGroups() {
@@ -121,13 +125,26 @@ export class Groups implements OnInit {
     });
   }
 
+  loadAgeGroups() {
+    this.groupService.getAllAgeGroups().subscribe({
+      next: (ageGroups) => {
+        this.ageGroups = ageGroups;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading age groups:', error);
+      }
+    });
+  }
+
   openAddModal() {
     this.isEditMode = false;
     this.currentGroupId = null;
     this.modalError = null;
     this.groupForm.reset({
       name: '',
-      teacherId: null
+      teacherId: null,
+      ageGroupID: null
     });
     this.showModal = true;
   }
@@ -138,7 +155,8 @@ export class Groups implements OnInit {
     this.modalError = null;
     this.groupForm.reset({
       name: group.name,
-      teacherId: group.teacherId
+      teacherId: group.teacherId,
+      ageGroupID: group.ageGroupID
     });
     this.showModal = true;
   }
@@ -240,6 +258,14 @@ export class Groups implements OnInit {
     return 'Unassigned';
   }
 
+  getAgeGroupName(group: Group): string {
+    if (group.ageGroup) {
+      return group.ageGroup.name;
+    }
+    const ag = this.ageGroups.find(a => a.id === group.ageGroupID);
+    return ag ? ag.name : 'Unknown';
+  }
+
   getStatusLabel(status: number): string {
     return this.statusLabels[status] ?? 'Unknown';
   }
@@ -267,6 +293,7 @@ export class Groups implements OnInit {
     this.courseModalGroupId = group.id;
     this.courseModalGroupName = group.name;
     this.courseModalError = null;
+    this.courseModalFilteredCourses = this.courses.filter(c => c.ageGroupID === group.ageGroupID);
     this.courseForm.reset({
       courseId: null,
       status: 0
@@ -377,6 +404,10 @@ export class Groups implements OnInit {
 
     if (controls['teacherId']?.errors?.['required']) {
       return 'A teacher must be assigned to the group';
+    }
+
+    if (controls['ageGroupID']?.errors?.['required']) {
+      return 'An age group must be assigned to the group';
     }
 
     return 'Please fix the errors in the form.';

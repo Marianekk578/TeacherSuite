@@ -17,8 +17,7 @@ public class AssignCourseToGroupHandler(IApplicationDbContext context) : IReques
         var course = await context.Courses.FindAsync(new object[] { request.CourseId }, cancellationToken);
         Guard.Against.NotFound(request.CourseId, course);
 
-        var hasExistingAgeGroup = group.AgeGroupID > 0;
-        if (hasExistingAgeGroup && group.AgeGroupID != course.AgeGroupID)
+        if (group.AgeGroupID != course.AgeGroupID)
         {
             throw new ConflictException("The course's age group does not match the group's age group.");
         }
@@ -38,8 +37,6 @@ public class AssignCourseToGroupHandler(IApplicationDbContext context) : IReques
                 new FluentValidation.Results.ValidationFailure("Status", "Only Planned or Active status is allowed when assigning a course.")
             });
         }
-
-        group.AgeGroupID = course.AgeGroupID;
 
         context.GroupCourses.Add(new GroupCourse
         {

@@ -8,6 +8,7 @@ public class CreateGroupCommandValidator : AbstractValidator<CreateGroupCommand>
     {
         GroupValidationRules.ApplyCommonRules(this,
             x => x.Name,
-            x => x.TeacherId);
+            x => x.TeacherId,
+            x => x.AgeGroupID);
     }
 }

@@ -4,7 +4,7 @@ using TeacherSuite.Domain.Events;
 
 namespace TeacherSuite.Application.Groups.Commands.Create;
 
-public record CreateGroupCommand(string? Name, Guid TeacherId) : IRequest<Guid>;
+public record CreateGroupCommand(string? Name, Guid TeacherId, int AgeGroupID) : IRequest<Guid>;
 
 public class CreateGroupHandler : IRequestHandler<CreateGroupCommand, Guid>
 {
@@ -22,7 +22,8 @@ public class CreateGroupHandler : IRequestHandler<CreateGroupCommand, Guid>
         var entity = new Group
         {
             Name = request.Name,
-            TeacherId = request.TeacherId
+            TeacherId = request.TeacherId,
+            AgeGroupID = request.AgeGroupID
         };
 
         _context.Groups.Add(entity);

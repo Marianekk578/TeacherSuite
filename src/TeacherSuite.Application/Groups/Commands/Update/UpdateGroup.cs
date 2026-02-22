@@ -2,7 +2,7 @@ using TeacherSuite.Application.Common.Interfaces;
 
 namespace TeacherSuite.Application.Groups.Commands.Update;
 
-public record UpdateGroupCommand(Guid Id, string? Name, Guid TeacherId) : IRequest<Unit>;
+public record UpdateGroupCommand(Guid Id, string? Name, Guid TeacherId, int AgeGroupID) : IRequest<Unit>;
 
 public class UpdateGroupHandler(IApplicationDbContext context) : IRequestHandler<UpdateGroupCommand, Unit>
 {
@@ -14,6 +14,7 @@ public class UpdateGroupHandler(IApplicationDbContext context) : IRequestHandler
 
         entity.Name = request.Name;
         entity.TeacherId = request.TeacherId;
+        entity.AgeGroupID = request.AgeGroupID;
 
         await context.SaveChangesAsync(cancellationToken);
         return Unit.Value;
