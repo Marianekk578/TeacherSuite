@@ -33,14 +33,34 @@ export interface UpdateTeacherDto {
   dateOfBirth: string;
 }
 
+export interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface TeacherQuery {
+  search: string;
+  page: number;
+  pageSize: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class TeacherService extends ApiService {
   private readonly apiUrl = '/Teachers';
 
-  getAllTeachers(): Observable<Teacher[]> {
-    return this.get<Teacher[]>(this.apiUrl);
+  getAllTeachers(query: TeacherQuery): Observable<PagedResult<Teacher>> {
+    const params = new URLSearchParams();
+    if (query.search) {
+      params.set('search', query.search);
+    }
+    params.set('page', String(query.page));
+    params.set('pageSize', String(query.pageSize));
+
+    return this.get<PagedResult<Teacher>>(`${this.apiUrl}?${params.toString()}`);
   }
 
   createTeacher(teacher: CreateTeacherDto): Observable<string> {

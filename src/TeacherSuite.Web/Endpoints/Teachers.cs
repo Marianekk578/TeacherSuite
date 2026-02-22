@@ -6,6 +6,7 @@ using TeacherSuite.Application.Teachers.Commands.Delete;
 using TeacherSuite.Application.Teachers.Commands.DeleteTestTeachers;
 using TeacherSuite.Application.Teachers.Commands.SeedTestTeachers;
 using TeacherSuite.Application.Teachers.Commands.Update;
+using TeacherSuite.Application.Common.Models;
 using TeacherSuite.Application.Teachers.Dtos;
 using TeacherSuite.Application.Teachers.Queries.Get;
 
@@ -26,7 +27,7 @@ public class Teachers
         return teacher is null ? TypedResults.NotFound() : TypedResults.Ok(teacher);
     }
 
-    public async Task<Ok<List<TeacherDto>>> GetAllTeachers(ISender sender, GetAllTeachersQuery query)
+    public async Task<Ok<PagedResult<TeacherDto>>> GetAllTeachers(ISender sender, GetAllTeachersQuery query)
     {
         var teachers = await sender.Send(query);
         return TypedResults.Ok(teachers);
