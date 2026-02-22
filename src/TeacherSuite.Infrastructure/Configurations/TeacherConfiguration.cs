@@ -15,6 +15,9 @@ public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
                .WithOne(g => g.Teacher)
                .HasForeignKey(g => g.TeacherId)
                .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(t => new { t.LastName, t.FirstName });
+        builder.HasIndex(t => t.Email);
     }
 }
 

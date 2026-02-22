@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
@@ -8,7 +8,10 @@ import {
   ValidationErrors,
   Validators
 } from '@angular/forms';
-import { TeacherService, Teacher, CreateTeacherDto, UpdateTeacherDto } from '../../services/teacher.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { TeacherService, Teacher, CreateTeacherDto, UpdateTeacherDto, PagedResult } from '../../services/teacher.service';
 import { ProgrammingLanguageService, ProgrammingLanguage } from '../../services/programming-language.service';
 
 @Component({
@@ -17,11 +20,22 @@ import { ProgrammingLanguageService, ProgrammingLanguage } from '../../services/
   templateUrl: './teachers.html',
   styleUrl: './teachers.scss',
 })
-export class Teachers implements OnInit {
+export class Teachers implements OnInit, OnDestroy {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
+  readonly search = signal('');
+  readonly page = signal(1);
+  readonly pageSize = signal(12);
+  readonly pageSizeOptions = [12, 20, 30, 50];
+
+  readonly totalCount = signal(0);
+  readonly totalPages = computed(() => Math.ceil(this.totalCount() / this.pageSize()) || 1);
+
   teachers: Teacher[] = [];
   loading = false;
   error: string | null = null;
-  
+
   showModal = false;
   isEditMode = false;
   currentTeacherId: string | null = null;
@@ -37,6 +51,9 @@ export class Teachers implements OnInit {
   showLanguageModal = false;
   languageTeacher: Teacher | null = null;
   allProgrammingLanguages: ProgrammingLanguage[] = [];
+
+  private readonly searchSubject = new Subject<string>();
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private teacherService: TeacherService,
@@ -54,18 +71,97 @@ export class Teachers implements OnInit {
   }
 
   ngOnInit() {
-    this.loadTeachers();
+    this.subscriptions.push(
+      this.searchSubject.pipe(
+        debounceTime(300),
+        distinctUntilChanged()
+      ).subscribe(value => {
+        this.navigateWithParams({ search: value, page: 1 });
+      })
+    );
+
+    this.subscriptions.push(
+      this.route.queryParams.subscribe(params => {
+        const s = params['search'] ?? '';
+        const p = parseInt(params['page'], 10) || 1;
+        const ps = parseInt(params['pageSize'], 10) || 12;
+
+        this.search.set(s);
+        this.page.set(p);
+        this.pageSize.set(ps);
+        this.loadTeachers();
+      })
+    );
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach(s => s.unsubscribe());
+    this.searchSubject.complete();
+  }
+
+  onSearchInput(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(value);
+  }
+
+  onPageSizeChange(event: Event) {
+    const value = parseInt((event.target as HTMLSelectElement).value, 10);
+    this.navigateWithParams({ pageSize: value, page: 1 });
+  }
+
+  goToPage(p: number) {
+    if (p < 1 || p > this.totalPages()) return;
+    this.navigateWithParams({ page: p });
+  }
+
+  get visiblePages(): number[] {
+    const total = this.totalPages();
+    const current = this.page();
+    const pages: number[] = [];
+    const start = Math.max(1, current - 2);
+    const end = Math.min(total, current + 2);
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  private navigateWithParams(overrides: { search?: string; page?: number; pageSize?: number }) {
+    const search = overrides.search ?? this.search();
+    const page = overrides.page ?? this.page();
+    const pageSize = overrides.pageSize ?? this.pageSize();
+
+    const queryParams: Record<string, string | undefined> = {};
+    if (search) queryParams['search'] = search;
+    if (page > 1) queryParams['page'] = String(page);
+    if (pageSize !== 12) queryParams['pageSize'] = String(pageSize);
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+    });
   }
 
   loadTeachers() {
     this.loading = true;
     this.error = null;
     this.cdr.detectChanges();
-    
-    this.teacherService.getAllTeachers().subscribe({
-      next: (teachers) => {
-        this.teachers = teachers;
+
+    this.teacherService.getAllTeachers({
+      search: this.search(),
+      page: this.page(),
+      pageSize: this.pageSize()
+    }).subscribe({
+      next: (result: PagedResult<Teacher>) => {
+        this.teachers = result.items;
+        this.totalCount.set(result.totalCount);
         this.loading = false;
+
+        if (this.page() > this.totalPages() && result.totalCount > 0) {
+          this.navigateWithParams({ page: this.totalPages() });
+          return;
+        }
+
         this.cdr.detectChanges();
       },
       error: (error) => {
@@ -182,7 +278,12 @@ export class Teachers implements OnInit {
           this.cancelDelete();
         },
         error: (error) => {
-          this.error = 'Failed to delete teacher. Please try again.';
+          const status = error?.status as number | undefined;
+          if (status === 409) {
+            this.error = 'This teacher is assigned to a group and cannot be deleted.';
+          } else {
+            this.error = 'Failed to delete teacher. Please try again.';
+          }
           console.error('Error deleting teacher:', error);
           this.cancelDelete();
         }
@@ -305,16 +406,16 @@ export class Teachers implements OnInit {
 
   formatDate(dateString: string): string {
     if (!dateString) return 'N/A';
-    
+
     const date = new Date(dateString);
-    
+
     if (isNaN(date.getTime())) {
       return 'Invalid Date';
     }
-    
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
+
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
       day: 'numeric',
       timeZone: 'UTC'
     });

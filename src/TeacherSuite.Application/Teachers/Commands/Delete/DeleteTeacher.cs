@@ -16,6 +16,14 @@ public class DeleteTeacherHandler(IApplicationDbContext context) : IRequestHandl
 
         Guard.Against.NotFound(request.Id, entity);
 
+        var isAssignedToGroup = await context.Groups
+            .AnyAsync(g => g.TeacherId == request.Id, cancellationToken);
+
+        if (isAssignedToGroup)
+        {
+            throw new ConflictException("The teacher is assigned to a group and cannot be deleted.");
+        }
+
         context.Teachers.Remove(entity);
         await context.SaveChangesAsync(cancellationToken);
 

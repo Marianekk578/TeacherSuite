@@ -1,23 +1,37 @@
 <div class="teachers-page">
   <div class="page-header">
     <h1>Teachers</h1>
+    <div class="search-bar">
+      <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="text"
+        placeholder="Search by name or email..."
+        [value]="search()"
+        (input)="onSearchInput($event)"
+        aria-label="Search teachers"
+      />
+      <span class="search-count" *ngIf="!loading">{{ totalCount() }} result{{ totalCount() === 1 ? '' : 's' }}</span>
+    </div>
     <div class="page-header-actions">
       <button
         aria-label="CreateTestTeachers"
-        class="btn btn-secondary"
+        class="btn btn-sm btn-secondary"
         (click)="seedTestTeachers()"
         [disabled]="seedingInProgress || deletingTestInProgress">
-        {{ seedingInProgress ? 'Creating...' : 'Create 1000 Teachers' }}
+        {{ seedingInProgress ? 'Creating...' : 'Create 1000' }}
       </button>
       <button
         aria-label="DeleteTestTeachers"
-        class="btn btn-danger"
+        class="btn btn-sm btn-danger"
         (click)="deleteTestTeachers()"
         [disabled]="seedingInProgress || deletingTestInProgress">
-        {{ deletingTestInProgress ? 'Deleting...' : 'Delete 1000 Teachers' }}
+        {{ deletingTestInProgress ? 'Deleting...' : 'Delete 1000' }}
       </button>
-      <button aria-label="AddTeacher" class="btn btn-primary" (click)="openAddModal()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <button aria-label="AddTeacher" class="btn btn-sm btn-primary" (click)="openAddModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
@@ -31,9 +45,16 @@
     <button class="alert-close" (click)="error = null">&times;</button>
   </div>
 
-  <div *ngIf="loading" class="loading-state">
-    <div class="spinner"></div>
-    <p>Loading teachers...</p>
+  <div *ngIf="loading" class="teachers-grid">
+    <div class="teacher-card skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12]">
+      <div class="skeleton-avatar skeleton-pulse"></div>
+      <div class="skeleton-info">
+        <div class="skeleton-line skeleton-line-name skeleton-pulse"></div>
+        <div class="skeleton-line skeleton-line-detail skeleton-pulse"></div>
+        <div class="skeleton-line skeleton-line-detail skeleton-pulse"></div>
+        <div class="skeleton-line skeleton-line-short skeleton-pulse"></div>
+      </div>
+    </div>
   </div>
 
   <div *ngIf="!loading && teachers.length === 0" class="empty-state">
@@ -43,9 +64,11 @@
       <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
       <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
     </svg>
-    <h2>No Teachers Yet</h2>
-    <p>Start by adding your first teacher to the system.</p>
-    <button class="btn btn-primary" (click)="openAddModal()">Add First Teacher</button>
+    <h2 *ngIf="!search()">No Teachers Yet</h2>
+    <h2 *ngIf="search()">No Results Found</h2>
+    <p *ngIf="!search()">Start by adding your first teacher to the system.</p>
+    <p *ngIf="search()">No teachers match "{{ search() }}". Try a different search.</p>
+    <button *ngIf="!search()" class="btn btn-primary" (click)="openAddModal()">Add First Teacher</button>
   </div>
 
   <div *ngIf="!loading && teachers.length > 0" class="teachers-grid">
@@ -103,6 +126,30 @@
           </svg>
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-bar" *ngIf="!loading && totalPages() > 1">
+    <div class="page-size-selector">
+      <label for="pageSize">Show</label>
+      <select id="pageSize" [value]="pageSize()" (change)="onPageSizeChange($event)" aria-label="Page size">
+        <option *ngFor="let size of pageSizeOptions" [value]="size" [selected]="size === pageSize()">{{ size }}</option>
+      </select>
+      <span>per page</span>
+    </div>
+    <div class="pagination">
+      <button class="btn-page" [disabled]="page() === 1" (click)="goToPage(1)" aria-label="First page">&laquo;</button>
+      <button class="btn-page" [disabled]="page() === 1" (click)="goToPage(page() - 1)" aria-label="Previous page">&lsaquo;</button>
+      <button
+        *ngFor="let p of visiblePages"
+        class="btn-page"
+        [class.active]="p === page()"
+        (click)="goToPage(p)">
+        {{ p }}
+      </button>
+      <button class="btn-page" [disabled]="page() === totalPages()" (click)="goToPage(page() + 1)" aria-label="Next page">&rsaquo;</button>
+      <button class="btn-page" [disabled]="page() === totalPages()" (click)="goToPage(totalPages())" aria-label="Last page">&raquo;</button>
     </div>
   </div>
 </div>
