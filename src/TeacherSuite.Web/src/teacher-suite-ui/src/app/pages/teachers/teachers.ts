@@ -27,6 +27,7 @@ export class Teachers implements OnInit, OnDestroy {
   readonly search = signal('');
   readonly page = signal(1);
   readonly pageSize = signal(12);
+  readonly pageSizeOptions = [12, 20, 30, 50];
 
   readonly totalCount = signal(0);
   readonly totalPages = computed(() => Math.ceil(this.totalCount() / this.pageSize()) || 1);
@@ -103,6 +104,11 @@ export class Teachers implements OnInit, OnDestroy {
     this.searchSubject.next(value);
   }
 
+  onPageSizeChange(event: Event) {
+    const value = parseInt((event.target as HTMLSelectElement).value, 10);
+    this.navigateWithParams({ pageSize: value, page: 1 });
+  }
+
   goToPage(p: number) {
     if (p < 1 || p > this.totalPages()) return;
     this.navigateWithParams({ page: p });
@@ -150,6 +156,13 @@ export class Teachers implements OnInit, OnDestroy {
         this.teachers = result.items;
         this.totalCount.set(result.totalCount);
         this.loading = false;
+
+        const lastPage = Math.ceil(result.totalCount / result.pageSize) || 1;
+        if (this.page() > lastPage && result.totalCount > 0) {
+          this.navigateWithParams({ page: lastPage });
+          return;
+        }
+
         this.cdr.detectChanges();
       },
       error: (error) => {
