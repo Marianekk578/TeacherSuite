@@ -143,9 +143,6 @@ namespace TeacherSuite.Infrastructure.Migrations
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uuid");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
                     b.Property<DateTimeOffset>("LastModified")
                         .HasColumnType("timestamp with time zone");
 
@@ -163,7 +160,8 @@ namespace TeacherSuite.Infrastructure.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.HasIndex("GroupId");
+                    b.HasIndex("GroupId", "CourseId")
+                        .IsUnique();
 
                     b.ToTable("GroupCourses");
                 });
