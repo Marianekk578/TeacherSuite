@@ -63,4 +63,18 @@ export class ApiService {
       })
     );
   }
+
+  protected patch(url: string, body: unknown): Observable<void> {
+    return from(
+      fetch(url, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }).then((response) => {
+        if (!response.ok) {
+          throw new ApiError(response.status, response.statusText);
+        }
+      })
+    );
+  }
 }
