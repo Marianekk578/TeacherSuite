@@ -61,13 +61,13 @@
           </div>
         </div>
         <div class="group-actions">
-          <button class="btn-icon btn-icon-edit" (click)="openEditModal(group)" title="Edit">
+          <button class="btn-icon btn-icon-edit" aria-label="Edity group" (click)="openEditModal(group)" title="Edit">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
             </svg>
           </button>
-          <button class="btn-icon btn-icon-delete" type="button" (click)="confirmDelete(group)" title="Delete">
+          <button class="btn-icon btn-icon-delete" aria-label="Delete group" type="button" (click)="confirmDelete(group)" title="Delete">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="3 6 5 6 21 6"></polyline>
               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -87,7 +87,7 @@
               <span class="status-badge" [ngClass]="getStatusClass(assignment.status)">{{ getStatusLabel(assignment.status) }}</span>
             </div>
             <div class="course-item-actions">
-              <button *ngIf="assignment.status === 0 || assignment.status === 1" class="btn-tiny" (click)="openStatusModal(group, assignment)" title="Update status">&#9998;</button>
+              <button *ngIf="assignment.status === 0 || assignment.status === 1" class="btn-tiny" (click)="openStatusModal(group, assignment)" aria-label="Update status" title="Update status">&#9998;</button>
               <button class="btn-tiny btn-tiny-danger" (click)="unassignCourse(group, assignment)" title="Remove">&times;</button>
             </div>
           </div>
@@ -105,12 +105,12 @@
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2 id="modalTitle">{{ isEditMode ? 'Edit Group' : 'Add New Group' }}</h2>
-      <button class="modal-close" (click)="closeModal()">&times;</button>
+      <button class="modal-close" aria-label="Close"  (click)="closeModal()">&times;</button>
     </div>
     <form class="modal-body" [formGroup]="groupForm" (ngSubmit)="saveGroup()">
       <div *ngIf="modalError" class="alert alert-error modal-alert">
         {{ modalError }}
-        <button type="button" class="alert-close" (click)="modalError = null">&times;</button>
+        <button type="button" class="alert-close" aria-label="Close alert" (click)="modalError = null">&times;</button>
       </div>
       <div class="form-group">
         <label for="name">Group Name *</label>
@@ -161,7 +161,7 @@
   <div class="modal modal-small" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2 id="deleteConfirmTitle">Confirm Delete</h2>
-      <button class="modal-close" (click)="cancelDelete()">&times;</button>
+      <button class="modal-close" aria-label="Close" (click)="cancelDelete()">&times;</button>
     </div>
     <div class="modal-body">
       <p>Are you sure you want to delete <strong>{{ groupToDelete?.name }}</strong>? This action cannot be undone.</p>
@@ -183,7 +183,7 @@
     <form class="modal-body" [formGroup]="courseForm" (ngSubmit)="assignCourse()">
       <div *ngIf="courseModalError" class="alert alert-error modal-alert">
         {{ courseModalError }}
-        <button type="button" class="alert-close" (click)="courseModalError = null">&times;</button>
+        <button type="button" class="alert-close" aria-label="Close" (click)="courseModalError = null">&times;</button>
       </div>
       <div class="form-group">
         <label for="courseId">Course *</label>
@@ -214,7 +214,7 @@
   <div class="modal modal-small" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2 id="statusModalTitle">Update Status: {{ statusModalCourse?.courseName }}</h2>
-      <button class="modal-close" (click)="closeStatusModal()">&times;</button>
+      <button class="modal-close" aria-label="Close" (click)="closeStatusModal()">&times;</button>
     </div>
     <form class="modal-body" [formGroup]="statusForm" (ngSubmit)="updateCourseStatus()">
       <div *ngIf="statusModalError" class="alert alert-error modal-alert">

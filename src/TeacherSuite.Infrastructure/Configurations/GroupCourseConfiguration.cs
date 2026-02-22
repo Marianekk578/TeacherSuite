@@ -10,6 +10,9 @@ public class GroupCourseConfiguration : IEntityTypeConfiguration<GroupCourse>
     {
         builder.HasKey(gc => gc.Id);
 
+        builder.HasIndex(gc => new { gc.GroupId, gc.CourseId })
+                .IsUnique();
+
         builder.HasOne(gc => gc.Group)
                .WithMany(g => g.GroupCourses)
                .HasForeignKey(gc => gc.GroupId)
