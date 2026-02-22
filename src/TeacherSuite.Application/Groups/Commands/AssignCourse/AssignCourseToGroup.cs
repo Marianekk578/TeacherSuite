@@ -17,7 +17,8 @@ public class AssignCourseToGroupHandler(IApplicationDbContext context) : IReques
         var course = await context.Courses.FindAsync(new object[] { request.CourseId }, cancellationToken);
         Guard.Against.NotFound(request.CourseId, course);
 
-        if (group.AgeGroupID != 0 && group.AgeGroupID != course.AgeGroupID)
+        var hasExistingAgeGroup = group.AgeGroupID > 0;
+        if (hasExistingAgeGroup && group.AgeGroupID != course.AgeGroupID)
         {
             throw new ConflictException("The course's age group does not match the group's age group.");
         }
