@@ -203,8 +203,7 @@
         <label for="updateStatus">New Status *</label>
         <select id="updateStatus" formControlName="status" required>
           <option [ngValue]="null">Select a status</option>
-          <option [ngValue]="2">Completed</option>
-          <option [ngValue]="3">Cancelled</option>
+          <option *ngFor="let t of statusModalTransitions" [ngValue]="t.value">{{ t.label }}</option>
         </select>
       </div>
       <div class="modal-actions">

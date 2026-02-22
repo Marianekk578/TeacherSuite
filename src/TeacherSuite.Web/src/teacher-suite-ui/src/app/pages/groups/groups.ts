@@ -43,6 +43,7 @@ export class Groups implements OnInit {
   statusModalGroupId: string | null = null;
   statusModalCourse: GroupCourseAssignment | null = null;
   statusModalError: string | null = null;
+  statusModalTransitions: { value: number; label: string }[] = [];
   statusForm: FormGroup;
 
   readonly statusLabels: Record<number, string> = {
@@ -253,6 +254,14 @@ export class Groups implements OnInit {
     }
   }
 
+  getAvailableTransitions(currentStatus: number): { value: number; label: string }[] {
+    switch (currentStatus) {
+      case 0: return [{ value: 1, label: 'Active' }, { value: 3, label: 'Cancelled' }];
+      case 1: return [{ value: 2, label: 'Completed' }, { value: 3, label: 'Cancelled' }];
+      default: return [];
+    }
+  }
+
   // Course assignment modal
   openCourseModal(group: Group) {
     this.courseModalGroupId = group.id;
@@ -320,6 +329,7 @@ export class Groups implements OnInit {
     this.statusModalGroupId = group.id;
     this.statusModalCourse = assignment;
     this.statusModalError = null;
+    this.statusModalTransitions = this.getAvailableTransitions(assignment.status);
     this.statusForm.reset({
       status: null
     });
