@@ -177,7 +177,12 @@ export class Courses implements OnInit {
           this.cancelDelete();
         },
         error: (error) => {
-          this.error = 'Failed to delete course. Please try again.';
+          const status = error?.status as number | undefined;
+          if (status === 409) {
+            this.error = 'This course is assigned to a group and cannot be deleted.';
+          } else {
+            this.error = 'Failed to delete course. Please try again.';
+          }
           console.error('Error deleting course:', error);
           this.cancelDelete();
         }

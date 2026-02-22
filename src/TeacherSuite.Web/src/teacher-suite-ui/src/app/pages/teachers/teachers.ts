@@ -182,7 +182,12 @@ export class Teachers implements OnInit {
           this.cancelDelete();
         },
         error: (error) => {
-          this.error = 'Failed to delete teacher. Please try again.';
+          const status = error?.status as number | undefined;
+          if (status === 409) {
+            this.error = 'This teacher is assigned to a group and cannot be deleted.';
+          } else {
+            this.error = 'Failed to delete teacher. Please try again.';
+          }
           console.error('Error deleting teacher:', error);
           this.cancelDelete();
         }
