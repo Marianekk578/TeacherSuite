@@ -4,25 +4,39 @@ import { ApiService } from './api.service';
 import { Teacher } from './teacher.service';
 import { Course } from './course.service';
 
+export interface GroupCourseAssignment {
+  courseId: number;
+  courseName: string;
+  status: number;
+  startDate: string;
+  endDate?: string;
+}
+
 export interface Group {
   id: string;
   name: string;
   teacherId: string;
   ageGroupID: number;
   teacher?: Teacher;
-  course?: Course;
+  courses: GroupCourseAssignment[];
 }
 
 export interface CreateGroupDto {
   name: string;
   teacherId: string;
-  courseId: number;
 }
 
 export interface UpdateGroupDto {
   name: string;
   teacherId: string;
-  courseId: number;
+}
+
+export interface AssignCourseDto {
+  status: number;
+}
+
+export interface UpdateCourseStatusDto {
+  status: number;
 }
 
 @Injectable({
@@ -51,6 +65,18 @@ export class GroupService extends ApiService {
 
   deleteGroup(id: string): Observable<void> {
     return this.delete(`${this.apiUrl}/${id}`);
+  }
+
+  assignCourse(groupId: string, courseId: number, data: AssignCourseDto): Observable<void> {
+    return this.put(`${this.apiUrl}/${groupId}/courses/${courseId}`, data);
+  }
+
+  unassignCourse(groupId: string, courseId: number): Observable<void> {
+    return this.delete(`${this.apiUrl}/${groupId}/courses/${courseId}`);
+  }
+
+  updateCourseStatus(groupId: string, courseId: number, data: UpdateCourseStatusDto): Observable<void> {
+    return this.patch(`${this.apiUrl}/${groupId}/courses/${courseId}/status`, data);
   }
 
   getAllTeachers(): Observable<Teacher[]> {

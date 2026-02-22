@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
+using TeacherSuite.Application.Groups.Commands.AssignCourse;
 using TeacherSuite.Application.Groups.Commands.Create;
 using TeacherSuite.Application.Groups.Commands.Delete;
 using TeacherSuite.Application.Groups.Commands.Update;
@@ -39,6 +40,26 @@ public class Groups
     public async Task<NoContent> DeleteGroup(ISender sender, Guid id)
     {
         await sender.Send(new DeleteGroupCommand(id));
+        return TypedResults.NoContent();
+    }
+
+    public async Task<NoContent> AssignCourse(ISender sender, Guid groupId, int courseId, AssignCourseToGroupCommand command)
+    {
+        var commandWithIds = command with { GroupId = groupId, CourseId = courseId };
+        await sender.Send(commandWithIds);
+        return TypedResults.NoContent();
+    }
+
+    public async Task<NoContent> UnassignCourse(ISender sender, Guid groupId, int courseId)
+    {
+        await sender.Send(new UnassignCourseFromGroupCommand(groupId, courseId));
+        return TypedResults.NoContent();
+    }
+
+    public async Task<NoContent> UpdateCourseStatus(ISender sender, Guid groupId, int courseId, UpdateGroupCourseStatusCommand command)
+    {
+        var commandWithIds = command with { GroupId = groupId, CourseId = courseId };
+        await sender.Send(commandWithIds);
         return TypedResults.NoContent();
     }
 }

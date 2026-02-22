@@ -6,7 +6,7 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
-import { GroupService, Group, CreateGroupDto, UpdateGroupDto } from '../../services/group.service';
+import { GroupService, Group, CreateGroupDto, UpdateGroupDto, GroupCourseAssignment } from '../../services/group.service';
 import { Teacher } from '../../services/teacher.service';
 import { Course } from '../../services/course.service';
 
@@ -33,6 +33,25 @@ export class Groups implements OnInit {
   showDeleteConfirm = false;
   groupToDelete: Group | null = null;
 
+  showCourseModal = false;
+  courseModalGroupId: string | null = null;
+  courseModalGroupName: string | null = null;
+  courseModalError: string | null = null;
+  courseForm: FormGroup;
+
+  showStatusModal = false;
+  statusModalGroupId: string | null = null;
+  statusModalCourse: GroupCourseAssignment | null = null;
+  statusModalError: string | null = null;
+  statusForm: FormGroup;
+
+  readonly statusLabels: Record<number, string> = {
+    0: 'Planned',
+    1: 'Active',
+    2: 'Completed',
+    3: 'Cancelled'
+  };
+
   constructor(
     private groupService: GroupService,
     private cdr: ChangeDetectorRef,
@@ -40,8 +59,14 @@ export class Groups implements OnInit {
   ) {
     this.groupForm = this.fb.group({
       name: ['', [Validators.required]],
-      teacherId: [null, [Validators.required]],
-      courseId: [null, [Validators.required]]
+      teacherId: [null, [Validators.required]]
+    });
+    this.courseForm = this.fb.group({
+      courseId: [null, [Validators.required]],
+      status: [0, [Validators.required]]
+    });
+    this.statusForm = this.fb.group({
+      status: [null, [Validators.required]]
     });
   }
 
@@ -101,8 +126,7 @@ export class Groups implements OnInit {
     this.modalError = null;
     this.groupForm.reset({
       name: '',
-      teacherId: null,
-      courseId: null
+      teacherId: null
     });
     this.showModal = true;
   }
@@ -113,8 +137,7 @@ export class Groups implements OnInit {
     this.modalError = null;
     this.groupForm.reset({
       name: group.name,
-      teacherId: group.teacherId,
-      courseId: group.course?.id ?? null
+      teacherId: group.teacherId
     });
     this.showModal = true;
   }
@@ -133,6 +156,12 @@ export class Groups implements OnInit {
     }
     if (this.showDeleteConfirm) {
       this.cancelDelete();
+    }
+    if (this.showCourseModal) {
+      this.closeCourseModal();
+    }
+    if (this.showStatusModal) {
+      this.closeStatusModal();
     }
   }
 
@@ -210,6 +239,125 @@ export class Groups implements OnInit {
     return 'Unassigned';
   }
 
+  getStatusLabel(status: number): string {
+    return this.statusLabels[status] ?? 'Unknown';
+  }
+
+  getStatusClass(status: number): string {
+    switch (status) {
+      case 0: return 'status-planned';
+      case 1: return 'status-active';
+      case 2: return 'status-completed';
+      case 3: return 'status-cancelled';
+      default: return '';
+    }
+  }
+
+  // Course assignment modal
+  openCourseModal(group: Group) {
+    this.courseModalGroupId = group.id;
+    this.courseModalGroupName = group.name;
+    this.courseModalError = null;
+    this.courseForm.reset({
+      courseId: null,
+      status: 0
+    });
+    this.showCourseModal = true;
+  }
+
+  closeCourseModal() {
+    this.showCourseModal = false;
+    this.courseModalGroupId = null;
+    this.courseModalGroupName = null;
+    this.courseModalError = null;
+  }
+
+  assignCourse() {
+    this.courseModalError = null;
+
+    if (this.courseForm.invalid) {
+      this.courseForm.markAllAsTouched();
+      this.courseModalError = 'Please select a course and status.';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const { courseId, status } = this.courseForm.getRawValue();
+
+    this.groupService.assignCourse(this.courseModalGroupId!, courseId, { status }).subscribe({
+      next: () => {
+        this.loadGroups();
+        this.closeCourseModal();
+      },
+      error: (error) => {
+        const errorStatus = error?.status as number | undefined;
+        if (errorStatus === 409) {
+          this.courseModalError = 'This course is already assigned or its age group does not match.';
+        } else {
+          this.courseModalError = 'Failed to assign course. Please try again.';
+        }
+        console.error('Error assigning course:', error);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  unassignCourse(group: Group, assignment: GroupCourseAssignment) {
+    this.groupService.unassignCourse(group.id, assignment.courseId).subscribe({
+      next: () => {
+        this.loadGroups();
+      },
+      error: (error) => {
+        this.error = 'Failed to unassign course. Please try again.';
+        console.error('Error unassigning course:', error);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // Status update modal
+  openStatusModal(group: Group, assignment: GroupCourseAssignment) {
+    this.statusModalGroupId = group.id;
+    this.statusModalCourse = assignment;
+    this.statusModalError = null;
+    this.statusForm.reset({
+      status: null
+    });
+    this.showStatusModal = true;
+  }
+
+  closeStatusModal() {
+    this.showStatusModal = false;
+    this.statusModalGroupId = null;
+    this.statusModalCourse = null;
+    this.statusModalError = null;
+  }
+
+  updateCourseStatus() {
+    this.statusModalError = null;
+
+    if (this.statusForm.invalid) {
+      this.statusForm.markAllAsTouched();
+      this.statusModalError = 'Please select a status.';
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const { status } = this.statusForm.getRawValue();
+
+    this.groupService.updateCourseStatus(this.statusModalGroupId!, this.statusModalCourse!.courseId, { status }).subscribe({
+      next: () => {
+        this.loadGroups();
+        this.closeStatusModal();
+      },
+      error: (error) => {
+        this.statusModalError = 'Failed to update course status. Please try again.';
+        console.error('Error updating course status:', error);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   private getFormErrorMessage(): string | null {
     const controls = this.groupForm.controls;
 
@@ -219,10 +367,6 @@ export class Groups implements OnInit {
 
     if (controls['teacherId']?.errors?.['required']) {
       return 'A teacher must be assigned to the group';
-    }
-
-    if (controls['courseId']?.errors?.['required']) {
-      return 'A course must be assigned to the group';
     }
 
     return 'Please fix the errors in the form.';

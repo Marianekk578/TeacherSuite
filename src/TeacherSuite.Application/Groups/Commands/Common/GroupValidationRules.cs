@@ -6,8 +6,7 @@ public static class GroupValidationRules
 {
     public static void ApplyCommonRules<T>(AbstractValidator<T> validator,
         Expression<Func<T, string?>> nameSelector,
-        Expression<Func<T, Guid>> teacherIdSelector,
-        Expression<Func<T, int>> courseIdSelector)
+        Expression<Func<T, Guid>> teacherIdSelector)
     {
         validator.RuleFor(nameSelector)
             .NotEmpty()
@@ -16,9 +15,5 @@ public static class GroupValidationRules
         validator.RuleFor(teacherIdSelector)
             .NotEmpty()
             .WithMessage("A teacher must be assigned to the group");
-
-        validator.RuleFor(courseIdSelector)
-            .GreaterThan(0)
-            .WithMessage("A valid course must be assigned to the group");
     }
 }

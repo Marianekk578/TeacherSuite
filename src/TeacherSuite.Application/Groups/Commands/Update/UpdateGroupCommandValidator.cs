@@ -12,7 +12,6 @@ public class UpdateGroupCommandValidator : AbstractValidator<UpdateGroupCommand>
 
         GroupValidationRules.ApplyCommonRules(this,
             x => x.Name,
-            x => x.TeacherId,
-            x => x.CourseId);
+            x => x.TeacherId);
     }
 }

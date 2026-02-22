@@ -1,4 +1,5 @@
 using MediatR;
+using TeacherSuite.Application.Groups.Commands.AssignCourse;
 using TeacherSuite.Application.Groups.Commands.Create;
 using TeacherSuite.Application.Groups.Commands.Update;
 using TeacherSuite.Application.Groups.Queries;
@@ -23,5 +24,14 @@ public static class GroupEndpoints
 
         app.MapDelete("/Groups/{id:guid}", async (Groups endpoints, ISender sender, Guid id) =>
             await endpoints.DeleteGroup(sender, id));
+
+        app.MapPut("/Groups/{groupId:guid}/courses/{courseId:int}", async (Groups endpoints, ISender sender, Guid groupId, int courseId, AssignCourseToGroupCommand command) =>
+            await endpoints.AssignCourse(sender, groupId, courseId, command));
+
+        app.MapDelete("/Groups/{groupId:guid}/courses/{courseId:int}", async (Groups endpoints, ISender sender, Guid groupId, int courseId) =>
+            await endpoints.UnassignCourse(sender, groupId, courseId));
+
+        app.MapPatch("/Groups/{groupId:guid}/courses/{courseId:int}/status", async (Groups endpoints, ISender sender, Guid groupId, int courseId, UpdateGroupCourseStatusCommand command) =>
+            await endpoints.UpdateCourseStatus(sender, groupId, courseId, command));
     }
 }
