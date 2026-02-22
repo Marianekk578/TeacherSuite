@@ -1,7 +1,7 @@
 # ADR-005: In-memory cache
 
 ## Date:
-2026-02-2
+2026-02-22
 
 ## Status:
 Accepted
