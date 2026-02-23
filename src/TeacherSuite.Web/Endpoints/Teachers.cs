@@ -21,6 +21,12 @@ public class Teachers
         return TypedResults.Created($"/{nameof(Teachers)}/{id}", id);
     }
 
+    public async Task<Results<Ok<TeacherDto>, NotFound>> GetTeacherById(ISender sender, Guid id)
+    {
+        var teacher = await sender.Send(new GetTeacherByIdQuery(id));
+        return teacher is null ? TypedResults.NotFound() : TypedResults.Ok(teacher);
+    }
+
     public async Task<Results<Ok<TeacherDto>, NotFound>> GetTeacherAssignedToGroup(ISender sender, GetTeacherAssignedToGroupQuery query)
     {
         var teacher = await sender.Send(query);

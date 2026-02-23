@@ -7,8 +7,8 @@ namespace TeacherSuite.Application.Teachers.Queries.Get;
 public record GetAllTeachersQuery : IRequest<PagedResult<TeacherDto>>
 {
     public string? Search { get; init; }
-    public int Page { get; init; } = 1;
-    public int PageSize { get; init; } = 12;
+    public int? Page { get; init; } 
+    public int? PageSize { get; init; }
 }
 
 public class GetAllTeachersQueryHandler : IRequestHandler<GetAllTeachersQuery, PagedResult<TeacherDto>>
@@ -40,8 +40,8 @@ public class GetAllTeachersQueryHandler : IRequestHandler<GetAllTeachersQuery, P
 
         var totalCount = await query.CountAsync(cancellationToken);
 
-        var page = Math.Max(1, request.Page);
-        var pageSize = Math.Clamp(request.PageSize, 1, 100);
+        var page = Math.Max(1, request.Page ?? 1);
+        var pageSize = Math.Clamp(request.PageSize ?? 12, 1, 100);
 
         var items = await query
             .OrderBy(t => t.LastName)
