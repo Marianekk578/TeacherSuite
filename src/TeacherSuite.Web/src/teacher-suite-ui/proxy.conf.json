@@ -1,0 +1,27 @@
+{
+  "/Teachers": {
+    "target": "https://localhost:7030",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/Courses": {
+    "target": "https://localhost:7030",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/Groups": {
+    "target": "https://localhost:7030",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/AgeGroups": {
+    "target": "https://localhost:7030",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/ProgrammingLanguages": {
+    "target": "https://localhost:7030",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

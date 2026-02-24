@@ -1,8 +1,6 @@
-using MediatR;
-using TeacherSuite.Application.AgeGroups.Commands;
-using TeacherSuite.Application.AgeGroups.Queries;
 using TeacherSuite.Infrastructure;
 using TeacherSuite.Web.Endpoints;
+using TeacherSuite.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,21 +9,28 @@ builder.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
 builder.Services.AddScoped<AgeGroups>();
+builder.Services.AddScoped<Teachers>();
+builder.Services.AddScoped<Courses>();
+builder.Services.AddScoped<Groups>();
+builder.Services.AddScoped<ProgrammingLanguages>();
 
 var app = builder.Build();
 
-app.MapGet("/AgeGroups", async (AgeGroups endpoints, ISender sender, [AsParameters] GetAgeGroupsQuery query) =>
-    await endpoints.GetAgeGroups(sender, query));
+app.UseHttpsRedirection();
+app.UseGlobalExceptionHandler();
+if (app.Environment.IsDevelopment()) {
+    app.UseRequestLogging();
+}
 
-app.MapPost("/AgeGroups", async (AgeGroups endpoints, ISender sender, CreateAgeGroupCommand command) =>
-    await endpoints.CreateAgeGroups(sender, command));
-
+app.MapAgeGroupEndpoints();
+app.MapTeacherEndpoints();
+app.MapCourseEndpoints();
+app.MapGroupEndpoints();
+app.MapProgrammingLanguageEndpoints();
 
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
-app.UseHttpsRedirection();
 
 app.Run();

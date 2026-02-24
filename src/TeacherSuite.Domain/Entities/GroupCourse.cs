@@ -13,5 +13,4 @@ public class GroupCourse : BaseAuditableEntity
     public DateTimeOffset StartDate { get; set; }
     public DateTimeOffset? EndDate { get; set; }
     public CourseAssignmentStatus Status { get; set; } = CourseAssignmentStatus.Planned;
-    public bool IsActive {  get; set; }
 }
