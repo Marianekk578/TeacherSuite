@@ -3,24 +3,13 @@ using TeacherSuite.Application.Common;
 
 namespace TeacherSuite.Web.Middleware;
 
-public class GlobalExceptionHandlerMiddleware
+public class GlobalExceptionHandlerMiddleware(RequestDelegate next, ILogger<GlobalExceptionHandlerMiddleware> logger, IHostEnvironment environment)
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<GlobalExceptionHandlerMiddleware> _logger;
-
-    public GlobalExceptionHandlerMiddleware(
-        RequestDelegate next,
-        ILogger<GlobalExceptionHandlerMiddleware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
-
     public async Task InvokeAsync(HttpContext context)
     {
         try
         {
-            await _next(context);
+            await next(context);
         }
         catch (Exception ex)
         {
@@ -30,11 +19,11 @@ public class GlobalExceptionHandlerMiddleware
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        _logger.LogError(exception, "An exception occurred: {Message}", exception.Message);
+        logger.LogError(exception, "An exception occurred: {Message}", exception.Message);
 
         if (context.Response.HasStarted)
         {
-            _logger.LogWarning("The response has already started, the global exception handler will not modify the response.");
+            logger.LogWarning("The response has already started, the global exception handler will not modify the response.");
             return;
         }
         context.Response.Clear();
@@ -50,7 +39,7 @@ public class GlobalExceptionHandlerMiddleware
 
             case Ardalis.GuardClauses.NotFoundException notFoundException:
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
-                await context.Response.WriteAsJsonAsync(CreateNotFoundProblemDetails(context, notFoundException));
+                await context.Response.WriteAsJsonAsync(CreateNotFoundProblemDetails(context, notFoundException, environment));
                 break;
 
             case ConflictException conflictException:
@@ -83,9 +72,10 @@ public class GlobalExceptionHandlerMiddleware
 
     private ProblemDetails CreateNotFoundProblemDetails(
         HttpContext context,
-        Ardalis.GuardClauses.NotFoundException exception)
+        Ardalis.GuardClauses.NotFoundException exception, 
+        IHostEnvironment environment)
     {
-        var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+        var isDevelopment = environment.IsDevelopment();
         
         var problemDetails = new ProblemDetails
         {

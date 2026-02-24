@@ -2,16 +2,8 @@
 
 namespace TeacherSuite.Web.Middleware;
 
-public class RequestLoggingMiddleware
+public class RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggingMiddleware> logger)
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<RequestLoggingMiddleware> _logger;
-    public RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggingMiddleware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
-
     public async Task InvokeAsync(HttpContext context)
     {
         var requestId = context.TraceIdentifier;
@@ -19,7 +11,7 @@ public class RequestLoggingMiddleware
         var sanitizedMethod = SanitizeForLog(context.Request.Method);
         var sanitizedPath = SanitizeForLog(context.Request.Path.ToString());
 
-        _logger.LogInformation(
+        logger.LogInformation(
             "Handling request {RequestId}: {Method} {Path} started at {Time}",
             requestId,
             sanitizedMethod,
@@ -30,12 +22,12 @@ public class RequestLoggingMiddleware
 
         try
         {
-            await _next(context);
+            await next(context);
         }
         finally
         {
             sw.Stop();
-            _logger.LogInformation(
+            logger.LogInformation(
                 "Finished handling request {RequestId}: {Method} {Path} completed at {Time} took {ElapsedMilliseconds} ms",
                 requestId,
                 sanitizedMethod,

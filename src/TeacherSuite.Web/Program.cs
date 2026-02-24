@@ -17,7 +17,9 @@ builder.Services.AddScoped<ProgrammingLanguages>();
 var app = builder.Build();
 
 app.UseGlobalExceptionHandler();
-app.UseRequestLogging();
+if (app.Environment.IsDevelopment()) {
+    app.UseRequestLogging();
+}
 
 app.MapAgeGroupEndpoints();
 app.MapTeacherEndpoints();

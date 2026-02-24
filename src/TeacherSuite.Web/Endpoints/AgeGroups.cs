@@ -14,6 +14,12 @@ public class AgeGroups
         return TypedResults.Ok(result);
     }
 
+    public async Task<Ok<AgeGroupDto>> GetAgeGroupById(ISender sender, int id)
+    {
+        var result = await sender.Send(new GetAgeGroupByIdQuery(id));
+        return TypedResults.Ok(result);
+    }
+
     public async Task<Created<int>> CreateAgeGroup(ISender sender, CreateAgeGroupCommand command)
     {
         var id = await sender.Send(command);

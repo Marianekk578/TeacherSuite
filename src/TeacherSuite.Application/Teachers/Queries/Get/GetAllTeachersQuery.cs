@@ -11,20 +11,11 @@ public record GetAllTeachersQuery : IRequest<PagedResult<TeacherDto>>
     public int? PageSize { get; init; }
 }
 
-public class GetAllTeachersQueryHandler : IRequestHandler<GetAllTeachersQuery, PagedResult<TeacherDto>>
+public class GetAllTeachersQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetAllTeachersQuery, PagedResult<TeacherDto>>
 {
-    private readonly IApplicationDbContext _db;
-    private readonly IMapper _mapper;
-
-    public GetAllTeachersQueryHandler(IApplicationDbContext db, IMapper mapper)
-    {
-        _db = db;
-        _mapper = mapper;
-    }
-
     public async Task<PagedResult<TeacherDto>> Handle(GetAllTeachersQuery request, CancellationToken cancellationToken)
     {
-        var query = _db.Teachers
+        var query = db.Teachers
             .Include(t => t.TeacherProgrammingLanguages)
                 .ThenInclude(tpl => tpl.ProgrammingLanguage)
             .AsQueryable();
@@ -48,7 +39,7 @@ public class GetAllTeachersQueryHandler : IRequestHandler<GetAllTeachersQuery, P
             .ThenBy(t => t.FirstName)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .ProjectTo<TeacherDto>(_mapper.ConfigurationProvider)
+            .ProjectTo<TeacherDto>(mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
 
         return new PagedResult<TeacherDto>

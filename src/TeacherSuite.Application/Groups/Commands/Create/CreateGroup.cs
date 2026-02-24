@@ -6,17 +6,8 @@ namespace TeacherSuite.Application.Groups.Commands.Create;
 
 public record CreateGroupCommand(string? Name, Guid TeacherId, int AgeGroupID) : IRequest<Guid>;
 
-public class CreateGroupHandler : IRequestHandler<CreateGroupCommand, Guid>
+public class CreateGroupHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateGroupCommand, Guid>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IPublisher _publisher;
-
-    public CreateGroupHandler(IApplicationDbContext context, IPublisher publisher)
-    {
-        _context = context;
-        _publisher = publisher;
-    }
-
     public async Task<Guid> Handle(CreateGroupCommand request, CancellationToken cancellationToken)
     {
         var entity = new Group
@@ -26,10 +17,10 @@ public class CreateGroupHandler : IRequestHandler<CreateGroupCommand, Guid>
             AgeGroupID = request.AgeGroupID
         };
 
-        _context.Groups.Add(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        db.Groups.Add(entity);
+        await db.SaveChangesAsync(cancellationToken);
 
-        await _publisher.Publish(new GroupCreatedEvent(entity), cancellationToken);
+        await publisher.Publish(new GroupCreatedEvent(entity), cancellationToken);
 
         return entity.Id;
     }

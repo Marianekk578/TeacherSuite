@@ -6,17 +6,8 @@ namespace TeacherSuite.Application.AgeGroups.Commands;
 
 public record CreateAgeGroupCommand(string Name, int MinAge, int MaxAge) : IRequest<int>;
 
-public class CreateAgeGroupHandler : IRequestHandler<CreateAgeGroupCommand, int>
+public class CreateAgeGroupHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateAgeGroupCommand, int>
 {
-    private readonly IApplicationDbContext _db;
-    private readonly IPublisher _publisher;
-
-    public CreateAgeGroupHandler(IApplicationDbContext db, IPublisher publisher)
-    {
-        _db = db;
-        _publisher = publisher;
-    }
-
     public async Task<int> Handle(CreateAgeGroupCommand request, CancellationToken cancellationToken)
     {
         var entity = new AgeGroup
@@ -26,10 +17,10 @@ public class CreateAgeGroupHandler : IRequestHandler<CreateAgeGroupCommand, int>
             MaxAge = request.MaxAge
         };
 
-        _db.AgeGroups.Add(entity);
-        await _db.SaveChangesAsync(cancellationToken);
+        db.AgeGroups.Add(entity);
+        await db.SaveChangesAsync(cancellationToken);
 
-        await _publisher.Publish(new AgeGroupCreatedEvent(entity), cancellationToken);
+        await publisher.Publish(new AgeGroupCreatedEvent(entity), cancellationToken);
 
         return entity.Id;
     }
