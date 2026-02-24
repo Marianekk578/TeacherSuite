@@ -25,6 +25,9 @@ public static class TeacherEndpoints
         app.MapGet("/Teachers", async (Teachers endpoints, ISender sender, [AsParameters] GetAllTeachersQuery query) =>
             await endpoints.GetAllTeachers(sender, query));
 
+        app.MapGet("/Teachers/{id:guid}", async (Teachers endpoints, ISender sender, Guid id) =>
+            await endpoints.GetTeacherById(sender, id));
+
         app.MapDelete("/Teachers/{id:guid}", async (Teachers endpoints, ISender sender, Guid id) =>
             await endpoints.DeleteTeacher(sender, id));
 

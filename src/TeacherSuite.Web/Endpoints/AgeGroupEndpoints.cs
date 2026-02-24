@@ -11,6 +11,9 @@ public static class AgeGroupEndpoints
         app.MapGet("/AgeGroups", async (AgeGroups endpoints, ISender sender, [AsParameters] GetAgeGroupsQuery query) =>
             await endpoints.GetAgeGroups(sender, query));
 
+        app.MapGet("/AgeGroups/{id:int}", async (AgeGroups endpoints, ISender sender, int id) =>
+            await endpoints.GetAgeGroupById(sender, id));
+
         app.MapPost("/AgeGroups", async (AgeGroups endpoints, ISender sender, CreateAgeGroupCommand command) =>
             await endpoints.CreateAgeGroup(sender, command));
     }

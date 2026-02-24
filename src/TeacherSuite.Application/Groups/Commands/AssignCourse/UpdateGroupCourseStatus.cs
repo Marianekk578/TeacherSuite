@@ -24,7 +24,7 @@ public class UpdateGroupCourseStatusHandler(IApplicationDbContext context) : IRe
 
         if (!AllowedTransitions.TryGetValue(entity.Status, out var allowed) || !allowed.Contains(request.Status))
         {
-            throw new TeacherSuite.Application.Common.ValidationException(new[]
+            throw new Application.Common.ValidationException(new[]
             {
                 new FluentValidation.Results.ValidationFailure("Status",
                     $"Cannot transition from {entity.Status} to {request.Status}.")

@@ -12,13 +12,35 @@ export class ApiError extends Error {
 }
 
 export class ApiService {
+  private async parseJsonIfPresent<T>(response: Response): Promise<T> {
+    if (response.status === 204 || response.status === 205) {
+      return undefined as T;
+    }
+
+    const contentLength = response.headers.get('content-length');
+    if (contentLength === '0') {
+      return undefined as T;
+    }
+
+    const text = await response.text();
+    if (!text) {
+      return undefined as T;
+    }
+
+    try {
+      return JSON.parse(text) as T;
+    } catch {
+      throw new ApiError(response.status, response.statusText, 'Invalid JSON response');
+    }
+  }
+
   protected get<T>(url: string): Observable<T> {
     return from(
       fetch(url).then((response) => {
         if (!response.ok) {
           throw new ApiError(response.status, response.statusText);
         }
-        return response.json();
+        return this.parseJsonIfPresent<T>(response);
       })
     );
   }
@@ -33,7 +55,7 @@ export class ApiService {
         if (!response.ok) {
           throw new ApiError(response.status, response.statusText);
         }
-        return response.json();
+        return this.parseJsonIfPresent<T>(response);
       })
     );
   }

@@ -94,7 +94,6 @@ export class TeacherService extends ApiService {
   }
 
   private convertToUtcIsoString(dateString: string): string {
-    const date = new Date(dateString + 'T00:00:00.000Z');
-    return date.toISOString();
+    return `${dateString}T00:00:00Z`;
   }
 }

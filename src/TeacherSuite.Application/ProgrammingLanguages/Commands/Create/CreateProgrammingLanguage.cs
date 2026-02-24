@@ -6,17 +6,8 @@ namespace TeacherSuite.Application.ProgrammingLanguages.Commands.Create;
 
 public record CreateProgrammingLanguageCommand(string? Name) : IRequest<int>;
 
-public class CreateProgrammingLanguageHandler : IRequestHandler<CreateProgrammingLanguageCommand, int>
+public class CreateProgrammingLanguageHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateProgrammingLanguageCommand, int>
 {
-    private readonly IApplicationDbContext _context;
-    private readonly IPublisher _publisher;
-
-    public CreateProgrammingLanguageHandler(IApplicationDbContext context, IPublisher publisher)
-    {
-        _context = context;
-        _publisher = publisher;
-    }
-
     public async Task<int> Handle(CreateProgrammingLanguageCommand request, CancellationToken cancellationToken)
     {
         var entity = new ProgrammingLanguage
@@ -24,10 +15,10 @@ public class CreateProgrammingLanguageHandler : IRequestHandler<CreateProgrammin
             Name = request.Name
         };
 
-        _context.ProgrammingLanguages.Add(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        db.ProgrammingLanguages.Add(entity);
+        await db.SaveChangesAsync(cancellationToken);
 
-        await _publisher.Publish(new ProgrammingLanguageCreatedEvent(entity), cancellationToken);
+        await publisher.Publish(new ProgrammingLanguageCreatedEvent(entity), cancellationToken);
 
         return entity.Id;
     }

@@ -16,8 +16,11 @@ builder.Services.AddScoped<ProgrammingLanguages>();
 
 var app = builder.Build();
 
+app.UseHttpsRedirection();
 app.UseGlobalExceptionHandler();
-app.UseRequestLogging();
+if (app.Environment.IsDevelopment()) {
+    app.UseRequestLogging();
+}
 
 app.MapAgeGroupEndpoints();
 app.MapTeacherEndpoints();
@@ -29,7 +32,5 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
-app.UseHttpsRedirection();
 
 app.Run();

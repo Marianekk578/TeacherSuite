@@ -7,24 +7,15 @@ namespace TeacherSuite.Application.Teachers.Queries.Get;
 public record GetAllTeachersQuery : IRequest<PagedResult<TeacherDto>>
 {
     public string? Search { get; init; }
-    public int Page { get; init; } = 1;
-    public int PageSize { get; init; } = 12;
+    public int? Page { get; init; } 
+    public int? PageSize { get; init; }
 }
 
-public class GetAllTeachersQueryHandler : IRequestHandler<GetAllTeachersQuery, PagedResult<TeacherDto>>
+public class GetAllTeachersQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetAllTeachersQuery, PagedResult<TeacherDto>>
 {
-    private readonly IApplicationDbContext _db;
-    private readonly IMapper _mapper;
-
-    public GetAllTeachersQueryHandler(IApplicationDbContext db, IMapper mapper)
-    {
-        _db = db;
-        _mapper = mapper;
-    }
-
     public async Task<PagedResult<TeacherDto>> Handle(GetAllTeachersQuery request, CancellationToken cancellationToken)
     {
-        var query = _db.Teachers
+        var query = db.Teachers
             .Include(t => t.TeacherProgrammingLanguages)
                 .ThenInclude(tpl => tpl.ProgrammingLanguage)
             .AsQueryable();
@@ -40,15 +31,15 @@ public class GetAllTeachersQueryHandler : IRequestHandler<GetAllTeachersQuery, P
 
         var totalCount = await query.CountAsync(cancellationToken);
 
-        var page = Math.Max(1, request.Page);
-        var pageSize = Math.Clamp(request.PageSize, 1, 100);
+        var page = Math.Max(1, request.Page ?? 1);
+        var pageSize = Math.Clamp(request.PageSize ?? 12, 1, 100);
 
         var items = await query
             .OrderBy(t => t.LastName)
             .ThenBy(t => t.FirstName)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .ProjectTo<TeacherDto>(_mapper.ConfigurationProvider)
+            .ProjectTo<TeacherDto>(mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
 
         return new PagedResult<TeacherDto>

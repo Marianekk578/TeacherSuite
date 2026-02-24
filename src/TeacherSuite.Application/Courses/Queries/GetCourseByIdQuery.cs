@@ -5,22 +5,13 @@ namespace TeacherSuite.Application.Courses.Queries;
 
 public record GetCourseByIdQuery(int Id) : IRequest<CourseDto?>;
 
-public class GetCourseByIdQueryHandler : IRequestHandler<GetCourseByIdQuery, CourseDto?>
+public class GetCourseByIdQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetCourseByIdQuery, CourseDto?>
 {
-    private readonly IApplicationDbContext _db;
-    private readonly IMapper _mapper;
-
-    public GetCourseByIdQueryHandler(IApplicationDbContext db, IMapper mapper)
-    {
-        _db = db;
-        _mapper = mapper;
-    }
-
     public async Task<CourseDto?> Handle(GetCourseByIdQuery request, CancellationToken cancellationToken)
     {
-        return await _db.Courses
+        return await db.Courses
             .Where(c => c.Id == request.Id)
-            .ProjectTo<CourseDto>(_mapper.ConfigurationProvider)
+            .ProjectTo<CourseDto>(mapper.ConfigurationProvider)
             .SingleOrDefaultAsync(cancellationToken);
     }
 }
