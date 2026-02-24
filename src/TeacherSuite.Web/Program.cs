@@ -16,6 +16,7 @@ builder.Services.AddScoped<ProgrammingLanguages>();
 
 var app = builder.Build();
 
+app.UseHttpsRedirection();
 app.UseGlobalExceptionHandler();
 if (app.Environment.IsDevelopment()) {
     app.UseRequestLogging();
@@ -31,7 +32,5 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
-app.UseHttpsRedirection();
 
 app.Run();

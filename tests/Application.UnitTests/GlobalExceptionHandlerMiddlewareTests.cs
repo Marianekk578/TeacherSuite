@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging;
+using Moq;
 using System.Net;
 using System.Text.Json;
 using TeacherSuite.Application.Common;
@@ -18,7 +19,7 @@ public class GlobalExceptionHandlerMiddlewareTests
         // Arrange
         var context = new DefaultHttpContext();
         context.Response.Body = new MemoryStream();
-        var logger = new TestLogger<GlobalExceptionHandlerMiddleware>();
+        var logger = CreateLogger();
         var environment = CreateEnvironment(Environments.Production);
 
         var middleware = new GlobalExceptionHandlerMiddleware(
@@ -26,7 +27,7 @@ public class GlobalExceptionHandlerMiddlewareTests
             {
                 new FluentValidation.Results.ValidationFailure("Name", "Name is required")
             }),
-            logger: logger,
+            logger: logger.Object,
             environment: environment);
 
         // Act
@@ -48,6 +49,7 @@ public class GlobalExceptionHandlerMiddlewareTests
         Assert.Equal(400, problemDetails.Status);
         Assert.NotNull(problemDetails.Errors);
         Assert.True(problemDetails.Errors.Count > 0, $"Expected at least one error. Response: {responseBody}");
+        VerifyLoggedError(logger);
     }
 
     [Fact]
@@ -56,12 +58,12 @@ public class GlobalExceptionHandlerMiddlewareTests
         // Arrange
         var context = new DefaultHttpContext();
         context.Response.Body = new MemoryStream();
-        var logger = new TestLogger<GlobalExceptionHandlerMiddleware>();
+        var logger = CreateLogger();
         var environment = CreateEnvironment(Environments.Production);
 
         var middleware = new GlobalExceptionHandlerMiddleware(
             next: (innerHttpContext) => throw new Ardalis.GuardClauses.NotFoundException("1", "Entity not found"),
-            logger: logger,
+            logger: logger.Object,
             environment: environment);
 
         // Act
@@ -81,6 +83,7 @@ public class GlobalExceptionHandlerMiddlewareTests
 
         Assert.NotNull(problemDetails);
         Assert.Equal(404, problemDetails.Status);
+        VerifyLoggedError(logger);
     }
 
     [Fact]
@@ -89,12 +92,12 @@ public class GlobalExceptionHandlerMiddlewareTests
         // Arrange
         var context = new DefaultHttpContext();
         context.Response.Body = new MemoryStream();
-        var logger = new TestLogger<GlobalExceptionHandlerMiddleware>();
+        var logger = CreateLogger();
         var environment = CreateEnvironment(Environments.Production);
 
         var middleware = new GlobalExceptionHandlerMiddleware(
             next: (innerHttpContext) => throw new InvalidOperationException("Something went wrong"),
-            logger: logger,
+            logger: logger.Object,
             environment: environment);
 
         // Act
@@ -114,6 +117,7 @@ public class GlobalExceptionHandlerMiddlewareTests
 
         Assert.NotNull(problemDetails);
         Assert.Equal(500, problemDetails.Status);
+        VerifyLoggedError(logger);
     }
 
     [Fact]
@@ -122,13 +126,13 @@ public class GlobalExceptionHandlerMiddlewareTests
         // Arrange
         var context = new DefaultHttpContext();
         context.Response.Body = new MemoryStream();
-        var logger = new TestLogger<GlobalExceptionHandlerMiddleware>();
+        var logger = CreateLogger();
         var environment = CreateEnvironment(Environments.Development);
         var exception = new Ardalis.GuardClauses.NotFoundException("1", "Entity not found");
 
         var middleware = new GlobalExceptionHandlerMiddleware(
             next: (innerHttpContext) => throw exception,
-            logger: logger,
+            logger: logger.Object,
             environment: environment);
 
         // Act
@@ -145,6 +149,7 @@ public class GlobalExceptionHandlerMiddlewareTests
 
         Assert.NotNull(problemDetails);
         Assert.Equal(exception.Message, problemDetails.Detail);
+        VerifyLoggedError(logger, exception);
     }
 
     [Fact]
@@ -153,12 +158,12 @@ public class GlobalExceptionHandlerMiddlewareTests
         // Arrange
         var context = new DefaultHttpContext();
         context.Response.Body = new MemoryStream();
-        var logger = new TestLogger<GlobalExceptionHandlerMiddleware>();
+        var logger = CreateLogger();
         var environment = CreateEnvironment(Environments.Production);
 
         var middleware = new GlobalExceptionHandlerMiddleware(
             next: (innerHttpContext) => throw new Ardalis.GuardClauses.NotFoundException("1", "Entity not found"),
-            logger: logger,
+            logger: logger.Object,
             environment: environment);
 
         // Act
@@ -175,15 +180,26 @@ public class GlobalExceptionHandlerMiddlewareTests
 
         Assert.NotNull(problemDetails);
         Assert.Equal("The requested resource was not found.", problemDetails.Detail);
+        VerifyLoggedError(logger);
     }
 
     private static IHostEnvironment CreateEnvironment(string environmentName)
     => new HostingEnvironment { EnvironmentName = environmentName };
-}
 
-internal class TestLogger<T> : ILogger<T>
-{
-    public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
-    public bool IsEnabled(LogLevel logLevel) => true;
-    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) { }
+    private static Mock<ILogger<GlobalExceptionHandlerMiddleware>> CreateLogger()
+        => new Mock<ILogger<GlobalExceptionHandlerMiddleware>>();
+
+    private static void VerifyLoggedError(Mock<ILogger<GlobalExceptionHandlerMiddleware>> logger, Exception? exception = null)
+    {
+        var expectedException = exception;
+
+        logger.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains("An exception occurred")),
+                It.Is<Exception>(ex => expectedException == null || ex == expectedException),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
 }
