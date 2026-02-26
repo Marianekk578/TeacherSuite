@@ -20,7 +20,7 @@ public class AuthorizationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRe
 
         if (authorizeAttributes.Count == 0)
         {
-            return await next();
+            return await next(cancellationToken);
         }
 
         if (!_currentUserService.IsAuthenticated)
@@ -59,6 +59,6 @@ public class AuthorizationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRe
             }
         }
 
-        return await next();
+        return await next(cancellationToken);
     }
 }
