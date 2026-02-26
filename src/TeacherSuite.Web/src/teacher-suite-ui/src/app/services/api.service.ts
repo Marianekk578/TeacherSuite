@@ -1,4 +1,6 @@
+import { inject } from '@angular/core';
 import { Observable, from } from 'rxjs';
+import { KeycloakService } from '../auth/keycloak.service';
 
 export class ApiError extends Error {
   status: number;
@@ -12,6 +14,17 @@ export class ApiError extends Error {
 }
 
 export class ApiService {
+  private keycloakService = inject(KeycloakService);
+
+  private async getAuthHeaders(extra: Record<string, string> = {}): Promise<Record<string, string>> {
+    try {
+      const token = await this.keycloakService.updateToken(30);
+      return { Authorization: `Bearer ${token}`, ...extra };
+    } catch {
+      return { ...extra };
+    }
+  }
+
   private async parseJsonIfPresent<T>(response: Response): Promise<T> {
     if (response.status === 204 || response.status === 205) {
       return undefined as T;
@@ -36,67 +49,78 @@ export class ApiService {
 
   protected get<T>(url: string): Observable<T> {
     return from(
-      fetch(url).then((response) => {
-        if (!response.ok) {
-          throw new ApiError(response.status, response.statusText);
-        }
-        return this.parseJsonIfPresent<T>(response);
-      })
+      this.getAuthHeaders().then((headers) =>
+        fetch(url, { headers }).then((response) => {
+          if (!response.ok) {
+            throw new ApiError(response.status, response.statusText);
+          }
+          return this.parseJsonIfPresent<T>(response);
+        })
+      )
     );
   }
 
   protected post<T>(url: string, body: unknown): Observable<T> {
     return from(
-      fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      }).then((response) => {
-        if (!response.ok) {
-          throw new ApiError(response.status, response.statusText);
-        }
-        return this.parseJsonIfPresent<T>(response);
-      })
+      this.getAuthHeaders({ 'Content-Type': 'application/json' }).then((headers) =>
+        fetch(url, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(body),
+        }).then((response) => {
+          if (!response.ok) {
+            throw new ApiError(response.status, response.statusText);
+          }
+          return this.parseJsonIfPresent<T>(response);
+        })
+      )
     );
   }
 
   protected put(url: string, body: unknown): Observable<void> {
     return from(
-      fetch(url, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      }).then((response) => {
-        if (!response.ok) {
-          throw new ApiError(response.status, response.statusText);
-        }
-      })
+      this.getAuthHeaders({ 'Content-Type': 'application/json' }).then((headers) =>
+        fetch(url, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify(body),
+        }).then((response) => {
+          if (!response.ok) {
+            throw new ApiError(response.status, response.statusText);
+          }
+        })
+      )
     );
   }
 
   protected delete(url: string): Observable<void> {
     return from(
-      fetch(url, {
-        method: 'DELETE',
-      }).then((response) => {
-        if (!response.ok) {
-          throw new ApiError(response.status, response.statusText);
-        }
-      })
+      this.getAuthHeaders().then((headers) =>
+        fetch(url, {
+          method: 'DELETE',
+          headers,
+        }).then((response) => {
+          if (!response.ok) {
+            throw new ApiError(response.status, response.statusText);
+          }
+        })
+      )
     );
   }
 
   protected patch(url: string, body: unknown): Observable<void> {
     return from(
-      fetch(url, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      }).then((response) => {
-        if (!response.ok) {
-          throw new ApiError(response.status, response.statusText);
-        }
-      })
+      this.getAuthHeaders({ 'Content-Type': 'application/json' }).then((headers) =>
+        fetch(url, {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify(body),
+        }).then((response) => {
+          if (!response.ok) {
+            throw new ApiError(response.status, response.statusText);
+          }
+        })
+      )
     );
   }
 }
