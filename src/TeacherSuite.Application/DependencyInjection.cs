@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using System.Reflection;
 using TeacherSuite.Application.Common;
+using TeacherSuite.Application.Common.Behaviours;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +16,7 @@ public static class DependencyInjection
 
         builder.Services.AddMediatR(cfg => {
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+            cfg.AddOpenBehavior(typeof(AuthorizationBehaviour<,>));
             cfg.AddOpenBehavior(typeof(ValidationBehaviour<,>));
         });
     }
