@@ -2,6 +2,7 @@ using Moq;
 using TeacherSuite.Application.Common.Behaviours;
 using TeacherSuite.Application.Common.Exceptions;
 using TeacherSuite.Application.Common.Interfaces;
+using TeacherSuite.Domain.Common;
 using MediatR;
 
 namespace Application.UnitTests;
@@ -51,7 +52,7 @@ public class AuthorizationBehaviourTests
         // Arrange
         var currentUserService = new Mock<ICurrentUserService>();
         currentUserService.Setup(x => x.IsAuthenticated).Returns(true);
-        currentUserService.Setup(x => x.IsInRole("admin")).Returns(true);
+        currentUserService.Setup(x => x.IsInRole(AppRoles.Admin)).Returns(true);
         var behaviour = new AuthorizationBehaviour<AdminOnlyRequest, string>(currentUserService.Object);
         var called = false;
 
@@ -90,6 +91,6 @@ public class AuthorizationBehaviourTests
     [Authorize]
     public class ProtectedRequest : IRequest<string> { }
 
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = AppRoles.Admin)]
     public class AdminOnlyRequest : IRequest<string> { }
 }

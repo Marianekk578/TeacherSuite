@@ -4,16 +4,9 @@ using TeacherSuite.Application.Common.Interfaces;
 
 namespace TeacherSuite.Application.Common.Behaviours;
 
-public class AuthorizationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+public class AuthorizationBehaviour<TRequest, TResponse>(ICurrentUserService currentUserService) : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
-    private readonly ICurrentUserService _currentUserService;
-
-    public AuthorizationBehaviour(ICurrentUserService currentUserService)
-    {
-        _currentUserService = currentUserService;
-    }
-
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         var authorizeAttributes = request.GetType().GetCustomAttributes<AuthorizeAttribute>().ToList();
@@ -23,7 +16,7 @@ public class AuthorizationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRe
             return await next(cancellationToken);
         }
 
-        if (!_currentUserService.IsAuthenticated)
+        if (!currentUserService.IsAuthenticated)
         {
             throw new Exceptions.UnauthorizedAccessException();
         }
@@ -40,7 +33,7 @@ public class AuthorizationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRe
             {
                 foreach (var role in roles)
                 {
-                    if (_currentUserService.IsInRole(role.Trim()))
+                    if (currentUserService.IsInRole(role.Trim()))
                     {
                         authorized = true;
                         break;
