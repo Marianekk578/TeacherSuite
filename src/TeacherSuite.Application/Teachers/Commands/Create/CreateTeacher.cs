@@ -5,7 +5,7 @@ using TeacherSuite.Domain.Events;
 
 namespace TeacherSuite.Application.Teachers.Commands.Create;
 
-[Authorize(Roles = $"{AppRoles.Admin},{AppRoles.Supervisor}")]
+[Authorize(Roles = AppRoles.Admin + "," + AppRoles.Supervisor)]
 public record CreateTeacherCommand(string FirstName, string LastName, string Email, string PhoneNumber, DateTimeOffset DateOfBirth) : IRequest<Guid>;
 
 public class CreateTeacherHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateTeacherCommand, Guid>
