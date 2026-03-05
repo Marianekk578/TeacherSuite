@@ -83,13 +83,8 @@ export class KeycloakService {
   }
 
   private clearStaleOidcEntries(): void {
-    const keysToRemove: string[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key?.startsWith('kc-callback-')) {
-        keysToRemove.push(key);
-      }
-    }
-    keysToRemove.forEach((key) => localStorage.removeItem(key));
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith('kc-callback-'))
+      .forEach((key) => localStorage.removeItem(key));
   }
 }

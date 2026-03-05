@@ -19,7 +19,10 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
 
-var spaOrigin = builder.Configuration["Cors:SpaOrigin"] ?? "http://localhost:4200";
+var spaOrigin = builder.Configuration["Cors:SpaOrigin"]
+    ?? (builder.Environment.IsDevelopment()
+        ? "http://localhost:4200"
+        : throw new InvalidOperationException("Cors:SpaOrigin must be configured in non-development environments."));
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
