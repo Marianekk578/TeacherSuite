@@ -24,5 +24,19 @@ services:
     depends_on:
       - db
 
+  redis-cache:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - teachersuite_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   teachersuite_db_data:
+  teachersuite_redis_data:

@@ -3,7 +3,11 @@ using TeacherSuite.Application.AgeGroups.Dtos;
 
 namespace TeacherSuite.Application.AgeGroups.Queries;
 
-public record GetAgeGroupsQuery : IRequest<List<AgeGroupDto>>;
+public record GetAgeGroupsQuery : IRequest<List<AgeGroupDto>>, ICacheableQuery
+{
+    public string CacheKey => "teachersuite:agegroups:all";
+    public IReadOnlyCollection<string>? Tags => ["agegroups"];
+}
 
 public class GetAgeGroupsQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetAgeGroupsQuery, List<AgeGroupDto>>
 {

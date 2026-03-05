@@ -2,7 +2,10 @@ using TeacherSuite.Application.Common.Interfaces;
 
 namespace TeacherSuite.Application.ProgrammingLanguages.Commands.Update;
 
-public record UpdateProgrammingLanguageCommand(int Id, string? Name) : IRequest<Unit>;
+public record UpdateProgrammingLanguageCommand(int Id, string? Name) : IRequest<Unit>, ICacheInvalidationCommand
+{
+    public IReadOnlyCollection<string> TagsToInvalidate => ["programming-languages"];
+}
 
 public class UpdateProgrammingLanguageHandler(IApplicationDbContext context) : IRequestHandler<UpdateProgrammingLanguageCommand, Unit>
 {

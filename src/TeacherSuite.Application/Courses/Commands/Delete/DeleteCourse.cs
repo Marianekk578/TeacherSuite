@@ -3,7 +3,10 @@ using TeacherSuite.Application.Common.Interfaces;
 
 namespace TeacherSuite.Application.Courses.Commands.Delete;
 
-public record DeleteCourseCommand(int Id) : IRequest<Unit>;
+public record DeleteCourseCommand(int Id) : IRequest<Unit>, ICacheInvalidationCommand
+{
+    public IReadOnlyCollection<string> TagsToInvalidate => ["courses"];
+}
 
 public class DeleteCourseHandler(IApplicationDbContext context) : IRequestHandler<DeleteCourseCommand, Unit>
 {

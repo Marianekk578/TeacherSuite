@@ -4,7 +4,10 @@ using TeacherSuite.Domain.Events;
 
 namespace TeacherSuite.Application.Courses.Commands.Create;
 
-public record CreateCourseCommand(string? Name, string? Description, int AgeGroupID) : IRequest<int>;
+public record CreateCourseCommand(string? Name, string? Description, int AgeGroupID) : IRequest<int>, ICacheInvalidationCommand
+{
+    public IReadOnlyCollection<string> TagsToInvalidate => ["courses"];
+}
 
 public class CreateCourseHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateCourseCommand, int>
 {

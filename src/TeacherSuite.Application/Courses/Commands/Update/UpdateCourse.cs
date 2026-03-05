@@ -2,7 +2,10 @@ using TeacherSuite.Application.Common.Interfaces;
 
 namespace TeacherSuite.Application.Courses.Commands.Update;
 
-public record UpdateCourseCommand(int Id, string? Name, string? Description, int AgeGroupID) : IRequest<Unit>;
+public record UpdateCourseCommand(int Id, string? Name, string? Description, int AgeGroupID) : IRequest<Unit>, ICacheInvalidationCommand
+{
+    public IReadOnlyCollection<string> TagsToInvalidate => ["courses"];
+}
 
 public class UpdateCourseHandler(IApplicationDbContext context) : IRequestHandler<UpdateCourseCommand, Unit>
 {

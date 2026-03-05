@@ -4,7 +4,10 @@ using TeacherSuite.Domain.Events;
 
 namespace TeacherSuite.Application.ProgrammingLanguages.Commands.Create;
 
-public record CreateProgrammingLanguageCommand(string? Name) : IRequest<int>;
+public record CreateProgrammingLanguageCommand(string? Name) : IRequest<int>, ICacheInvalidationCommand
+{
+    public IReadOnlyCollection<string> TagsToInvalidate => ["programming-languages"];
+}
 
 public class CreateProgrammingLanguageHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateProgrammingLanguageCommand, int>
 {
