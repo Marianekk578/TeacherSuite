@@ -23,7 +23,7 @@ builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformatio
 var spaOrigin = builder.Configuration["Cors:SpaOrigin"]
     ?? (builder.Environment.IsDevelopment()
         ? "http://localhost:4200"
-        : throw new InvalidOperationException("Cors:SpaOrigin must be configured in non-development environments."));
+        : throw new InvalidOperationException("Cors:SpaOrigin missing."));
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
