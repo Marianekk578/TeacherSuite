@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Domain.Common;
@@ -50,19 +51,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy(AuthorizationPolicies.AdminOnly, policy =>
-        policy.RequireRole(AppRoles.Admin));
-    options.AddPolicy(AuthorizationPolicies.TeacherAccess, policy =>
-        policy.RequireRole(AppRoles.Admin, AppRoles.Teacher));
-    options.AddPolicy(AuthorizationPolicies.SupervisorAccess, policy =>
-        policy.RequireRole(AppRoles.Admin, AppRoles.Supervisor));
-
-    options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(AuthorizationPolicies.AdminOnly, policy =>
+        policy.RequireRole(AppRoles.Admin))
+    .AddPolicy(AuthorizationPolicies.SupervisorAccess, policy =>
+        policy.RequireRole(AppRoles.Admin, AppRoles.Supervisor))
+    .AddPolicy(AuthorizationPolicies.TeacherAccess, policy =>
+        policy.RequireRole(AppRoles.Admin, AppRoles.Supervisor, AppRoles.Teacher))
+    .SetFallbackPolicy(new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
-        .Build();
-});
+        .Build());
 
 builder.Services.AddScoped<AgeGroups>();
 builder.Services.AddScoped<Teachers>();
