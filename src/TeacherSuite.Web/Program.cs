@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using TeacherSuite.Application.Common.Interfaces;
+using TeacherSuite.Domain.Common;
 using TeacherSuite.Infrastructure;
 using TeacherSuite.Web.Auth;
 using TeacherSuite.Web.Endpoints;
@@ -17,6 +18,15 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
+
+var spaOrigin = builder.Configuration["Cors:SpaOrigin"] ?? "http://localhost:4200";
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+        policy.WithOrigins(spaOrigin)
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -40,11 +50,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(AuthorizationPolicies.AdminOnly, policy =>
-        policy.RequireRole(AuthorizationPolicies.RoleAdmin));
+        policy.RequireRole(AppRoles.Admin));
     options.AddPolicy(AuthorizationPolicies.TeacherAccess, policy =>
-        policy.RequireRole(AuthorizationPolicies.RoleAdmin, AuthorizationPolicies.RoleTeacher));
+        policy.RequireRole(AppRoles.Admin, AppRoles.Teacher));
     options.AddPolicy(AuthorizationPolicies.SupervisorAccess, policy =>
-        policy.RequireRole(AuthorizationPolicies.RoleAdmin, AuthorizationPolicies.RoleSupervisor));
+        policy.RequireRole(AppRoles.Admin, AppRoles.Supervisor));
+
+    options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
 });
 
 builder.Services.AddScoped<AgeGroups>();
@@ -58,6 +72,7 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseGlobalExceptionHandler();
 
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -73,7 +88,7 @@ app.MapProgrammingLanguageEndpoints();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.MapOpenApi().AllowAnonymous();
 }
 
 app.Run();

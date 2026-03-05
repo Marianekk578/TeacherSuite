@@ -27,6 +27,8 @@ export class KeycloakService {
       this.setupTokenRefresh();
     }
 
+    this.clearStaleOidcEntries();
+
     return authenticated;
   }
 
@@ -63,6 +65,7 @@ export class KeycloakService {
   }
 
   logout(): void {
+    this.clearStaleOidcEntries();
     this.keycloak.logout({ redirectUri: window.location.origin });
   }
 
@@ -77,5 +80,16 @@ export class KeycloakService {
         this.keycloak.login();
       });
     };
+  }
+
+  private clearStaleOidcEntries(): void {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('kc-callback-')) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
   }
 }
