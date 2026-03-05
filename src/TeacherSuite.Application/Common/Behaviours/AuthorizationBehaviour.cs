@@ -1,6 +1,7 @@
 using System.Reflection;
 using TeacherSuite.Application.Common.Exceptions;
 using TeacherSuite.Application.Common.Interfaces;
+using UnauthorizedAccessException = TeacherSuite.Application.Common.Exceptions.UnauthorizedAccessException;
 
 namespace TeacherSuite.Application.Common.Behaviours;
 
@@ -18,7 +19,7 @@ public class AuthorizationBehaviour<TRequest, TResponse>(ICurrentUserService cur
 
         if (!currentUserService.IsAuthenticated)
         {
-            throw new Exceptions.UnauthorizedAccessException();
+            throw new UnauthorizedAccessException();
         }
 
         var attributesWithRoles = authorizeAttributes

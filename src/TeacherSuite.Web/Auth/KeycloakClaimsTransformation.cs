@@ -22,26 +22,33 @@ public class KeycloakClaimsTransformation : IClaimsTransformation
 
     private static void MapRealmRoles(ClaimsIdentity identity)
     {
-        var realmAccessClaim = identity.FindFirst("realm_access");
-        if (realmAccessClaim == null)
+        try
         {
-            return;
-        }
-
-        using var realmAccess = JsonDocument.Parse(realmAccessClaim.Value);
-        if (!realmAccess.RootElement.TryGetProperty("roles", out var roles))
-        {
-            return;
-        }
-
-        foreach (var role in roles.EnumerateArray())
-        {
-            var roleValue = role.GetString();
-            if (!string.IsNullOrEmpty(roleValue) &&
-                !identity.HasClaim(ClaimTypes.Role, roleValue))
+            var realmAccessClaim = identity.FindFirst("realm_access");
+            if (realmAccessClaim == null)
             {
-                identity.AddClaim(new Claim(ClaimTypes.Role, roleValue));
+                return;
             }
+
+            using var realmAccess = JsonDocument.Parse(realmAccessClaim.Value);
+            if (!realmAccess.RootElement.TryGetProperty("roles", out var roles))
+            {
+                return;
+            }
+
+            foreach (var role in roles.EnumerateArray())
+            {
+                var roleValue = role.GetString();
+                if (!string.IsNullOrEmpty(roleValue) &&
+                    !identity.HasClaim(ClaimTypes.Role, roleValue))
+                {
+                    identity.AddClaim(new Claim(ClaimTypes.Role, roleValue));
+                }
+            }
+        }
+        catch (JsonException)
+        {
+            // Malformed or unexpected JSON in realm_access claim; ignore and do not add role claims.
         }
     }
 

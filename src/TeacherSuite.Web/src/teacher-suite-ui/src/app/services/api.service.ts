@@ -19,7 +19,10 @@ export class ApiService {
   private async getAuthHeaders(extra: Record<string, string> = {}): Promise<Record<string, string>> {
     try {
       const token = await this.keycloakService.updateToken(30);
-      return { Authorization: `Bearer ${token}`, ...extra };
+      if (token && token.trim()) {
+        return { Authorization: `Bearer ${token}`, ...extra };
+      }
+      return { ...extra };
     } catch {
       return { ...extra };
     }
