@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using TeacherSuite.Application.Common;
+using TeacherSuite.Application.Common.Exceptions;
 
 namespace TeacherSuite.Web.Middleware;
 
@@ -45,6 +46,16 @@ public class GlobalExceptionHandlerMiddleware(RequestDelegate next, ILogger<Glob
             case ConflictException conflictException:
                 context.Response.StatusCode = StatusCodes.Status409Conflict;
                 await context.Response.WriteAsJsonAsync(CreateConflictProblemDetails(context, conflictException));
+                break;
+
+            case Application.Common.Exceptions.UnauthorizedAccessException:
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await context.Response.WriteAsJsonAsync(CreateUnauthorizedProblemDetails(context));
+                break;
+
+            case ForbiddenAccessException:
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                await context.Response.WriteAsJsonAsync(CreateForbiddenProblemDetails(context));
                 break;
 
             default:
@@ -119,5 +130,29 @@ public class GlobalExceptionHandlerMiddleware(RequestDelegate next, ILogger<Glob
         };
 
         return problemDetails;
+    }
+
+    private static ProblemDetails CreateUnauthorizedProblemDetails(HttpContext context)
+    {
+        return new ProblemDetails
+        {
+            Type = "https://tools.ietf.org/html/rfc9110#section-15.5.2",
+            Title = "Unauthorized",
+            Status = StatusCodes.Status401Unauthorized,
+            Instance = context.Request.Path,
+            Detail = "Authentication is required to access this resource."
+        };
+    }
+
+    private static ProblemDetails CreateForbiddenProblemDetails(HttpContext context)
+    {
+        return new ProblemDetails
+        {
+            Type = "https://tools.ietf.org/html/rfc9110#section-15.5.4",
+            Title = "Forbidden",
+            Status = StatusCodes.Status403Forbidden,
+            Instance = context.Request.Path,
+            Detail = "You do not have permission to access this resource."
+        };
     }
 }
