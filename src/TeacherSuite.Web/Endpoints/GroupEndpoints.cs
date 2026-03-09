@@ -13,6 +13,9 @@ public static class GroupEndpoints
         app.MapGet("/Groups", async (Groups endpoints, ISender sender, [AsParameters] GetAllGroupsQuery query) =>
             await endpoints.GetAllGroups(sender, query));
 
+        app.MapGet("/Groups/by-course-name", async (Groups endpoints, ISender sender, string courseName) =>
+            await endpoints.GetGroupsByCourseName(sender, courseName));
+
         app.MapGet("/Groups/{id:guid}", async (Groups endpoints, ISender sender, Guid id) =>
             await endpoints.GetGroupById(sender, id));
 

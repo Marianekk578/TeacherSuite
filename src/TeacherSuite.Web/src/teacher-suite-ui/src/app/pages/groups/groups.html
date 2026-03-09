@@ -15,6 +15,11 @@
     <button class="alert-close" (click)="error = null">&times;</button>
   </div>
 
+  <div *ngIf="courseNameFilter" class="filter-banner">
+    <span>Showing groups assigned to course: <strong>{{ courseNameFilter }}</strong></span>
+    <button class="btn btn-secondary btn-small-filter" (click)="clearCourseFilter()">Clear filter</button>
+  </div>
+
   <div *ngIf="loading" class="loading-state">
     <div class="spinner"></div>
     <p>Loading groups...</p>
@@ -83,7 +88,7 @@
         <div *ngIf="group.courses && group.courses.length > 0" class="courses-list">
           <div class="course-item" *ngFor="let assignment of group.courses">
             <div class="course-item-info">
-              <span class="course-name">{{ assignment.courseName }}</span>
+              <span class="course-name course-name-link" (click)="navigateToCourseDetails(assignment.courseId)">{{ assignment.courseName }}</span>
               <span class="status-badge" [ngClass]="getStatusClass(assignment.status)">{{ getStatusLabel(assignment.status) }}</span>
             </div>
             <div class="course-item-actions">

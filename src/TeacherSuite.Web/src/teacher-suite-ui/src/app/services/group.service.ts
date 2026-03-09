@@ -83,6 +83,10 @@ export class GroupService extends ApiService {
     return this.patch(`${this.apiUrl}/${groupId}/courses/${courseId}/status`, data);
   }
 
+  getGroupsByCourseName(courseName: string): Observable<Group[]> {
+    return this.get<Group[]>(`${this.apiUrl}/by-course-name?courseName=${encodeURIComponent(courseName)}`);
+  }
+
   getAllTeachers(): Observable<Teacher[]> {
     return this.get<Teacher[]>(this.teacherUrl);
   }

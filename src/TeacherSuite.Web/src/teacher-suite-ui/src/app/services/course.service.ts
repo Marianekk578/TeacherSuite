@@ -9,12 +9,18 @@ export interface AgeGroup {
   maxAge: number;
 }
 
+export interface ProgrammingLanguage {
+  id: number;
+  name: string;
+}
+
 export interface Course {
   id: number;
   name: string;
   description: string;
   ageGroupID: number;
   ageGroup?: AgeGroup;
+  programmingLanguages: ProgrammingLanguage[];
 }
 
 export interface CreateCourseDto {

@@ -6,7 +6,9 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CourseService, Course, AgeGroup, CreateCourseDto, UpdateCourseDto } from '../../services/course.service';
+import { KeycloakService } from '../../auth/keycloak.service';
 
 @Component({
   selector: 'app-courses',
@@ -30,10 +32,17 @@ export class Courses implements OnInit {
   showDeleteConfirm = false;
   courseToDelete: Course | null = null;
 
+  showDetailsModal = false;
+  selectedCourse: Course | null = null;
+  detailsLoading = false;
+
   constructor(
     private courseService: CourseService,
     private cdr: ChangeDetectorRef,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private router: Router,
+    private route: ActivatedRoute,
+    private keycloakService: KeycloakService
   ) {
     this.courseForm = this.fb.group({
       name: ['', [Validators.required]],
@@ -45,6 +54,13 @@ export class Courses implements OnInit {
   ngOnInit() {
     this.loadCourses();
     this.loadAgeGroups();
+
+    this.route.queryParams.subscribe(params => {
+      const courseId = params['courseId'];
+      if (courseId) {
+        this.openDetailsById(+courseId);
+      }
+    });
   }
 
   loadCourses() {
@@ -110,6 +126,69 @@ export class Courses implements OnInit {
     this.modalError = null;
   }
 
+  openDetailsModal(course: Course) {
+    this.detailsLoading = true;
+    this.showDetailsModal = true;
+    this.selectedCourse = course;
+    this.cdr.detectChanges();
+
+    this.courseService.getCourseById(course.id).subscribe({
+      next: (fullCourse) => {
+        this.selectedCourse = fullCourse;
+        this.detailsLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading course details:', error);
+        this.detailsLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  openDetailsById(courseId: number) {
+    this.detailsLoading = true;
+    this.showDetailsModal = true;
+    this.selectedCourse = null;
+    this.cdr.detectChanges();
+
+    this.courseService.getCourseById(courseId).subscribe({
+      next: (course) => {
+        this.selectedCourse = course;
+        this.detailsLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading course details:', error);
+        this.detailsLoading = false;
+        this.showDetailsModal = false;
+        this.error = 'Failed to load course details.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  closeDetailsModal() {
+    this.showDetailsModal = false;
+    this.selectedCourse = null;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true
+    });
+  }
+
+  showAssignedGroups(course: Course) {
+    this.closeDetailsModal();
+    this.router.navigate(['/groups'], {
+      queryParams: { courseName: course.name }
+    });
+  }
+
+  canSeeAssignedGroups(): boolean {
+    return this.keycloakService.hasRole('Admin') || this.keycloakService.hasRole('Supervisor');
+  }
+
   @HostListener('document:keydown.escape', ['$event'])
   onEscapeKey(event: Event) {
     if (this.showModal) {
@@ -117,6 +196,9 @@ export class Courses implements OnInit {
     }
     if (this.showDeleteConfirm) {
       this.cancelDelete();
+    }
+    if (this.showDetailsModal) {
+      this.closeDetailsModal();
     }
   }
 

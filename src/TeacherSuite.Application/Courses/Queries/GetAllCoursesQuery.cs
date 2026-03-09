@@ -11,6 +11,8 @@ public class GetAllCoursesQueryHandler(IApplicationDbContext db, IMapper mapper)
     {
         return await db.Courses
             .Include(c => c.AgeGroup)
+            .Include(c => c.CourseProgrammingLanguages)
+                .ThenInclude(cpl => cpl.ProgrammingLanguage)
             .ProjectTo<CourseDto>(mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
     }

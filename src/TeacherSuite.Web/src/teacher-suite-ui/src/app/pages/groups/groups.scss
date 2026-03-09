@@ -523,6 +523,35 @@
   font-style: italic;
 }
 
+// Course name link
+.course-name-link {
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #667eea;
+    text-decoration: underline;
+  }
+}
+
+// Filter banner
+.filter-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  background: #e0e7ff;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: #3730a3;
+}
+
+.btn-small-filter {
+  padding: 0.375rem 1rem;
+  font-size: 0.8rem;
+}
+
 // Responsive Design
 @media (max-width: 768px) {
   .groups-page {
