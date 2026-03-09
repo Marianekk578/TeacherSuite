@@ -7,7 +7,7 @@ import {
   Validators
 } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { CourseService, Course, AgeGroup, CreateCourseDto, UpdateCourseDto } from '../../services/course.service';
+import { CourseService, Course, AgeGroup, ProgrammingLanguage, CreateCourseDto, UpdateCourseDto } from '../../services/course.service';
 import { KeycloakService } from '../../auth/keycloak.service';
 
 @Component({
@@ -19,6 +19,7 @@ import { KeycloakService } from '../../auth/keycloak.service';
 export class Courses implements OnInit {
   courses: Course[] = [];
   ageGroups: AgeGroup[] = [];
+  allProgrammingLanguages: ProgrammingLanguage[] = [];
   loading = false;
   error: string | null = null;
   
@@ -26,6 +27,7 @@ export class Courses implements OnInit {
   isEditMode = false;
   currentCourseId: number | null = null;
   modalError: string | null = null;
+  selectedLanguageIds: number[] = [];
 
   courseForm: FormGroup;
 
@@ -54,6 +56,7 @@ export class Courses implements OnInit {
   ngOnInit() {
     this.loadCourses();
     this.loadAgeGroups();
+    this.loadProgrammingLanguages();
 
     this.route.queryParams.subscribe(params => {
       const courseId = params['courseId'];
@@ -95,10 +98,23 @@ export class Courses implements OnInit {
     });
   }
 
+  loadProgrammingLanguages() {
+    this.courseService.getAllProgrammingLanguages().subscribe({
+      next: (languages) => {
+        this.allProgrammingLanguages = languages;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading programming languages:', error);
+      }
+    });
+  }
+
   openAddModal() {
     this.isEditMode = false;
     this.currentCourseId = null;
     this.modalError = null;
+    this.selectedLanguageIds = [];
     this.courseForm.reset({
       name: '',
       description: '',
@@ -111,6 +127,7 @@ export class Courses implements OnInit {
     this.isEditMode = true;
     this.currentCourseId = course.id;
     this.modalError = null;
+    this.selectedLanguageIds = course.programmingLanguages?.map(pl => pl.id) || [];
     this.courseForm.reset({
       name: course.name,
       description: course.description,
@@ -124,6 +141,32 @@ export class Courses implements OnInit {
     this.isEditMode = false;
     this.currentCourseId = null;
     this.modalError = null;
+    this.selectedLanguageIds = [];
+  }
+
+  toggleLanguage(languageId: number) {
+    const index = this.selectedLanguageIds.indexOf(languageId);
+    if (index >= 0) {
+      this.selectedLanguageIds.splice(index, 1);
+    } else {
+      this.selectedLanguageIds.push(languageId);
+    }
+  }
+
+  isLanguageSelected(languageId: number): boolean {
+    return this.selectedLanguageIds.includes(languageId);
+  }
+
+  getLanguageColor(pl: ProgrammingLanguage): string {
+    return pl.color || '#667eea';
+  }
+
+  getLanguageLabel(pl: ProgrammingLanguage): string {
+    return pl.label || pl.name || '';
+  }
+
+  getAgeGroupLabel(ag: AgeGroup): string {
+    return ag.label || ag.name || '';
   }
 
   openDetailsModal(course: Course) {
@@ -212,7 +255,13 @@ export class Courses implements OnInit {
       return;
     }
 
-    const coursePayload = this.courseForm.getRawValue() as CreateCourseDto | UpdateCourseDto;
+    const formValue = this.courseForm.getRawValue();
+    const coursePayload: CreateCourseDto | UpdateCourseDto = {
+      name: formValue.name,
+      description: formValue.description,
+      ageGroupID: formValue.ageGroupID,
+      programmingLanguageIds: this.selectedLanguageIds
+    };
 
     if (this.isEditMode && this.currentCourseId !== null) {
       this.courseService.updateCourse(this.currentCourseId, coursePayload).subscribe({

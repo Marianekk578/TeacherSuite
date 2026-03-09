@@ -29,13 +29,17 @@ export class ProgrammingLanguages implements OnInit {
   showDeleteConfirm = false;
   languageToDelete: ProgrammingLanguage | null = null;
 
+  readonly defaultColor = '#667eea';
+
   constructor(
     private programmingLanguageService: ProgrammingLanguageService,
     private cdr: ChangeDetectorRef,
     private fb: FormBuilder
   ) {
     this.languageForm = this.fb.group({
-      name: ['', [Validators.required]]
+      name: ['', [Validators.required]],
+      label: [''],
+      color: [this.defaultColor]
     });
   }
 
@@ -68,7 +72,9 @@ export class ProgrammingLanguages implements OnInit {
     this.currentLanguageId = null;
     this.modalError = null;
     this.languageForm.reset({
-      name: ''
+      name: '',
+      label: '',
+      color: this.defaultColor
     });
     this.showModal = true;
   }
@@ -78,7 +84,9 @@ export class ProgrammingLanguages implements OnInit {
     this.currentLanguageId = language.id;
     this.modalError = null;
     this.languageForm.reset({
-      name: language.name
+      name: language.name,
+      label: language.label || '',
+      color: language.color || this.defaultColor
     });
     this.showModal = true;
   }
@@ -100,6 +108,14 @@ export class ProgrammingLanguages implements OnInit {
     }
   }
 
+  getDisplayLabel(language: ProgrammingLanguage): string {
+    return language.label || language.name || '';
+  }
+
+  getLanguageColor(language: ProgrammingLanguage): string {
+    return language.color || this.defaultColor;
+  }
+
   saveLanguage() {
     this.modalError = null;
 
@@ -110,7 +126,12 @@ export class ProgrammingLanguages implements OnInit {
       return;
     }
 
-    const languagePayload = this.languageForm.getRawValue() as CreateProgrammingLanguageDto | UpdateProgrammingLanguageDto;
+    const formValue = this.languageForm.getRawValue();
+    const languagePayload: CreateProgrammingLanguageDto | UpdateProgrammingLanguageDto = {
+      name: formValue.name,
+      label: formValue.label || formValue.name,
+      color: formValue.color || this.defaultColor
+    };
 
     if (this.isEditMode && this.currentLanguageId !== null) {
       this.programmingLanguageService.updateProgrammingLanguage(this.currentLanguageId, languagePayload).subscribe({

@@ -272,11 +272,12 @@ export class Groups implements OnInit {
   }
 
   getAgeGroupName(group: Group): string {
-    if (group.ageGroup) {
-      return group.ageGroup.name;
+    const ag = group.ageGroup || this.ageGroups.find(a => a.id === group.ageGroupID);
+    if (ag) {
+      const label = ag.label || ag.name;
+      return `${label} (${ag.minAge}-${ag.maxAge})`;
     }
-    const ag = this.ageGroups.find(a => a.id === group.ageGroupID);
-    return ag ? ag.name : 'Unknown';
+    return 'Unknown';
   }
 
   getStatusLabel(status: number): string {

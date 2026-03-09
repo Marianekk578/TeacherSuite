@@ -52,14 +52,11 @@
         </div>
         <p class="course-description">{{ course.description }}</p>
         <div class="course-tags">
-          <span class="age-group-tag" *ngIf="course.ageGroup">
-            #{{ course.ageGroup.name }}
+          <span class="age-group-label" *ngIf="course.ageGroup">
+            {{ getAgeGroupLabel(course.ageGroup) }}
           </span>
-          <span class="age-group-tag age-group-missing" *ngIf="!course.ageGroup && course.ageGroupID">
-            #Age group unavailable
-          </span>
-          <span class="programming-language-tag" *ngFor="let pl of course.programmingLanguages">
-            #{{ pl.name }}
+          <span class="programming-language-label" *ngFor="let pl of course.programmingLanguages" [style.background-color]="getLanguageColor(pl)">
+            {{ getLanguageLabel(pl) }}
           </span>
         </div>
       </div>
@@ -91,8 +88,8 @@
         <div class="details-section">
           <label class="details-label">Age Group</label>
           <p class="details-value">
-            <span class="age-group-tag" *ngIf="selectedCourse.ageGroup">
-              #{{ selectedCourse.ageGroup.name }} ({{ selectedCourse.ageGroup.minAge }}-{{ selectedCourse.ageGroup.maxAge }} years)
+            <span class="age-group-label" *ngIf="selectedCourse.ageGroup">
+              {{ getAgeGroupLabel(selectedCourse.ageGroup) }} ({{ selectedCourse.ageGroup.minAge }}-{{ selectedCourse.ageGroup.maxAge }} years)
             </span>
             <span *ngIf="!selectedCourse.ageGroup">N/A</span>
           </p>
@@ -100,8 +97,8 @@
         <div class="details-section">
           <label class="details-label">Programming Languages</label>
           <div class="details-tags" *ngIf="selectedCourse.programmingLanguages && selectedCourse.programmingLanguages.length > 0">
-            <span class="programming-language-tag" *ngFor="let pl of selectedCourse.programmingLanguages">
-              #{{ pl.name }}
+            <span class="programming-language-label" *ngFor="let pl of selectedCourse.programmingLanguages" [style.background-color]="getLanguageColor(pl)">
+              {{ getLanguageLabel(pl) }}
             </span>
           </div>
           <p class="details-value" *ngIf="!selectedCourse.programmingLanguages || selectedCourse.programmingLanguages.length === 0">
@@ -163,6 +160,23 @@
             {{ ageGroup.name }} ({{ ageGroup.minAge }}-{{ ageGroup.maxAge }} years)
           </option>
         </select>
+      </div>
+      <div class="form-group">
+        <label>Programming Languages</label>
+        <div class="language-chips">
+          <button 
+            type="button"
+            class="language-chip"
+            *ngFor="let pl of allProgrammingLanguages"
+            [class.selected]="isLanguageSelected(pl.id)"
+            [style.background-color]="isLanguageSelected(pl.id) ? getLanguageColor(pl) : ''"
+            [style.border-color]="getLanguageColor(pl)"
+            [style.color]="isLanguageSelected(pl.id) ? 'white' : getLanguageColor(pl)"
+            (click)="toggleLanguage(pl.id)"
+          >
+            {{ getLanguageLabel(pl) }}
+          </button>
+        </div>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>

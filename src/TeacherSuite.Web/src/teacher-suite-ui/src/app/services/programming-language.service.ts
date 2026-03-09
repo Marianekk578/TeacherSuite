@@ -5,14 +5,20 @@ import { ApiService } from './api.service';
 export interface ProgrammingLanguage {
   id: number;
   name: string;
+  label: string;
+  color: string;
 }
 
 export interface CreateProgrammingLanguageDto {
   name: string;
+  label?: string;
+  color?: string;
 }
 
 export interface UpdateProgrammingLanguageDto {
   name: string;
+  label?: string;
+  color?: string;
 }
 
 @Injectable({
