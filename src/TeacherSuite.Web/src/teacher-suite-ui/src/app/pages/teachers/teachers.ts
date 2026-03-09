@@ -382,7 +382,7 @@ export class Teachers implements OnInit, OnDestroy {
           if (this.languageTeacher) {
             this.languageTeacher.programmingLanguages = [
               ...this.languageTeacher.programmingLanguages,
-              { id: language.id, name: language.name }
+              { id: language.id, name: language.name, label: language.label, color: language.color }
             ];
           }
           this.loadTeachers();

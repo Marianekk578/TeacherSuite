@@ -408,9 +408,8 @@
   display: inline-flex;
   align-items: center;
   padding: 0.2rem 0.625rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  border-radius: 20px;
+  border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -441,7 +440,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  border-radius: 20px;
+  border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -456,10 +455,18 @@
   }
 
   &.assigned {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: #f0f0f0;
     border-color: transparent;
   }
+}
+
+.language-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.625rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 .language-toggle-status {

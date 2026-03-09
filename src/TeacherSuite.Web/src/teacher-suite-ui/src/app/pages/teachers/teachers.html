@@ -79,7 +79,7 @@
       <div class="teacher-info">
         <h3>{{ getFullName(teacher) }}</h3>
         <div class="teacher-languages" *ngIf="teacher.programmingLanguages && teacher.programmingLanguages.length > 0">
-          <span class="language-label" *ngFor="let lang of teacher.programmingLanguages">#{{ lang.name }}</span>
+          <span class="language-label" *ngFor="let lang of teacher.programmingLanguages" [style.background-color]="lang.color || '#667eea'">{{ lang.label || lang.name }}</span>
         </div>
         <div class="teacher-details">
           <div class="detail-item">
@@ -256,7 +256,7 @@
         <div class="language-toggle-item" *ngFor="let lang of allProgrammingLanguages" 
              [class.assigned]="isLanguageAssigned(lang)"
              (click)="toggleLanguage(lang)">
-          <span class="language-toggle-label">#{{ lang.name }}</span>
+          <span class="language-toggle-label" [style.background-color]="isLanguageAssigned(lang) ? (lang.color || '#667eea') : ''" [style.color]="isLanguageAssigned(lang) ? 'white' : ''">{{ lang.label || lang.name }}</span>
           <span class="language-toggle-status">{{ isLanguageAssigned(lang) ? '✓' : '+' }}</span>
         </div>
       </div>

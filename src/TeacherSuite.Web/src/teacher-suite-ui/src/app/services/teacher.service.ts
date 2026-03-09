@@ -15,6 +15,8 @@ export interface Teacher {
 export interface TeacherProgrammingLanguage {
   id: number;
   name: string;
+  label: string;
+  color: string;
 }
 
 export interface CreateTeacherDto {
