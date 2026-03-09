@@ -19,7 +19,6 @@ import { Course, AgeGroup } from '../../services/course.service';
 })
 export class Groups implements OnInit {
   groups: Group[] = [];
-  filteredGroups: Group[] = [];
   teachers: Teacher[] = [];
   courses: Course[] = [];
   ageGroups: AgeGroup[] = [];
@@ -103,7 +102,6 @@ export class Groups implements OnInit {
     source$.subscribe({
       next: (groups) => {
         this.groups = groups;
-        this.filteredGroups = groups;
         this.loading = false;
         this.cdr.detectChanges();
       },

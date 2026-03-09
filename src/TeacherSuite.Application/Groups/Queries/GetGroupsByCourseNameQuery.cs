@@ -9,8 +9,10 @@ public class GetGroupsByCourseNameQueryHandler(IApplicationDbContext db, IMapper
 {
     public async Task<List<GroupDto>> Handle(GetGroupsByCourseNameQuery request, CancellationToken cancellationToken)
     {
+        var courseNameLower = request.CourseName.ToLower();
+
         return await db.Groups
-            .Where(g => g.GroupCourses.Any(gc => gc.Course!.Name == request.CourseName))
+            .Where(g => g.GroupCourses.Any(gc => gc.Course!.Name!.ToLower() == courseNameLower))
             .ProjectTo<GroupDto>(mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
     }
