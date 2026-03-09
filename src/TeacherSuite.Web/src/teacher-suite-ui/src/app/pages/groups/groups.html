@@ -58,14 +58,16 @@
             <span>{{ getTeacherName(group) }}</span>
           </div>
           <div class="detail-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <circle cx="19" cy="11" r="2"></circle>
-              <path d="M19 8v1"></path>
-              <path d="M19 13v1"></path>
-            </svg>
-            <span>{{ getAgeGroupName(group) }}</span>
+            <span class="age-group-label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <circle cx="19" cy="11" r="2"></circle>
+                <path d="M19 8v1"></path>
+                <path d="M19 13v1"></path>
+              </svg>
+              {{ getAgeGroupLabel(group) }}
+            </span>
           </div>
         </div>
         <div class="group-actions">

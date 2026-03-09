@@ -259,6 +259,23 @@
   }
 }
 
+.age-group-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  background: #e0e7ff;
+  color: #4338ca;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+
+  svg {
+    flex-shrink: 0;
+    color: #4338ca;
+  }
+}
+
 .group-actions {
   display: flex;
   gap: 0.5rem;

@@ -46,7 +46,7 @@
       </div>
       <div class="course-info">
         <h3 class="course-name-link" (click)="openDetailsModal(course)">{{ course.name }}</h3>
-        <div class="course-tags">
+        <div class="course-labels">
           <span class="age-group-label" *ngIf="course.ageGroup">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -57,9 +57,11 @@
             </svg>
             {{ getAgeGroupLabel(course.ageGroup) }}
           </span>
-          <span class="programming-language-label" *ngFor="let pl of course.programmingLanguages" [style.background-color]="getLanguageColor(pl)">
-            {{ getLanguageLabel(pl) }}
-          </span>
+          <div class="course-tags" *ngIf="course.programmingLanguages && course.programmingLanguages.length > 0">
+            <span class="programming-language-label" *ngFor="let pl of course.programmingLanguages" [style.background-color]="getLanguageColor(pl)">
+              {{ getLanguageLabel(pl) }}
+            </span>
+          </div>
         </div>
       </div>
       <div class="course-actions">

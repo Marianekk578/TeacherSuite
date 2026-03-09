@@ -271,7 +271,7 @@ export class Groups implements OnInit {
     return 'Unassigned';
   }
 
-  getAgeGroupName(group: Group): string {
+  getAgeGroupLabel(group: Group): string {
     const ag = group.ageGroup || this.ageGroups.find(a => a.id === group.ageGroupID);
     if (ag) {
       const label = ag.label || ag.name;

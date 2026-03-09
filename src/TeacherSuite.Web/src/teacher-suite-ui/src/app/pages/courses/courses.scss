@@ -254,6 +254,12 @@
   }
 }
 
+.course-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 .course-tags {
   display: flex;
   flex-wrap: wrap;
