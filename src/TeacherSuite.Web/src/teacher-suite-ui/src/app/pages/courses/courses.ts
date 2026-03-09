@@ -166,7 +166,8 @@ export class Courses implements OnInit {
   }
 
   getAgeGroupLabel(ag: AgeGroup): string {
-    return ag.label || ag.name || '';
+    const label = ag.label || ag.name || '';
+    return `${label} (${ag.minAge}-${ag.maxAge})`;
   }
 
   openDetailsModal(course: Course) {
