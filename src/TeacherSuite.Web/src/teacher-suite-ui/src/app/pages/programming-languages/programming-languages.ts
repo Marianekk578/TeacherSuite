@@ -127,9 +127,10 @@ export class ProgrammingLanguages implements OnInit {
     }
 
     const formValue = this.languageForm.getRawValue();
+    const name = formValue.name?.trim();
     const languagePayload: CreateProgrammingLanguageDto | UpdateProgrammingLanguageDto = {
-      name: formValue.name,
-      label: formValue.label || formValue.name,
+      name: name,
+      label: formValue.label?.trim() || name,
       color: formValue.color || this.defaultColor
     };
 

@@ -19,18 +19,23 @@ public class UpdateCourseHandler(IApplicationDbContext context) : IRequestHandle
         entity.Description = request.Description;
         entity.AgeGroupID = request.AgeGroupID;
 
-        entity.CourseProgrammingLanguages.Clear();
+        var newIds = request.ProgrammingLanguageIds ?? new List<int>();
+        var existingIds = entity.CourseProgrammingLanguages.Select(cpl => cpl.ProgrammingLanguageId).ToList();
 
-        if (request.ProgrammingLanguageIds is { Count: > 0 })
+        var toRemove = entity.CourseProgrammingLanguages.Where(cpl => !newIds.Contains(cpl.ProgrammingLanguageId)).ToList();
+        foreach (var cpl in toRemove)
         {
-            foreach (var plId in request.ProgrammingLanguageIds)
+            entity.CourseProgrammingLanguages.Remove(cpl);
+        }
+
+        var toAdd = newIds.Where(id => !existingIds.Contains(id)).ToList();
+        foreach (var plId in toAdd)
+        {
+            entity.CourseProgrammingLanguages.Add(new CourseProgrammingLanguage
             {
-                entity.CourseProgrammingLanguages.Add(new CourseProgrammingLanguage
-                {
-                    CourseId = entity.Id,
-                    ProgrammingLanguageId = plId
-                });
-            }
+                CourseId = entity.Id,
+                ProgrammingLanguageId = plId
+            });
         }
 
         await context.SaveChangesAsync(cancellationToken);
