@@ -30,12 +30,6 @@ public class Groups
         return group is null ? TypedResults.NotFound() : TypedResults.Ok(group);
     }
 
-    public async Task<Ok<List<GroupDto>>> GetGroupsByCourseName(ISender sender, string courseName)
-    {
-        var groups = await sender.Send(new GetGroupsByCourseNameQuery(courseName));
-        return TypedResults.Ok(groups);
-    }
-
     public async Task<NoContent> UpdateGroup(ISender sender, Guid id, UpdateGroupCommand command)
     {
         var commandWithId = command with { Id = id };

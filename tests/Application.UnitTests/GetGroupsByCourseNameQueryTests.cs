@@ -10,16 +10,56 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Application.UnitTests;
 
-public class GetGroupsByCourseNameQueryTests
+public class GetAllGroupsQueryTests
 {
     private readonly IMapper _mapper;
 
-    public GetGroupsByCourseNameQueryTests()
+    public GetAllGroupsQueryTests()
     {
         var config = new MapperConfiguration(
             cfg => cfg.AddMaps(typeof(GroupDto).Assembly),
             NullLoggerFactory.Instance);
         _mapper = config.CreateMapper();
+    }
+
+    [Fact]
+    public async Task Handle_WithNoFilter_ReturnsAllGroups()
+    {
+        // Arrange
+        var groupAId = Guid.NewGuid();
+        var groupBId = Guid.NewGuid();
+
+        var groupA = new Group
+        {
+            Id = groupAId,
+            Name = "Group A",
+            TeacherId = Guid.NewGuid(),
+            AgeGroupID = 1,
+            GroupCourses = new List<GroupCourse>()
+        };
+
+        var groupB = new Group
+        {
+            Id = groupBId,
+            Name = "Group B",
+            TeacherId = Guid.NewGuid(),
+            AgeGroupID = 1,
+            GroupCourses = new List<GroupCourse>()
+        };
+
+        var groups = new List<Group> { groupA, groupB }.AsQueryable();
+        var mockDbSet = CreateMockDbSet(groups);
+
+        var mockDb = new Mock<IApplicationDbContext>();
+        mockDb.Setup(x => x.Groups).Returns(mockDbSet.Object);
+
+        var handler = new GetAllGroupsQueryHandler(mockDb.Object, _mapper);
+
+        // Act
+        var result = await handler.Handle(new GetAllGroupsQuery(), CancellationToken.None);
+
+        // Assert
+        Assert.Equal(2, result.Count);
     }
 
     [Fact]
@@ -62,10 +102,10 @@ public class GetGroupsByCourseNameQueryTests
         var mockDb = new Mock<IApplicationDbContext>();
         mockDb.Setup(x => x.Groups).Returns(mockDbSet.Object);
 
-        var handler = new GetGroupsByCourseNameQueryHandler(mockDb.Object, _mapper);
+        var handler = new GetAllGroupsQueryHandler(mockDb.Object, _mapper);
 
         // Act
-        var result = await handler.Handle(new GetGroupsByCourseNameQuery("Intro to C#"), CancellationToken.None);
+        var result = await handler.Handle(new GetAllGroupsQuery(CourseName: "Intro to C#"), CancellationToken.None);
 
         // Assert
         Assert.Single(result);
@@ -97,10 +137,10 @@ public class GetGroupsByCourseNameQueryTests
         var mockDb = new Mock<IApplicationDbContext>();
         mockDb.Setup(x => x.Groups).Returns(mockDbSet.Object);
 
-        var handler = new GetGroupsByCourseNameQueryHandler(mockDb.Object, _mapper);
+        var handler = new GetAllGroupsQueryHandler(mockDb.Object, _mapper);
 
         // Act
-        var result = await handler.Handle(new GetGroupsByCourseNameQuery("Nonexistent Course"), CancellationToken.None);
+        var result = await handler.Handle(new GetAllGroupsQuery(CourseName: "Nonexistent Course"), CancellationToken.None);
 
         // Assert
         Assert.Empty(result);
