@@ -2,7 +2,7 @@ using TeacherSuite.Application.Common.Interfaces;
 
 namespace TeacherSuite.Application.ProgrammingLanguages.Commands.Update;
 
-public record UpdateProgrammingLanguageCommand(int Id, string? Name, string? Label, string? Color) : IRequest<Unit>;
+public record UpdateProgrammingLanguageCommand(int Id, string Name, string? Label, string? Color) : IRequest<Unit>;
 
 public class UpdateProgrammingLanguageHandler(IApplicationDbContext context) : IRequestHandler<UpdateProgrammingLanguageCommand, Unit>
 {

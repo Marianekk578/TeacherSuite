@@ -2,14 +2,6 @@
 
 namespace TeacherSuite.Application.Teachers.Dtos;
 
-public class TeacherProgrammingLanguageDto
-{
-    public int Id { get; init; }
-    public string? Name { get; init; }
-    public string? Label { get; init; }
-    public string? Color { get; init; }
-}
-
 public class TeacherDto
 {
     public Guid Id { get; init; }
@@ -28,8 +20,6 @@ public class TeacherDto
                 .ForMember(dest => dest.ProgrammingLanguages,
                     opt => opt.MapFrom(src => src.TeacherProgrammingLanguages
                         .Select(tpl => tpl.ProgrammingLanguage)));
-
-            CreateMap<ProgrammingLanguage, TeacherProgrammingLanguageDto>();
         }
     }
 }

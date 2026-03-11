@@ -4,7 +4,7 @@ using TeacherSuite.Domain.Events;
 
 namespace TeacherSuite.Application.ProgrammingLanguages.Commands.Create;
 
-public record CreateProgrammingLanguageCommand(string? Name, string? Label, string? Color) : IRequest<int>;
+public record CreateProgrammingLanguageCommand(string Name, string? Label, string? Color) : IRequest<int>;
 
 public class CreateProgrammingLanguageHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateProgrammingLanguageCommand, int>
 {
