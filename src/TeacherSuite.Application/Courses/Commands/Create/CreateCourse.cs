@@ -6,7 +6,7 @@ namespace TeacherSuite.Application.Courses.Commands.Create;
 
 public record CreateCourseCommand(string? Name, string? Description, int AgeGroupID) : IRequest<int>;
 
-public class CreateCourseHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateCourseCommand, int>
+internal sealed class CreateCourseCommandHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateCourseCommand, int>
 {
     public async Task<int> Handle(CreateCourseCommand request, CancellationToken cancellationToken)
     {

@@ -5,7 +5,7 @@ namespace TeacherSuite.Application.Teachers.Commands.SeedTestTeachers;
 
 public record SeedTestTeachersCommand(int Count = 1000) : IRequest<int>;
 
-public class SeedTestTeachersHandler(ISender sender) : IRequestHandler<SeedTestTeachersCommand, int>
+internal sealed class SeedTestTeachersCommandHandler(ISender sender) : IRequestHandler<SeedTestTeachersCommand, int>
 {
     public async Task<int> Handle(SeedTestTeachersCommand request, CancellationToken cancellationToken)
     {

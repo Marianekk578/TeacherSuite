@@ -6,7 +6,7 @@ namespace TeacherSuite.Application.Teachers.Commands.Create;
 
 public record CreateTeacherCommand(string FirstName, string LastName, string Email, string PhoneNumber, DateTimeOffset DateOfBirth) : IRequest<Guid>;
 
-public class CreateTeacherHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateTeacherCommand, Guid>
+internal sealed class CreateTeacherCommandHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateTeacherCommand, Guid>
 {
     public async Task<Guid> Handle(CreateTeacherCommand request, CancellationToken cancellationToken)
     {

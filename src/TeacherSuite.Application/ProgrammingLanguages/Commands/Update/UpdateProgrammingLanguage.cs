@@ -4,7 +4,7 @@ namespace TeacherSuite.Application.ProgrammingLanguages.Commands.Update;
 
 public record UpdateProgrammingLanguageCommand(int Id, string? Name) : IRequest<Unit>;
 
-public class UpdateProgrammingLanguageHandler(IApplicationDbContext context) : IRequestHandler<UpdateProgrammingLanguageCommand, Unit>
+internal sealed class UpdateProgrammingLanguageCommandHandler(IApplicationDbContext context) : IRequestHandler<UpdateProgrammingLanguageCommand, Unit>
 {
     public async Task<Unit> Handle(UpdateProgrammingLanguageCommand request, CancellationToken cancellationToken)
     {

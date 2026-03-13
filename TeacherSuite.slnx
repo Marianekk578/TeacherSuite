@@ -8,4 +8,5 @@
   <Project Path="src/TeacherSuite.Infrastructure/TeacherSuite.Infrastructure.csproj" />
   <Project Path="src/TeacherSuite.Web/TeacherSuite.Web.csproj" />
   <Project Path="tests/Application.UnitTests/Application.UnitTests.csproj" />
+  <Project Path="tests/Architecture.Tests/Architecture.Tests.csproj" />
 </Solution>
