@@ -23,5 +23,11 @@ public static class CourseEndpoints
 
         app.MapDelete("/Courses/{id:int}", async (Courses endpoints, ISender sender, int id) =>
             await endpoints.DeleteCourse(sender, id));
+
+        app.MapPost("/Courses/seed-test", async (Courses endpoints, ISender sender) =>
+            await endpoints.SeedTestCourses(sender));
+
+        app.MapPost("/Courses/delete-test", async (Courses endpoints, ISender sender) =>
+            await endpoints.DeleteTestCourses(sender));
     }
 }

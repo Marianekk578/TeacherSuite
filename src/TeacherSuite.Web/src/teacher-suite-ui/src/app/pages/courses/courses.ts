@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -6,7 +6,11 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { CourseService, Course, AgeGroup, CreateCourseDto, UpdateCourseDto } from '../../services/course.service';
+import { PagedResult } from '../../services/teacher.service';
 
 @Component({
   selector: 'app-courses',
@@ -14,7 +18,18 @@ import { CourseService, Course, AgeGroup, CreateCourseDto, UpdateCourseDto } fro
   templateUrl: './courses.html',
   styleUrl: './courses.scss',
 })
-export class Courses implements OnInit {
+export class Courses implements OnInit, OnDestroy {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
+  readonly search = signal('');
+  readonly page = signal(1);
+  readonly pageSize = signal(12);
+  readonly pageSizeOptions = [12, 20, 30, 50];
+
+  readonly totalCount = signal(0);
+  readonly totalPages = computed(() => Math.ceil(this.totalCount() / this.pageSize()) || 1);
+
   courses: Course[] = [];
   ageGroups: AgeGroup[] = [];
   loading = false;
@@ -30,6 +45,12 @@ export class Courses implements OnInit {
   showDeleteConfirm = false;
   courseToDelete: Course | null = null;
 
+  seedingInProgress = false;
+  deletingTestInProgress = false;
+
+  private readonly searchSubject = new Subject<string>();
+  private subscriptions: Subscription[] = [];
+
   constructor(
     private courseService: CourseService,
     private cdr: ChangeDetectorRef,
@@ -43,8 +64,77 @@ export class Courses implements OnInit {
   }
 
   ngOnInit() {
-    this.loadCourses();
     this.loadAgeGroups();
+
+    this.subscriptions.push(
+      this.searchSubject.pipe(
+        debounceTime(300),
+        distinctUntilChanged()
+      ).subscribe(value => {
+        this.navigateWithParams({ search: value, page: 1 });
+      })
+    );
+
+    this.subscriptions.push(
+      this.route.queryParams.subscribe(params => {
+        const s = params['search'] ?? '';
+        const p = parseInt(params['page'], 10) || 1;
+        const ps = parseInt(params['pageSize'], 10) || 12;
+
+        this.search.set(s);
+        this.page.set(p);
+        this.pageSize.set(ps);
+        this.loadCourses();
+      })
+    );
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach(s => s.unsubscribe());
+    this.searchSubject.complete();
+  }
+
+  onSearchInput(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(value);
+  }
+
+  onPageSizeChange(event: Event) {
+    const value = parseInt((event.target as HTMLSelectElement).value, 10);
+    this.navigateWithParams({ pageSize: value, page: 1 });
+  }
+
+  goToPage(p: number) {
+    if (p < 1 || p > this.totalPages()) return;
+    this.navigateWithParams({ page: p });
+  }
+
+  get visiblePages(): number[] {
+    const total = this.totalPages();
+    const current = this.page();
+    const pages: number[] = [];
+    const start = Math.max(1, current - 2);
+    const end = Math.min(total, current + 2);
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  private navigateWithParams(overrides: { search?: string; page?: number; pageSize?: number }) {
+    const search = overrides.search ?? this.search();
+    const page = overrides.page ?? this.page();
+    const pageSize = overrides.pageSize ?? this.pageSize();
+
+    const queryParams: Record<string, string | undefined> = {};
+    if (search) queryParams['search'] = search;
+    if (page > 1) queryParams['page'] = String(page);
+    if (pageSize !== 12) queryParams['pageSize'] = String(pageSize);
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+    });
   }
 
   loadCourses() {
@@ -52,10 +142,21 @@ export class Courses implements OnInit {
     this.error = null;
     this.cdr.detectChanges();
     
-    this.courseService.getAllCourses().subscribe({
-      next: (courses) => {
-        this.courses = courses;
+    this.courseService.getAllCourses({
+      search: this.search(),
+      page: this.page(),
+      pageSize: this.pageSize()
+    }).subscribe({
+      next: (result: PagedResult<Course>) => {
+        this.courses = result.items;
+        this.totalCount.set(result.totalCount);
         this.loading = false;
+
+        if (this.page() > this.totalPages() && result.totalCount > 0) {
+          this.navigateWithParams({ page: this.totalPages() });
+          return;
+        }
+
         this.cdr.detectChanges();
       },
       error: (error) => {
@@ -188,6 +289,46 @@ export class Courses implements OnInit {
         }
       });
     }
+  }
+
+  seedTestCourses() {
+    this.seedingInProgress = true;
+    this.error = null;
+    this.cdr.detectChanges();
+
+    this.courseService.seedTestCourses().subscribe({
+      next: () => {
+        this.seedingInProgress = false;
+        this.loadCourses();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.error = 'Failed to seed test courses. Please try again.';
+        this.seedingInProgress = false;
+        console.error('Error seeding test courses:', error);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  deleteTestCourses() {
+    this.deletingTestInProgress = true;
+    this.error = null;
+    this.cdr.detectChanges();
+
+    this.courseService.deleteTestCourses().subscribe({
+      next: () => {
+        this.deletingTestInProgress = false;
+        this.loadCourses();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.error = 'Failed to delete test courses. Please try again.';
+        this.deletingTestInProgress = false;
+        console.error('Error deleting test courses:', error);
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   private getFormErrorMessage(): string | null {

@@ -1,7 +1,10 @@
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
+using TeacherSuite.Application.Common.Models;
 using TeacherSuite.Application.Courses.Commands.Create;
 using TeacherSuite.Application.Courses.Commands.Delete;
+using TeacherSuite.Application.Courses.Commands.DeleteTestCourses;
+using TeacherSuite.Application.Courses.Commands.SeedTestCourses;
 using TeacherSuite.Application.Courses.Commands.Update;
 using TeacherSuite.Application.Courses.Dtos;
 using TeacherSuite.Application.Courses.Queries;
@@ -17,7 +20,7 @@ public class Courses
         return TypedResults.Created($"/{nameof(Courses)}/{id}", id);
     }
 
-    public async Task<Ok<List<CourseDto>>> GetAllCourses(ISender sender, GetAllCoursesQuery query)
+    public async Task<Ok<PagedResult<CourseDto>>> GetAllCourses(ISender sender, GetAllCoursesQuery query)
     {
         var courses = await sender.Send(query);
         return TypedResults.Ok(courses);
@@ -40,5 +43,17 @@ public class Courses
     {
         await sender.Send(new DeleteCourseCommand(id));
         return TypedResults.NoContent();
+    }
+
+    public async Task<Ok<int>> SeedTestCourses(ISender sender)
+    {
+        var count = await sender.Send(new SeedTestCoursesCommand());
+        return TypedResults.Ok(count);
+    }
+
+    public async Task<Ok<int>> DeleteTestCourses(ISender sender)
+    {
+        var count = await sender.Send(new DeleteTestCoursesCommand());
+        return TypedResults.Ok(count);
     }
 }
