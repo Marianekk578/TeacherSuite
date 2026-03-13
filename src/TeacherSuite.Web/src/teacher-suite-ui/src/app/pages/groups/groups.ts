@@ -173,10 +173,11 @@ export class Groups implements OnInit, OnDestroy {
     this.teacherSuggestions = [];
     this.showTeacherDropdown = false;
     this.cdr.detectChanges();
-    setTimeout(() => this.teacherSearchInput?.nativeElement?.focus());
+    setTimeout(() => this.teacherSearchInput?.nativeElement?.focus(), 0);
   }
 
   onTeacherSearchBlur() {
+    // Delay hiding dropdown to allow click events on suggestion items to fire first
     setTimeout(() => {
       this.showTeacherDropdown = false;
       this.cdr.detectChanges();
