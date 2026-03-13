@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -6,6 +6,8 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { GroupService, Group, CreateGroupDto, UpdateGroupDto, GroupCourseAssignment } from '../../services/group.service';
 import { Teacher } from '../../services/teacher.service';
 import { Course, AgeGroup } from '../../services/course.service';
@@ -16,7 +18,7 @@ import { Course, AgeGroup } from '../../services/course.service';
   templateUrl: './groups.html',
   styleUrl: './groups.scss',
 })
-export class Groups implements OnInit {
+export class Groups implements OnInit, OnDestroy {
   groups: Group[] = [];
   teachers: Teacher[] = [];
   courses: Course[] = [];
@@ -30,6 +32,19 @@ export class Groups implements OnInit {
   modalError: string | null = null;
 
   groupForm: FormGroup;
+
+  // Teacher search autocomplete
+  teacherSearchTerm = '';
+  teacherSuggestions: Teacher[] = [];
+  selectedTeacher: Teacher | null = null;
+  showTeacherDropdown = false;
+  teacherSearchLoading = false;
+  hoveredTeacher: Teacher | null = null;
+
+  private teacherSearchSubject = new Subject<string>();
+  private subscriptions: Subscription[] = [];
+
+  @ViewChild('teacherSearchInput') teacherSearchInput!: ElementRef<HTMLInputElement>;
 
   showDeleteConfirm = false;
   groupToDelete: Group | null = null;
@@ -76,9 +91,38 @@ export class Groups implements OnInit {
 
   ngOnInit() {
     this.loadGroups();
-    this.loadTeachers();
     this.loadCourses();
     this.loadAgeGroups();
+
+    this.subscriptions.push(
+      this.teacherSearchSubject.pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap(term => {
+          this.teacherSearchLoading = true;
+          this.cdr.detectChanges();
+          return this.groupService.searchTeachers(term, 1, 10);
+        })
+      ).subscribe({
+        next: (result) => {
+          this.teacherSuggestions = result.items;
+          this.showTeacherDropdown = this.teacherSuggestions.length > 0;
+          this.teacherSearchLoading = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.teacherSuggestions = [];
+          this.showTeacherDropdown = false;
+          this.teacherSearchLoading = false;
+          this.cdr.detectChanges();
+        }
+      })
+    );
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach(s => s.unsubscribe());
+    this.teacherSearchSubject.complete();
   }
 
   loadGroups() {
@@ -101,16 +145,56 @@ export class Groups implements OnInit {
     });
   }
 
-  loadTeachers() {
-    this.groupService.getAllTeachers().subscribe({
-      next: (teachers) => {
-        this.teachers = teachers;
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        console.error('Error loading teachers:', error);
-      }
-    });
+  onTeacherSearchInput(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.teacherSearchTerm = value;
+    if (value.trim().length > 0) {
+      this.teacherSearchSubject.next(value.trim());
+    } else {
+      this.teacherSuggestions = [];
+      this.showTeacherDropdown = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  selectTeacher(teacher: Teacher) {
+    this.selectedTeacher = teacher;
+    this.groupForm.patchValue({ teacherId: teacher.id });
+    this.teacherSearchTerm = `${teacher.firstName} ${teacher.lastName}`;
+    this.teacherSuggestions = [];
+    this.showTeacherDropdown = false;
+    this.cdr.detectChanges();
+  }
+
+  clearSelectedTeacher() {
+    this.selectedTeacher = null;
+    this.groupForm.patchValue({ teacherId: null });
+    this.teacherSearchTerm = '';
+    this.teacherSuggestions = [];
+    this.showTeacherDropdown = false;
+    this.cdr.detectChanges();
+    setTimeout(() => this.teacherSearchInput?.nativeElement?.focus());
+  }
+
+  onTeacherSearchBlur() {
+    setTimeout(() => {
+      this.showTeacherDropdown = false;
+      this.cdr.detectChanges();
+    }, 200);
+  }
+
+  onTeacherSearchFocus() {
+    if (this.teacherSuggestions.length > 0 && !this.selectedTeacher) {
+      this.showTeacherDropdown = true;
+      this.cdr.detectChanges();
+    }
+  }
+
+  getTeacherLanguages(teacher: Teacher): string {
+    if (!teacher.programmingLanguages || teacher.programmingLanguages.length === 0) {
+      return 'None';
+    }
+    return teacher.programmingLanguages.map(l => l.name).join(', ');
   }
 
   loadCourses() {
@@ -141,6 +225,10 @@ export class Groups implements OnInit {
     this.isEditMode = false;
     this.currentGroupId = null;
     this.modalError = null;
+    this.selectedTeacher = null;
+    this.teacherSearchTerm = '';
+    this.teacherSuggestions = [];
+    this.showTeacherDropdown = false;
     this.groupForm.reset({
       name: '',
       teacherId: null,
@@ -153,11 +241,30 @@ export class Groups implements OnInit {
     this.isEditMode = true;
     this.currentGroupId = group.id;
     this.modalError = null;
+    this.teacherSuggestions = [];
+    this.showTeacherDropdown = false;
     this.groupForm.reset({
       name: group.name,
       teacherId: group.teacherId,
       ageGroupID: group.ageGroupID
     });
+    if (group.teacher) {
+      this.selectedTeacher = group.teacher as Teacher;
+      this.teacherSearchTerm = `${group.teacher.firstName ?? ''} ${group.teacher.lastName ?? ''}`.trim();
+    } else {
+      this.selectedTeacher = null;
+      this.teacherSearchTerm = '';
+      this.groupService.getTeacherById(group.teacherId).subscribe({
+        next: (teacher) => {
+          this.selectedTeacher = teacher;
+          this.teacherSearchTerm = `${teacher.firstName} ${teacher.lastName}`;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.teacherSearchTerm = '';
+        }
+      });
+    }
     this.showModal = true;
   }
 
@@ -166,6 +273,10 @@ export class Groups implements OnInit {
     this.isEditMode = false;
     this.currentGroupId = null;
     this.modalError = null;
+    this.selectedTeacher = null;
+    this.teacherSearchTerm = '';
+    this.teacherSuggestions = [];
+    this.showTeacherDropdown = false;
   }
 
   @HostListener('document:keydown.escape', ['$event'])

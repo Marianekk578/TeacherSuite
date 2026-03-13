@@ -123,17 +123,51 @@
         />
       </div>
       <div class="form-group">
-        <label for="teacherId">Teacher *</label>
-        <select 
-          id="teacherId" 
-          formControlName="teacherId"
-          required
-        >
-          <option [ngValue]="null">Select a teacher</option>
-          <option *ngFor="let teacher of teachers" [ngValue]="teacher.id">
-            {{ teacher.firstName }} {{ teacher.lastName }}
-          </option>
-        </select>
+        <label for="teacherSearch">Teacher *</label>
+        <div class="teacher-autocomplete">
+          <div *ngIf="selectedTeacher" class="teacher-selected">
+            <span class="teacher-selected-name">{{ selectedTeacher.firstName }} {{ selectedTeacher.lastName }}</span>
+            <span class="teacher-info-icon"
+              (mouseenter)="hoveredTeacher = selectedTeacher"
+              (mouseleave)="hoveredTeacher = null">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <div class="teacher-tooltip" *ngIf="hoveredTeacher === selectedTeacher">
+                <div class="tooltip-row"><strong>Name:</strong> {{ selectedTeacher.firstName }} {{ selectedTeacher.lastName }}</div>
+                <div class="tooltip-row"><strong>Email:</strong> {{ selectedTeacher.email }}</div>
+                <div class="tooltip-row"><strong>Languages:</strong> {{ getTeacherLanguages(selectedTeacher) }}</div>
+              </div>
+            </span>
+            <button type="button" class="teacher-clear-btn" (click)="clearSelectedTeacher()" aria-label="Clear teacher">&times;</button>
+          </div>
+          <input
+            *ngIf="!selectedTeacher"
+            #teacherSearchInput
+            type="text"
+            id="teacherSearch"
+            [value]="teacherSearchTerm"
+            (input)="onTeacherSearchInput($event)"
+            (blur)="onTeacherSearchBlur()"
+            (focus)="onTeacherSearchFocus()"
+            placeholder="Search by name or email..."
+            autocomplete="off"
+          />
+          <div class="teacher-suggestions" *ngIf="showTeacherDropdown && !selectedTeacher">
+            <div
+              class="teacher-suggestion-item"
+              *ngFor="let teacher of teacherSuggestions"
+              (mousedown)="selectTeacher(teacher)">
+              <span class="suggestion-name">{{ teacher.firstName }} {{ teacher.lastName }}</span>
+              <span class="suggestion-email">{{ teacher.email }}</span>
+            </div>
+          </div>
+          <div class="teacher-search-loading" *ngIf="teacherSearchLoading && !selectedTeacher">
+            Searching...
+          </div>
+        </div>
       </div>
       <div class="form-group">
         <label for="ageGroupID">Age Group *</label>
