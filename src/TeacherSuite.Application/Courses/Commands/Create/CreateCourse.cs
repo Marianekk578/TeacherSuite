@@ -17,9 +17,11 @@ public class CreateCourseHandler(IApplicationDbContext db, IPublisher publisher)
             AgeGroupID = request.AgeGroupID
         };
 
-        if (request.ProgrammingLanguageIds is { Count: > 0 })
+        var languagesSet = request.ProgrammingLanguageIds?.ToHashSet();
+
+        if (languagesSet is { Count: > 0 })
         {
-            foreach (var plId in request.ProgrammingLanguageIds)
+            foreach (var plId in languagesSet)
             {
                 entity.CourseProgrammingLanguages.Add(new CourseProgrammingLanguage
                 {

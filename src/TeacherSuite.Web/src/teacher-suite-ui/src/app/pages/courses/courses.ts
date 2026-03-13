@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -17,6 +18,8 @@ import { KeycloakService } from '../../auth/keycloak.service';
   styleUrl: './courses.scss',
 })
 export class Courses implements OnInit {
+  private destroyRef = inject(DestroyRef);
+
   courses: Course[] = [];
   ageGroups: AgeGroup[] = [];
   allProgrammingLanguages: ProgrammingLanguage[] = [];
@@ -58,11 +61,16 @@ export class Courses implements OnInit {
     this.loadAgeGroups();
     this.loadProgrammingLanguages();
 
-    this.route.queryParams.subscribe(params => {
-      const courseId = params['courseId'];
-      if (courseId) {
-        this.openDetailsById(+courseId);
-      }
+    this.route.queryParams
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const courseIdParam = params['courseId'];
+        if (courseIdParam !== undefined && courseIdParam !== null) {
+          const parsedCourseId = Number.parseInt(courseIdParam, 10);
+          if (Number.isFinite(parsedCourseId)) {
+            this.openDetailsById(parsedCourseId);
+          }
+        }
     });
   }
 

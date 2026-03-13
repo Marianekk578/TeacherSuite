@@ -5,7 +5,7 @@ import { ApiService } from './api.service';
 export interface AgeGroup {
   id: number;
   name: string;
-  label: string;
+  label?: string;
   minAge: number;
   maxAge: number;
 }
@@ -13,8 +13,8 @@ export interface AgeGroup {
 export interface ProgrammingLanguage {
   id: number;
   name: string;
-  label: string;
-  color: string;
+  label?: string;
+  color?: string;
 }
 
 export interface Course {

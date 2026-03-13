@@ -127,10 +127,25 @@ export class ProgrammingLanguages implements OnInit {
     }
 
     const formValue = this.languageForm.getRawValue();
-    const name = formValue.name?.trim();
+    const trimmedName = formValue.name ? formValue.name.trim() : '';
+
+    if (!trimmedName) {
+      const nameControl = this.languageForm.get('name');
+      if (nameControl) {
+        const existingErrors = nameControl.errors || {};
+        nameControl.setErrors({ ...existingErrors, required: true });
+      }
+      this.languageForm.markAllAsTouched();
+      this.modalError = this.getFormErrorMessage();
+      this.cdr.detectChanges();
+      return;
+    }
+
+    const trimmedLabel = formValue.label ? formValue.label.trim() : '';
+
     const languagePayload: CreateProgrammingLanguageDto | UpdateProgrammingLanguageDto = {
-      name: name,
-      label: formValue.label?.trim() || name,
+      name: trimmedName,
+      label: trimmedLabel || trimmedName,
       color: formValue.color || this.defaultColor
     };
 

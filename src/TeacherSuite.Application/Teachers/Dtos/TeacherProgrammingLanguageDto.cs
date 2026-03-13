@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TeacherSuite.Domain.Entities;
+﻿using TeacherSuite.Domain.Entities;
 
 namespace TeacherSuite.Application.Teachers.Dtos;
 

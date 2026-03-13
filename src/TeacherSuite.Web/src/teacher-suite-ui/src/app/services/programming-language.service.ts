@@ -5,8 +5,8 @@ import { ApiService } from './api.service';
 export interface ProgrammingLanguage {
   id: number;
   name: string;
-  label: string;
-  color: string;
+  label?: string;
+  color?: string;
 }
 
 export interface CreateProgrammingLanguageDto {

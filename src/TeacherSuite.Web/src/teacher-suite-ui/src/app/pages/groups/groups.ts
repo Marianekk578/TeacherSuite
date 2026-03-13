@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -18,6 +19,8 @@ import { Course, AgeGroup } from '../../services/course.service';
   styleUrl: './groups.scss',
 })
 export class Groups implements OnInit {
+  private destroyRef = inject(DestroyRef);
+
   groups: Group[] = [];
   teachers: Teacher[] = [];
   courses: Course[] = [];
@@ -83,10 +86,12 @@ export class Groups implements OnInit {
     this.loadCourses();
     this.loadAgeGroups();
 
-    this.route.queryParams.subscribe(params => {
-      const courseName = params['courseName'] ?? null;
-      this.courseNameFilter = courseName;
-      this.loadGroups();
+    this.route.queryParams
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const courseName = params['courseName'] ?? null;
+        this.courseNameFilter = courseName;
+        this.loadGroups();
     });
   }
 

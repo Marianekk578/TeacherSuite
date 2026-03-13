@@ -13,7 +13,7 @@ public class GetAllGroupsQueryHandler(IApplicationDbContext db, IMapper mapper) 
 
         if (!string.IsNullOrWhiteSpace(request.CourseName))
         {
-            var courseNameLower = request.CourseName.ToLower();
+            var courseNameLower = request.CourseName.ToLowerInvariant();
             query = query.Where(g => g.GroupCourses.Any(gc => gc.Course!.Name!.ToLower() == courseNameLower));
         }
 

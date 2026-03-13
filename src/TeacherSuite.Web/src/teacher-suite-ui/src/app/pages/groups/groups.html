@@ -93,7 +93,7 @@
         <div *ngIf="group.courses && group.courses.length > 0" class="courses-list">
           <div class="course-item" *ngFor="let assignment of group.courses">
             <div class="course-item-info">
-              <span class="course-name course-name-link" (click)="navigateToCourseDetails(assignment.courseId)">{{ assignment.courseName }}</span>
+              <button type="button" class="course-name course-name-link" (click)="navigateToCourseDetails(assignment.courseId)">{{ assignment.courseName }}</button>
               <span class="status-badge" [ngClass]="getStatusClass(assignment.status)">{{ getStatusLabel(assignment.status) }}</span>
             </div>
             <div class="course-item-actions">
