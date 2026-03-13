@@ -100,7 +100,7 @@
     <div class="page-size-selector">
       <label for="pageSize">Show</label>
       <select id="pageSize" [value]="pageSize()" (change)="onPageSizeChange($event)" aria-label="Page size">
-        <option *ngFor="let size of pageSizeOptions" [value]="size" [selected]="size === pageSize()">{{ size }}</option>
+        <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
       </select>
       <span>per page</span>
     </div>
