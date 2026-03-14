@@ -6,7 +6,7 @@ namespace TeacherSuite.Application.ProgrammingLanguages.Commands.Create;
 
 public record CreateProgrammingLanguageCommand(string Name, string? Label, string? Color) : IRequest<int>;
 
-public class CreateProgrammingLanguageHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateProgrammingLanguageCommand, int>
+internal sealed class CreateProgrammingLanguageCommandHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateProgrammingLanguageCommand, int>
 {
     public async Task<int> Handle(CreateProgrammingLanguageCommand request, CancellationToken cancellationToken)
     {

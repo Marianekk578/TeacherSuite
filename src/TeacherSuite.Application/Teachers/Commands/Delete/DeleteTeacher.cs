@@ -5,7 +5,7 @@ namespace TeacherSuite.Application.Teachers.Commands.Delete;
 
 public record DeleteTeacherCommand(Guid Id) : IRequest<Unit>;
 
-public class DeleteTeacherHandler(IApplicationDbContext context) : IRequestHandler<DeleteTeacherCommand, Unit>
+internal sealed class DeleteTeacherCommandHandler(IApplicationDbContext context) : IRequestHandler<DeleteTeacherCommand, Unit>
 {
     public async Task<Unit> Handle(DeleteTeacherCommand request, CancellationToken cancellationToken)
     {

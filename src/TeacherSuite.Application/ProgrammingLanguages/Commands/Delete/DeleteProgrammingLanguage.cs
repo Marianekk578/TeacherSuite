@@ -5,7 +5,7 @@ namespace TeacherSuite.Application.ProgrammingLanguages.Commands.Delete;
 
 public record DeleteProgrammingLanguageCommand(int Id) : IRequest<Unit>;
 
-public class DeleteProgrammingLanguageHandler(IApplicationDbContext context) : IRequestHandler<DeleteProgrammingLanguageCommand, Unit>
+internal sealed class DeleteProgrammingLanguageCommandHandler(IApplicationDbContext context) : IRequestHandler<DeleteProgrammingLanguageCommand, Unit>
 {
     public async Task<Unit> Handle(DeleteProgrammingLanguageCommand request, CancellationToken cancellationToken)
     {

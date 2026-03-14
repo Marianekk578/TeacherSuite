@@ -5,7 +5,7 @@ namespace TeacherSuite.Application.ProgrammingLanguages.Queries;
 
 public record GetProgrammingLanguageByIdQuery(int Id) : IRequest<ProgrammingLanguageDto?>;
 
-public class GetProgrammingLanguageByIdQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetProgrammingLanguageByIdQuery, ProgrammingLanguageDto?>
+internal sealed class GetProgrammingLanguageByIdQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetProgrammingLanguageByIdQuery, ProgrammingLanguageDto?>
 {
     public async Task<ProgrammingLanguageDto?> Handle(GetProgrammingLanguageByIdQuery request, CancellationToken cancellationToken)
     {

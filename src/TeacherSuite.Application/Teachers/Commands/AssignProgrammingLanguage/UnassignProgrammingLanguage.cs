@@ -4,7 +4,7 @@ namespace TeacherSuite.Application.Teachers.Commands.AssignProgrammingLanguage;
 
 public record UnassignProgrammingLanguageCommand(Guid TeacherId, int ProgrammingLanguageId) : IRequest<Unit>;
 
-public class UnassignProgrammingLanguageHandler(IApplicationDbContext context) : IRequestHandler<UnassignProgrammingLanguageCommand, Unit>
+internal sealed class UnassignProgrammingLanguageCommandHandler(IApplicationDbContext context) : IRequestHandler<UnassignProgrammingLanguageCommand, Unit>
 {
     public async Task<Unit> Handle(UnassignProgrammingLanguageCommand request, CancellationToken cancellationToken)
     {

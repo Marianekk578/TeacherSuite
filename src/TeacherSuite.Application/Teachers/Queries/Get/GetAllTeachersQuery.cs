@@ -12,7 +12,7 @@ public record GetAllTeachersQuery : IRequest<PagedResult<TeacherDto>>
     public int? PageSize { get; init; }
 }
 
-public class GetAllTeachersQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetAllTeachersQuery, PagedResult<TeacherDto>>
+internal sealed class GetAllTeachersQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetAllTeachersQuery, PagedResult<TeacherDto>>
 {
     public async Task<PagedResult<TeacherDto>> Handle(GetAllTeachersQuery request, CancellationToken cancellationToken)
     {
