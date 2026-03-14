@@ -1,7 +1,7 @@
 <div class="pagination-bar" *ngIf="totalPages() > 1">
   <div class="page-size-selector">
-    <label>Show</label>
-    <select [value]="pageSize()" (change)="onPageSizeChange($event)" aria-label="Page size">
+    <label for="paginationPageSize">Show</label>
+    <select id="paginationPageSize" [value]="pageSize()" (change)="onPageSizeChange($event)" aria-label="Page size">
       <option *ngFor="let size of pageSizeOptions()" [value]="size" [selected]="size === pageSize()">{{ size }}</option>
     </select>
     <span>per page</span>
