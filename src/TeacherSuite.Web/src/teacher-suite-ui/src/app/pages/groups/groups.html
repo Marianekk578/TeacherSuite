@@ -164,7 +164,7 @@
             <div
               class="teacher-suggestion-item"
               *ngFor="let teacher of teacherSuggestions"
-              (mousedown)="selectTeacher(teacher)"
+              (mousedown)="$event.preventDefault(); selectTeacher(teacher)"
             >
               <div class="suggestion-name">{{ teacher.firstName }} {{ teacher.lastName }}</div>
               <div class="suggestion-email">{{ teacher.email }}</div>
