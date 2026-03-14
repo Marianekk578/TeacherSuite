@@ -5,7 +5,7 @@ namespace TeacherSuite.Application.Courses.Queries;
 
 public record GetAllCoursesQuery : IRequest<List<CourseDto>>;
 
-public class GetAllCoursesQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetAllCoursesQuery, List<CourseDto>>
+internal sealed class GetAllCoursesQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetAllCoursesQuery, List<CourseDto>>
 {
     public async Task<List<CourseDto>> Handle(GetAllCoursesQuery request, CancellationToken cancellationToken)
     {

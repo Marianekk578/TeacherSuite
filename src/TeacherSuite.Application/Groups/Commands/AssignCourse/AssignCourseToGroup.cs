@@ -8,7 +8,7 @@ namespace TeacherSuite.Application.Groups.Commands.AssignCourse;
 
 public record AssignCourseToGroupCommand(Guid GroupId, int CourseId, CourseAssignmentStatus Status) : IRequest<Unit>;
 
-public class AssignCourseToGroupHandler(IApplicationDbContext context) : IRequestHandler<AssignCourseToGroupCommand, Unit>
+internal sealed class AssignCourseToGroupCommandHandler(IApplicationDbContext context) : IRequestHandler<AssignCourseToGroupCommand, Unit>
 {
     public async Task<Unit> Handle(AssignCourseToGroupCommand request, CancellationToken cancellationToken)
     {

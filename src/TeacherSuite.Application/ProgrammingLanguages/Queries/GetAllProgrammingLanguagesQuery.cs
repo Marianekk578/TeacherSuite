@@ -5,7 +5,7 @@ namespace TeacherSuite.Application.ProgrammingLanguages.Queries;
 
 public record GetAllProgrammingLanguagesQuery : IRequest<List<ProgrammingLanguageDto>>;
 
-public class GetAllProgrammingLanguagesQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetAllProgrammingLanguagesQuery, List<ProgrammingLanguageDto>>
+internal sealed class GetAllProgrammingLanguagesQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetAllProgrammingLanguagesQuery, List<ProgrammingLanguageDto>>
 {
     public async Task<List<ProgrammingLanguageDto>> Handle(GetAllProgrammingLanguagesQuery request, CancellationToken cancellationToken)
     {

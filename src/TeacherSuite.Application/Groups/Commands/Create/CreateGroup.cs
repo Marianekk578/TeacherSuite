@@ -6,7 +6,7 @@ namespace TeacherSuite.Application.Groups.Commands.Create;
 
 public record CreateGroupCommand(string? Name, Guid TeacherId, int AgeGroupID) : IRequest<Guid>;
 
-public class CreateGroupHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateGroupCommand, Guid>
+internal sealed class CreateGroupCommandHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateGroupCommand, Guid>
 {
     public async Task<Guid> Handle(CreateGroupCommand request, CancellationToken cancellationToken)
     {

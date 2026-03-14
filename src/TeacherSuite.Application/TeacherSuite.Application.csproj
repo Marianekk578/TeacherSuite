@@ -22,4 +22,9 @@
     <ProjectReference Include="..\TeacherSuite.Domain\TeacherSuite.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Application.UnitTests" />
+    <InternalsVisibleTo Include="Architecture.Tests" />
+  </ItemGroup>
+
 </Project>
