@@ -7,6 +7,7 @@ using TeacherSuite.Domain.Entities;
 using TeacherSuite.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace Application.UnitTests;
 
@@ -161,7 +162,7 @@ public class GetAllGroupsQueryTests
 }
 
 // Async query support for in-memory testing
-internal class TestAsyncQueryProvider<TEntity>(IQueryProvider inner) : Microsoft.EntityFrameworkCore.Query.IAsyncQueryProvider
+internal class TestAsyncQueryProvider<TEntity>(IQueryProvider inner) : IAsyncQueryProvider
 {
     public IQueryable CreateQuery(System.Linq.Expressions.Expression expression)
     {
@@ -222,5 +223,3 @@ internal class TestAsyncEnumerator<T>(IEnumerator<T> inner) : IAsyncEnumerator<T
         return ValueTask.CompletedTask;
     }
 }
-
-
