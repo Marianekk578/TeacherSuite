@@ -3,7 +3,9 @@
 public class ProgrammingLanguage
 {
     public int Id { get; set; }
-    public string? Name { get; set; }
+    public string Name { get; set; } = String.Empty;
+    public string? Label { get; set; }
+    public string? Color { get; set; }
     public ICollection<TeacherProgrammingLanguage> TeacherProgrammingLanguages { get; set; } = new List<TeacherProgrammingLanguage>();
     public ICollection<CourseProgrammingLanguage> CourseProgrammingLanguages { get; set; } = new List<CourseProgrammingLanguage>();
 }

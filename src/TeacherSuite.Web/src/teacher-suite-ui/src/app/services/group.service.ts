@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { Teacher, PagedResult } from './teacher.service';
+import { Teacher } from './teacher.service';
 import { Course, AgeGroup } from './course.service';
 
 export interface GroupCourseAssignment {
@@ -83,18 +83,12 @@ export class GroupService extends ApiService {
     return this.patch(`${this.apiUrl}/${groupId}/courses/${courseId}/status`, data);
   }
 
-  searchTeachers(search: string, page = 1, pageSize = 10): Observable<PagedResult<Teacher>> {
-    const params = new URLSearchParams();
-    if (search) {
-      params.set('search', search);
-    }
-    params.set('page', String(page));
-    params.set('pageSize', String(pageSize));
-    return this.get<PagedResult<Teacher>>(`${this.teacherUrl}?${params.toString()}`);
+  getGroupsByCourseName(courseName: string): Observable<Group[]> {
+    return this.get<Group[]>(`${this.apiUrl}?courseName=${encodeURIComponent(courseName)}`);
   }
 
-  getTeacherById(id: string): Observable<Teacher> {
-    return this.get<Teacher>(`${this.teacherUrl}/${id}`);
+  getAllTeachers(): Observable<Teacher[]> {
+    return this.get<Teacher[]>(this.teacherUrl);
   }
 
   getAllCourses(): Observable<Course[]> {

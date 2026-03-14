@@ -240,6 +240,42 @@
   font-weight: 500;
 }
 
+.language-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  color: white;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.color-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.color-input {
+  width: 48px !important;
+  height: 36px;
+  padding: 2px !important;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  background: white;
+}
+
+.color-preview-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  color: white;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
 .language-actions {
   display: flex;
   gap: 0.5rem;
@@ -271,7 +307,7 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 
   &.modal-small {
-    max-width: 400px;
+    max-width: 480px;
   }
 }
 
