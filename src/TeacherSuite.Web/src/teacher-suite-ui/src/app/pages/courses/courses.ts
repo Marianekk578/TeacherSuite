@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -6,7 +7,9 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
-import { CourseService, Course, AgeGroup, CreateCourseDto, UpdateCourseDto } from '../../services/course.service';
+import { Router, ActivatedRoute } from '@angular/router';
+import { CourseService, Course, AgeGroup, ProgrammingLanguage, CreateCourseDto, UpdateCourseDto } from '../../services/course.service';
+import { KeycloakService } from '../../auth/keycloak.service';
 
 @Component({
   selector: 'app-courses',
@@ -15,8 +18,11 @@ import { CourseService, Course, AgeGroup, CreateCourseDto, UpdateCourseDto } fro
   styleUrl: './courses.scss',
 })
 export class Courses implements OnInit {
+  private destroyRef = inject(DestroyRef);
+
   courses: Course[] = [];
   ageGroups: AgeGroup[] = [];
+  allProgrammingLanguages: ProgrammingLanguage[] = [];
   loading = false;
   error: string | null = null;
   
@@ -24,16 +30,24 @@ export class Courses implements OnInit {
   isEditMode = false;
   currentCourseId: number | null = null;
   modalError: string | null = null;
+  selectedLanguageIds: number[] = [];
 
   courseForm: FormGroup;
 
   showDeleteConfirm = false;
   courseToDelete: Course | null = null;
 
+  showDetailsModal = false;
+  selectedCourse: Course | null = null;
+  detailsLoading = false;
+
   constructor(
     private courseService: CourseService,
     private cdr: ChangeDetectorRef,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private router: Router,
+    private route: ActivatedRoute,
+    private keycloakService: KeycloakService
   ) {
     this.courseForm = this.fb.group({
       name: ['', [Validators.required]],
@@ -45,6 +59,19 @@ export class Courses implements OnInit {
   ngOnInit() {
     this.loadCourses();
     this.loadAgeGroups();
+    this.loadProgrammingLanguages();
+
+    this.route.queryParams
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const courseIdParam = params['courseId'];
+        if (courseIdParam !== undefined && courseIdParam !== null) {
+          const parsedCourseId = Number.parseInt(courseIdParam, 10);
+          if (Number.isFinite(parsedCourseId)) {
+            this.openDetailsById(parsedCourseId);
+          }
+        }
+    });
   }
 
   loadCourses() {
@@ -79,10 +106,23 @@ export class Courses implements OnInit {
     });
   }
 
+  loadProgrammingLanguages() {
+    this.courseService.getAllProgrammingLanguages().subscribe({
+      next: (languages) => {
+        this.allProgrammingLanguages = languages;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading programming languages:', error);
+      }
+    });
+  }
+
   openAddModal() {
     this.isEditMode = false;
     this.currentCourseId = null;
     this.modalError = null;
+    this.selectedLanguageIds = [];
     this.courseForm.reset({
       name: '',
       description: '',
@@ -95,6 +135,7 @@ export class Courses implements OnInit {
     this.isEditMode = true;
     this.currentCourseId = course.id;
     this.modalError = null;
+    this.selectedLanguageIds = course.programmingLanguages?.map(pl => pl.id) || [];
     this.courseForm.reset({
       name: course.name,
       description: course.description,
@@ -108,6 +149,96 @@ export class Courses implements OnInit {
     this.isEditMode = false;
     this.currentCourseId = null;
     this.modalError = null;
+    this.selectedLanguageIds = [];
+  }
+
+  toggleLanguage(languageId: number) {
+    const index = this.selectedLanguageIds.indexOf(languageId);
+    if (index >= 0) {
+      this.selectedLanguageIds.splice(index, 1);
+    } else {
+      this.selectedLanguageIds.push(languageId);
+    }
+  }
+
+  isLanguageSelected(languageId: number): boolean {
+    return this.selectedLanguageIds.includes(languageId);
+  }
+
+  getLanguageColor(pl: ProgrammingLanguage): string {
+    return pl.color || '#667eea';
+  }
+
+  getLanguageLabel(pl: ProgrammingLanguage): string {
+    return pl.label || pl.name || '';
+  }
+
+  getAgeGroupLabel(ag: AgeGroup): string {
+    const label = ag.label || ag.name || '';
+    return `${label} (${ag.minAge}-${ag.maxAge})`;
+  }
+
+  openDetailsModal(course: Course) {
+    this.detailsLoading = true;
+    this.showDetailsModal = true;
+    this.selectedCourse = course;
+    this.cdr.detectChanges();
+
+    this.courseService.getCourseById(course.id).subscribe({
+      next: (fullCourse) => {
+        this.selectedCourse = fullCourse;
+        this.detailsLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading course details:', error);
+        this.detailsLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  openDetailsById(courseId: number) {
+    this.detailsLoading = true;
+    this.showDetailsModal = true;
+    this.selectedCourse = null;
+    this.cdr.detectChanges();
+
+    this.courseService.getCourseById(courseId).subscribe({
+      next: (course) => {
+        this.selectedCourse = course;
+        this.detailsLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading course details:', error);
+        this.detailsLoading = false;
+        this.showDetailsModal = false;
+        this.error = 'Failed to load course details.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  closeDetailsModal() {
+    this.showDetailsModal = false;
+    this.selectedCourse = null;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true
+    });
+  }
+
+  showAssignedGroups(course: Course) {
+    this.closeDetailsModal();
+    this.router.navigate(['/groups'], {
+      queryParams: { courseName: course.name }
+    });
+  }
+
+  canSeeAssignedGroups(): boolean {
+    return this.keycloakService.hasRole('Admin') || this.keycloakService.hasRole('Supervisor');
   }
 
   @HostListener('document:keydown.escape', ['$event'])
@@ -117,6 +248,9 @@ export class Courses implements OnInit {
     }
     if (this.showDeleteConfirm) {
       this.cancelDelete();
+    }
+    if (this.showDetailsModal) {
+      this.closeDetailsModal();
     }
   }
 
@@ -130,7 +264,13 @@ export class Courses implements OnInit {
       return;
     }
 
-    const coursePayload = this.courseForm.getRawValue() as CreateCourseDto | UpdateCourseDto;
+    const formValue = this.courseForm.getRawValue();
+    const coursePayload: CreateCourseDto | UpdateCourseDto = {
+      name: formValue.name,
+      description: formValue.description,
+      ageGroupID: formValue.ageGroupID,
+      programmingLanguageIds: this.selectedLanguageIds
+    };
 
     if (this.isEditMode && this.currentCourseId !== null) {
       this.courseService.updateCourse(this.currentCourseId, coursePayload).subscribe({

@@ -259,6 +259,23 @@
   }
 }
 
+.age-group-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  background: #e0e7ff;
+  color: #4338ca;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+
+  svg {
+    flex-shrink: 0;
+    color: #4338ca;
+  }
+}
+
 .group-actions {
   display: flex;
   gap: 0.5rem;
@@ -521,6 +538,35 @@
   font-size: 0.8rem;
   color: #9ca3af;
   font-style: italic;
+}
+
+// Course name link
+.course-name-link {
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #667eea;
+    text-decoration: underline;
+  }
+}
+
+// Filter banner
+.filter-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  background: #e0e7ff;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: #3730a3;
+}
+
+.btn-small-filter {
+  padding: 0.375rem 1rem;
+  font-size: 0.8rem;
 }
 
 // Responsive Design

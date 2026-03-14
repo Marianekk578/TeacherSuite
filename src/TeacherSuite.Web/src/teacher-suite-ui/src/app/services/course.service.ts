@@ -5,8 +5,16 @@ import { ApiService } from './api.service';
 export interface AgeGroup {
   id: number;
   name: string;
+  label?: string;
   minAge: number;
   maxAge: number;
+}
+
+export interface ProgrammingLanguage {
+  id: number;
+  name: string;
+  label?: string;
+  color?: string;
 }
 
 export interface Course {
@@ -15,18 +23,21 @@ export interface Course {
   description: string;
   ageGroupID: number;
   ageGroup?: AgeGroup;
+  programmingLanguages: ProgrammingLanguage[];
 }
 
 export interface CreateCourseDto {
   name: string;
   description: string;
   ageGroupID: number;
+  programmingLanguageIds?: number[];
 }
 
 export interface UpdateCourseDto {
   name: string;
   description: string;
   ageGroupID: number;
+  programmingLanguageIds?: number[];
 }
 
 @Injectable({
@@ -35,6 +46,7 @@ export interface UpdateCourseDto {
 export class CourseService extends ApiService {
   private readonly apiUrl = '/Courses';
   private readonly ageGroupUrl = '/AgeGroups';
+  private readonly programmingLanguageUrl = '/ProgrammingLanguages';
 
   getAllCourses(): Observable<Course[]> {
     return this.get<Course[]>(this.apiUrl);
@@ -58,5 +70,9 @@ export class CourseService extends ApiService {
 
   getAllAgeGroups(): Observable<AgeGroup[]> {
     return this.get<AgeGroup[]>(this.ageGroupUrl);
+  }
+
+  getAllProgrammingLanguages(): Observable<ProgrammingLanguage[]> {
+    return this.get<ProgrammingLanguage[]>(this.programmingLanguageUrl);
   }
 }

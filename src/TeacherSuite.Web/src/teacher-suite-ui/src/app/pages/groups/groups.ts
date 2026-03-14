@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -6,6 +7,7 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
 import { GroupService, Group, CreateGroupDto, UpdateGroupDto, GroupCourseAssignment } from '../../services/group.service';
 import { Teacher } from '../../services/teacher.service';
 import { Course, AgeGroup } from '../../services/course.service';
@@ -17,12 +19,15 @@ import { Course, AgeGroup } from '../../services/course.service';
   styleUrl: './groups.scss',
 })
 export class Groups implements OnInit {
+  private destroyRef = inject(DestroyRef);
+
   groups: Group[] = [];
   teachers: Teacher[] = [];
   courses: Course[] = [];
   ageGroups: AgeGroup[] = [];
   loading = false;
   error: string | null = null;
+  courseNameFilter: string | null = null;
 
   showModal = false;
   isEditMode = false;
@@ -58,7 +63,9 @@ export class Groups implements OnInit {
   constructor(
     private groupService: GroupService,
     private cdr: ChangeDetectorRef,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     this.groupForm = this.fb.group({
       name: ['', [Validators.required]],
@@ -75,10 +82,17 @@ export class Groups implements OnInit {
   }
 
   ngOnInit() {
-    this.loadGroups();
     this.loadTeachers();
     this.loadCourses();
     this.loadAgeGroups();
+
+    this.route.queryParams
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const courseName = params['courseName'] ?? null;
+        this.courseNameFilter = courseName;
+        this.loadGroups();
+    });
   }
 
   loadGroups() {
@@ -86,7 +100,11 @@ export class Groups implements OnInit {
     this.error = null;
     this.cdr.detectChanges();
 
-    this.groupService.getAllGroups().subscribe({
+    const source$ = this.courseNameFilter
+      ? this.groupService.getGroupsByCourseName(this.courseNameFilter)
+      : this.groupService.getAllGroups();
+
+    source$.subscribe({
       next: (groups) => {
         this.groups = groups;
         this.loading = false;
@@ -258,12 +276,13 @@ export class Groups implements OnInit {
     return 'Unassigned';
   }
 
-  getAgeGroupName(group: Group): string {
-    if (group.ageGroup) {
-      return group.ageGroup.name;
+  getAgeGroupLabel(group: Group): string {
+    const ag = group.ageGroup || this.ageGroups.find(a => a.id === group.ageGroupID);
+    if (ag) {
+      const label = ag.label || ag.name;
+      return `${label} (${ag.minAge}-${ag.maxAge})`;
     }
-    const ag = this.ageGroups.find(a => a.id === group.ageGroupID);
-    return ag ? ag.name : 'Unknown';
+    return 'Unknown';
   }
 
   getStatusLabel(status: number): string {
@@ -411,5 +430,20 @@ export class Groups implements OnInit {
     }
 
     return 'Please fix the errors in the form.';
+  }
+
+  navigateToCourseDetails(courseId: number) {
+    this.router.navigate(['/courses'], {
+      queryParams: { courseId: courseId }
+    });
+  }
+
+  clearCourseFilter() {
+    this.courseNameFilter = null;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true
+    });
   }
 }
