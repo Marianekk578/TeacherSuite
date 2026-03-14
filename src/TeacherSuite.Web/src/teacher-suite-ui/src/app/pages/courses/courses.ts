@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener, DestroyRef, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener, DestroyRef, inject, signal, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { CommonModule } from '@angular/common';
 import {
@@ -8,7 +8,9 @@ import {
   Validators
 } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { CourseService, Course, AgeGroup, ProgrammingLanguage, CreateCourseDto, UpdateCourseDto } from '../../services/course.service';
+import { PagedResult } from '../../services/teacher.service';
 import { KeycloakService } from '../../auth/keycloak.service';
 
 @Component({
@@ -17,8 +19,17 @@ import { KeycloakService } from '../../auth/keycloak.service';
   templateUrl: './courses.html',
   styleUrl: './courses.scss',
 })
-export class Courses implements OnInit {
+export class Courses implements OnInit, OnDestroy {
   private destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
+  readonly page = signal(1);
+  readonly pageSize = signal(12);
+  readonly pageSizeOptions = [12, 20, 30, 50];
+
+  readonly totalCount = signal(0);
+  readonly totalPages = computed(() => Math.ceil(this.totalCount() / this.pageSize()) || 1);
 
   courses: Course[] = [];
   ageGroups: AgeGroup[] = [];
@@ -41,12 +52,12 @@ export class Courses implements OnInit {
   selectedCourse: Course | null = null;
   detailsLoading = false;
 
+  private subscriptions: Subscription[] = [];
+
   constructor(
     private courseService: CourseService,
     private cdr: ChangeDetectorRef,
     private fb: FormBuilder,
-    private router: Router,
-    private route: ActivatedRoute,
     private keycloakService: KeycloakService
   ) {
     this.courseForm = this.fb.group({
@@ -57,7 +68,17 @@ export class Courses implements OnInit {
   }
 
   ngOnInit() {
-    this.loadCourses();
+    this.subscriptions.push(
+      this.route.queryParams.subscribe(params => {
+        const p = parseInt(params['page'], 10) || 1;
+        const ps = parseInt(params['pageSize'], 10) || 12;
+
+        this.page.set(p);
+        this.pageSize.set(ps);
+        this.loadCourses();
+      })
+    );
+
     this.loadAgeGroups();
     this.loadProgrammingLanguages();
 
@@ -74,15 +95,65 @@ export class Courses implements OnInit {
     });
   }
 
+  ngOnDestroy() {
+    this.subscriptions.forEach(s => s.unsubscribe());
+  }
+
+  onPageSizeChange(event: Event) {
+    const value = parseInt((event.target as HTMLSelectElement).value, 10);
+    this.navigateWithParams({ pageSize: value, page: 1 });
+  }
+
+  goToPage(p: number) {
+    if (p < 1 || p > this.totalPages()) return;
+    this.navigateWithParams({ page: p });
+  }
+
+  get visiblePages(): number[] {
+    const total = this.totalPages();
+    const current = this.page();
+    const pages: number[] = [];
+    const start = Math.max(1, current - 2);
+    const end = Math.min(total, current + 2);
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  private navigateWithParams(overrides: { page?: number; pageSize?: number }) {
+    const page = overrides.page ?? this.page();
+    const pageSize = overrides.pageSize ?? this.pageSize();
+
+    const queryParams: Record<string, string | undefined> = {};
+    if (page > 1) queryParams['page'] = String(page);
+    if (pageSize !== 12) queryParams['pageSize'] = String(pageSize);
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+    });
+  }
+
   loadCourses() {
     this.loading = true;
     this.error = null;
     this.cdr.detectChanges();
     
-    this.courseService.getAllCourses().subscribe({
-      next: (courses) => {
-        this.courses = courses;
+    this.courseService.getAllCourses({
+      page: this.page(),
+      pageSize: this.pageSize()
+    }).subscribe({
+      next: (result: PagedResult<Course>) => {
+        this.courses = result.items;
+        this.totalCount.set(result.totalCount);
         this.loading = false;
+
+        if (this.page() > this.totalPages() && result.totalCount > 0) {
+          this.navigateWithParams({ page: this.totalPages() });
+          return;
+        }
+
         this.cdr.detectChanges();
       },
       error: (error) => {

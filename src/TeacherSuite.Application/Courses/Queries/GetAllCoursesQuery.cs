@@ -1,16 +1,37 @@
 using TeacherSuite.Application.Common.Interfaces;
+using TeacherSuite.Application.Common.Models;
 using TeacherSuite.Application.Courses.Dtos;
 
 namespace TeacherSuite.Application.Courses.Queries;
 
-public record GetAllCoursesQuery : IRequest<List<CourseDto>>;
-
-public class GetAllCoursesQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetAllCoursesQuery, List<CourseDto>>
+public record GetAllCoursesQuery : IRequest<PagedResult<CourseDto>>
 {
-    public async Task<List<CourseDto>> Handle(GetAllCoursesQuery request, CancellationToken cancellationToken)
+    public int? Page { get; init; }
+    public int? PageSize { get; init; }
+}
+
+public class GetAllCoursesQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetAllCoursesQuery, PagedResult<CourseDto>>
+{
+    public async Task<PagedResult<CourseDto>> Handle(GetAllCoursesQuery request, CancellationToken cancellationToken)
     {
-        return await db.Courses
+        var totalCount = await db.Courses.CountAsync(cancellationToken);
+
+        var page = Math.Max(1, request.Page ?? 1);
+        var pageSize = Math.Clamp(request.PageSize ?? 12, 1, 100);
+
+        var items = await db.Courses
+            .OrderBy(c => c.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ProjectTo<CourseDto>(mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
+
+        return new PagedResult<CourseDto>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
+        };
     }
 }

@@ -161,7 +161,7 @@ public class GetAllGroupsQueryTests
 }
 
 // Async query support for in-memory testing
-internal class TestAsyncQueryProvider<TEntity>(IQueryProvider inner) : IAsyncQueryProvider
+internal class TestAsyncQueryProvider<TEntity>(IQueryProvider inner) : Microsoft.EntityFrameworkCore.Query.IAsyncQueryProvider
 {
     public IQueryable CreateQuery(System.Linq.Expressions.Expression expression)
     {
@@ -223,8 +223,4 @@ internal class TestAsyncEnumerator<T>(IEnumerator<T> inner) : IAsyncEnumerator<T
     }
 }
 
-// Required interface for EF Core async query operations
-internal interface IAsyncQueryProvider : IQueryProvider
-{
-    TResult ExecuteAsync<TResult>(System.Linq.Expressions.Expression expression, CancellationToken cancellationToken = default);
-}
+

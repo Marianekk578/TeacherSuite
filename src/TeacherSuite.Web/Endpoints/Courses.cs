@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
+using TeacherSuite.Application.Common.Models;
 using TeacherSuite.Application.Courses.Commands.Create;
 using TeacherSuite.Application.Courses.Commands.Delete;
 using TeacherSuite.Application.Courses.Commands.Update;
@@ -17,7 +18,7 @@ public class Courses
         return TypedResults.Created($"/{nameof(Courses)}/{id}", id);
     }
 
-    public async Task<Ok<List<CourseDto>>> GetAllCourses(ISender sender, GetAllCoursesQuery query)
+    public async Task<Ok<PagedResult<CourseDto>>> GetAllCourses(ISender sender, GetAllCoursesQuery query)
     {
         var courses = await sender.Send(query);
         return TypedResults.Ok(courses);
