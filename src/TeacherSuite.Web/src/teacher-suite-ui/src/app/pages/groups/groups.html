@@ -50,12 +50,16 @@
         </div>
         <div class="group-info">
           <h3>{{ group.name }}</h3>
-          <div class="detail-item">
+          <div class="detail-item teacher-detail-item">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
-            <span>{{ getTeacherName(group) }}</span>
+            <span
+              class="teacher-name-hover"
+              (mouseenter)="showTeacherTooltip($event, group)"
+              (mouseleave)="hideTeacherTooltip()"
+            >{{ getTeacherName(group) }}</span>
           </div>
           <div class="detail-item">
             <span class="age-group-label">
@@ -133,17 +137,46 @@
         />
       </div>
       <div class="form-group">
-        <label for="teacherId">Teacher *</label>
-        <select 
-          id="teacherId" 
-          formControlName="teacherId"
-          required
-        >
-          <option [ngValue]="null">Select a teacher</option>
-          <option *ngFor="let teacher of teachers" [ngValue]="teacher.id">
-            {{ teacher.firstName }} {{ teacher.lastName }}
-          </option>
-        </select>
+        <label for="teacherSearch">Teacher *</label>
+        <div class="teacher-autocomplete">
+          <div class="teacher-search-input-wrapper">
+            <input
+              type="text"
+              id="teacherSearch"
+              [value]="teacherSearchText"
+              (input)="onTeacherSearchInput($event)"
+              (blur)="onTeacherSearchBlur()"
+              (focus)="onTeacherSearchFocus()"
+              placeholder="Search by name or email..."
+              autocomplete="off"
+              [class.has-selection]="selectedTeacher"
+            />
+            <button
+              *ngIf="selectedTeacher"
+              type="button"
+              class="teacher-clear-btn"
+              (click)="clearTeacherSelection()"
+              aria-label="Clear teacher selection"
+            >&times;</button>
+            <div *ngIf="teacherSearchLoading" class="teacher-search-spinner"></div>
+          </div>
+          <div *ngIf="showTeacherSuggestions" class="teacher-suggestions">
+            <div
+              class="teacher-suggestion-item"
+              *ngFor="let teacher of teacherSuggestions"
+              (mousedown)="selectTeacher(teacher)"
+            >
+              <div class="suggestion-name">{{ teacher.firstName }} {{ teacher.lastName }}</div>
+              <div class="suggestion-email">{{ teacher.email }}</div>
+              <div *ngIf="teacher.programmingLanguages && teacher.programmingLanguages.length > 0" class="suggestion-languages">
+                <span class="lang-tag" *ngFor="let lang of teacher.programmingLanguages">{{ lang.label || lang.name }}</span>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="showTeacherSuggestions && teacherSuggestions.length === 0 && !teacherSearchLoading" class="teacher-suggestions">
+            <div class="teacher-suggestion-empty">No teachers found</div>
+          </div>
+        </div>
       </div>
       <div class="form-group">
         <label for="ageGroupID">Age Group *</label>
@@ -243,5 +276,14 @@
         <button type="submit" class="btn btn-primary">Update</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Teacher Tooltip -->
+<div *ngIf="hoveredTeacher" class="teacher-tooltip" [ngStyle]="tooltipStyle">
+  <div class="tooltip-name">{{ hoveredTeacher.firstName }} {{ hoveredTeacher.lastName }}</div>
+  <div class="tooltip-email">{{ hoveredTeacher.email }}</div>
+  <div *ngIf="hoveredTeacher.programmingLanguages && hoveredTeacher.programmingLanguages.length > 0" class="tooltip-languages">
+    <span class="lang-tag" *ngFor="let lang of hoveredTeacher.programmingLanguages">{{ lang.label || lang.name }}</span>
   </div>
 </div>

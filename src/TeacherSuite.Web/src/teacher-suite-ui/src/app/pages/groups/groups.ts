@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener, DestroyRef, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
@@ -8,6 +8,8 @@ import {
   Validators
 } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
 import { GroupService, Group, CreateGroupDto, UpdateGroupDto, GroupCourseAssignment } from '../../services/group.service';
 import { Teacher } from '../../services/teacher.service';
 import { Course, AgeGroup } from '../../services/course.service';
@@ -18,7 +20,7 @@ import { Course, AgeGroup } from '../../services/course.service';
   templateUrl: './groups.html',
   styleUrl: './groups.scss',
 })
-export class Groups implements OnInit {
+export class Groups implements OnInit, OnDestroy {
   private destroyRef = inject(DestroyRef);
 
   groups: Group[] = [];
@@ -28,6 +30,19 @@ export class Groups implements OnInit {
   loading = false;
   error: string | null = null;
   courseNameFilter: string | null = null;
+
+  // Teacher search autocomplete
+  teacherSearchText = '';
+  teacherSuggestions: Teacher[] = [];
+  showTeacherSuggestions = false;
+  selectedTeacher: Teacher | null = null;
+  teacherSearchLoading = false;
+  private teacherSearchSubject = new Subject<string>();
+  private subscriptions: Subscription[] = [];
+
+  // Teacher tooltip on group cards
+  hoveredTeacher: Teacher | null = null;
+  tooltipStyle: { top: string; left: string } = { top: '0px', left: '0px' };
 
   showModal = false;
   isEditMode = false;
@@ -82,9 +97,33 @@ export class Groups implements OnInit {
   }
 
   ngOnInit() {
-    this.loadTeachers();
     this.loadCourses();
     this.loadAgeGroups();
+
+    this.subscriptions.push(
+      this.teacherSearchSubject.pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        tap(() => {
+          this.teacherSearchLoading = true;
+          this.cdr.detectChanges();
+        }),
+        switchMap(search => this.groupService.searchTeachers(search))
+      ).subscribe({
+        next: (teachers) => {
+          this.teacherSuggestions = teachers;
+          this.showTeacherSuggestions = teachers.length > 0;
+          this.teacherSearchLoading = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.teacherSuggestions = [];
+          this.showTeacherSuggestions = false;
+          this.teacherSearchLoading = false;
+          this.cdr.detectChanges();
+        }
+      })
+    );
 
     this.route.queryParams
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -93,6 +132,11 @@ export class Groups implements OnInit {
         this.courseNameFilter = courseName;
         this.loadGroups();
     });
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach(s => s.unsubscribe());
+    this.teacherSearchSubject.complete();
   }
 
   loadGroups() {
@@ -119,16 +163,78 @@ export class Groups implements OnInit {
     });
   }
 
-  loadTeachers() {
-    this.groupService.getAllTeachers().subscribe({
-      next: (teachers) => {
-        this.teachers = teachers;
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        console.error('Error loading teachers:', error);
-      }
-    });
+  onTeacherSearchInput(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.teacherSearchText = value;
+    if (this.selectedTeacher) {
+      this.selectedTeacher = null;
+      this.groupForm.patchValue({ teacherId: null });
+    }
+    if (value.trim().length >= 2) {
+      this.teacherSearchSubject.next(value.trim());
+    } else {
+      this.teacherSuggestions = [];
+      this.showTeacherSuggestions = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  selectTeacher(teacher: Teacher) {
+    this.selectedTeacher = teacher;
+    this.teacherSearchText = `${teacher.firstName} ${teacher.lastName}`;
+    this.groupForm.patchValue({ teacherId: teacher.id });
+    this.showTeacherSuggestions = false;
+    this.teacherSuggestions = [];
+    this.cdr.detectChanges();
+  }
+
+  clearTeacherSelection() {
+    this.selectedTeacher = null;
+    this.teacherSearchText = '';
+    this.groupForm.patchValue({ teacherId: null });
+    this.teacherSuggestions = [];
+    this.showTeacherSuggestions = false;
+    this.cdr.detectChanges();
+  }
+
+  getTeacherLanguages(teacher: Teacher): string {
+    if (!teacher.programmingLanguages || teacher.programmingLanguages.length === 0) {
+      return '';
+    }
+    return teacher.programmingLanguages.map(pl => pl.label || pl.name).join(', ');
+  }
+
+  onTeacherSearchBlur() {
+    setTimeout(() => {
+      this.showTeacherSuggestions = false;
+      this.cdr.detectChanges();
+    }, 200);
+  }
+
+  onTeacherSearchFocus() {
+    if (this.teacherSuggestions.length > 0 && !this.selectedTeacher) {
+      this.showTeacherSuggestions = true;
+      this.cdr.detectChanges();
+    }
+  }
+
+  // Teacher tooltip on group cards
+  showTeacherTooltip(event: MouseEvent, group: Group) {
+    if (group.teacher) {
+      this.hoveredTeacher = group.teacher;
+      const target = event.target as HTMLElement;
+      const rect = target.getBoundingClientRect();
+      this.tooltipStyle = {
+        top: `${rect.bottom + window.scrollY + 8}px`,
+        left: `${rect.left + window.scrollX}px`
+      };
+      this.cdr.detectChanges();
+    }
+  }
+
+  hideTeacherTooltip() {
+    this.hoveredTeacher = null;
+    this.cdr.detectChanges();
   }
 
   loadCourses() {
@@ -159,6 +265,10 @@ export class Groups implements OnInit {
     this.isEditMode = false;
     this.currentGroupId = null;
     this.modalError = null;
+    this.teacherSearchText = '';
+    this.selectedTeacher = null;
+    this.teacherSuggestions = [];
+    this.showTeacherSuggestions = false;
     this.groupForm.reset({
       name: '',
       teacherId: null,
@@ -171,6 +281,12 @@ export class Groups implements OnInit {
     this.isEditMode = true;
     this.currentGroupId = group.id;
     this.modalError = null;
+    this.selectedTeacher = group.teacher ?? null;
+    this.teacherSearchText = group.teacher
+      ? `${group.teacher.firstName} ${group.teacher.lastName}`
+      : '';
+    this.teacherSuggestions = [];
+    this.showTeacherSuggestions = false;
     this.groupForm.reset({
       name: group.name,
       teacherId: group.teacherId,
@@ -184,6 +300,10 @@ export class Groups implements OnInit {
     this.isEditMode = false;
     this.currentGroupId = null;
     this.modalError = null;
+    this.teacherSearchText = '';
+    this.selectedTeacher = null;
+    this.teacherSuggestions = [];
+    this.showTeacherSuggestions = false;
   }
 
   @HostListener('document:keydown.escape', ['$event'])
