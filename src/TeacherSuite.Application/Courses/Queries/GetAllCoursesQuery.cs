@@ -10,7 +10,6 @@ internal sealed class GetAllCoursesQueryHandler(IApplicationDbContext db, IMappe
     public async Task<List<CourseDto>> Handle(GetAllCoursesQuery request, CancellationToken cancellationToken)
     {
         return await db.Courses
-            .Include(c => c.AgeGroup)
             .ProjectTo<CourseDto>(mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
     }

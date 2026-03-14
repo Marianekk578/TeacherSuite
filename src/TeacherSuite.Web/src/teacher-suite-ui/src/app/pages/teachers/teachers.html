@@ -79,7 +79,7 @@
       <div class="teacher-info">
         <h3>{{ getFullName(teacher) }}</h3>
         <div class="teacher-languages" *ngIf="teacher.programmingLanguages && teacher.programmingLanguages.length > 0">
-          <span class="language-label" *ngFor="let lang of teacher.programmingLanguages">#{{ lang.name }}</span>
+          <span class="language-label" *ngFor="let lang of teacher.programmingLanguages" [style.background-color]="lang.color || '#667eea'">{{ lang.label || lang.name }}</span>
         </div>
         <div class="teacher-details">
           <div class="detail-item">
@@ -252,13 +252,19 @@
     </div>
     <div class="modal-body">
       <p *ngIf="allProgrammingLanguages.length === 0" class="no-languages-message">No programming languages available. Add some from the Programming Languages page first.</p>
-      <div class="language-toggle-list" *ngIf="allProgrammingLanguages.length > 0">
-        <div class="language-toggle-item" *ngFor="let lang of allProgrammingLanguages" 
-             [class.assigned]="isLanguageAssigned(lang)"
-             (click)="toggleLanguage(lang)">
-          <span class="language-toggle-label">#{{ lang.name }}</span>
-          <span class="language-toggle-status">{{ isLanguageAssigned(lang) ? '✓' : '+' }}</span>
-        </div>
+      <div class="language-chips" *ngIf="allProgrammingLanguages.length > 0">
+        <button 
+          type="button"
+          class="language-chip"
+          *ngFor="let lang of allProgrammingLanguages"
+          [class.selected]="isLanguageAssigned(lang)"
+          [style.background-color]="isLanguageAssigned(lang) ? (lang.color || '#667eea') : ''"
+          [style.border-color]="lang.color || '#667eea'"
+          [style.color]="isLanguageAssigned(lang) ? 'white' : (lang.color || '#667eea')"
+          (click)="toggleLanguage(lang)"
+        >
+          {{ lang.label || lang.name }}
+        </button>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-secondary" (click)="closeLanguageModal()">Close</button>

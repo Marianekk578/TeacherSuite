@@ -5,13 +5,14 @@ import { Courses } from './pages/courses/courses';
 import { AgeGroups } from './pages/age-groups/age-groups';
 import { Groups } from './pages/groups/groups';
 import { ProgrammingLanguages } from './pages/programming-languages/programming-languages';
+import { authGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
   { path: '', component: Home },
-  { path: 'teachers', component: Teachers },
-  { path: 'courses', component: Courses },
-  { path: 'groups', component: Groups },
-  { path: 'age-groups', component: AgeGroups },
-  { path: 'programming-languages', component: ProgrammingLanguages },
+  { path: 'teachers', component: Teachers, canActivate: [authGuard] },
+  { path: 'courses', component: Courses, canActivate: [authGuard] },
+  { path: 'groups', component: Groups, canActivate: [authGuard] },
+  { path: 'age-groups', component: AgeGroups, canActivate: [authGuard] },
+  { path: 'programming-languages', component: ProgrammingLanguages, canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

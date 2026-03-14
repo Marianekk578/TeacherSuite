@@ -1,8 +1,10 @@
 using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Application.Teachers.Commands.Delete;
+using TeacherSuite.Domain.Common;
 
 namespace TeacherSuite.Application.Teachers.Commands.DeleteTestTeachers;
 
+[Authorize(Roles = AppRoles.Admin)]
 public record DeleteTestTeachersCommand() : IRequest<int>;
 
 internal sealed class DeleteTestTeachersCommandHandler(IApplicationDbContext context, ISender sender)

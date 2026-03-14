@@ -4,6 +4,7 @@ using TeacherSuite.Application.Teachers.Dtos;
 
 namespace TeacherSuite.Application.Teachers.Queries.Get;
 
+[Authorize]
 public record GetAllTeachersQuery : IRequest<PagedResult<TeacherDto>>
 {
     public string? Search { get; init; }

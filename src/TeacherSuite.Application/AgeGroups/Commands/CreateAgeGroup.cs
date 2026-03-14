@@ -4,7 +4,7 @@ using TeacherSuite.Domain.Events;
 
 namespace TeacherSuite.Application.AgeGroups.Commands;
 
-public record CreateAgeGroupCommand(string Name, int MinAge, int MaxAge) : IRequest<int>;
+public record CreateAgeGroupCommand(string Name, string? Label, int MinAge, int MaxAge) : IRequest<int>;
 
 internal sealed class CreateAgeGroupCommandHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateAgeGroupCommand, int>
 {
@@ -13,6 +13,7 @@ internal sealed class CreateAgeGroupCommandHandler(IApplicationDbContext db, IPu
         var entity = new AgeGroup
         {
             Name = request.Name,
+            Label = request.Label ?? request.Name,
             MinAge = request.MinAge,
             MaxAge = request.MaxAge
         };

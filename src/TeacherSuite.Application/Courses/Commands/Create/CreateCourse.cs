@@ -4,7 +4,7 @@ using TeacherSuite.Domain.Events;
 
 namespace TeacherSuite.Application.Courses.Commands.Create;
 
-public record CreateCourseCommand(string? Name, string? Description, int AgeGroupID) : IRequest<int>;
+public record CreateCourseCommand(string? Name, string? Description, int AgeGroupID, List<int>? ProgrammingLanguageIds) : IRequest<int>;
 
 internal sealed class CreateCourseCommandHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateCourseCommand, int>
 {
@@ -16,6 +16,19 @@ internal sealed class CreateCourseCommandHandler(IApplicationDbContext db, IPubl
             Description = request.Description,
             AgeGroupID = request.AgeGroupID
         };
+
+        var languagesSet = request.ProgrammingLanguageIds?.ToHashSet();
+
+        if (languagesSet is { Count: > 0 })
+        {
+            foreach (var plId in languagesSet)
+            {
+                entity.CourseProgrammingLanguages.Add(new CourseProgrammingLanguage
+                {
+                    ProgrammingLanguageId = plId
+                });
+            }
+        }
 
         db.Courses.Add(entity);
         await db.SaveChangesAsync(cancellationToken);
