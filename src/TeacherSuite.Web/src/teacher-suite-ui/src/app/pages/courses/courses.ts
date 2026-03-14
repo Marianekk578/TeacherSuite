@@ -9,12 +9,13 @@ import {
 } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CourseService, Course, AgeGroup, ProgrammingLanguage, CreateCourseDto, UpdateCourseDto } from '../../services/course.service';
-import { PagedResult } from '../../services/teacher.service';
+import { PagedResult } from '../../models/paged-result.model';
+import { PaginationBarComponent } from '../../components/pagination-bar/pagination-bar';
 import { KeycloakService } from '../../auth/keycloak.service';
 
 @Component({
   selector: 'app-courses',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PaginationBarComponent],
   templateUrl: './courses.html',
   styleUrl: './courses.scss',
 })
@@ -88,26 +89,13 @@ export class Courses implements OnInit {
     this.loadProgrammingLanguages();
   }
 
-  onPageSizeChange(event: Event) {
-    const value = parseInt((event.target as HTMLSelectElement).value, 10);
-    this.navigateWithParams({ pageSize: value, page: 1 });
+  onPageSizeChange(newSize: number) {
+    this.navigateWithParams({ pageSize: newSize, page: 1 });
   }
 
   goToPage(p: number) {
     if (p < 1 || p > this.totalPages()) return;
     this.navigateWithParams({ page: p });
-  }
-
-  get visiblePages(): number[] {
-    const total = this.totalPages();
-    const current = this.page();
-    const pages: number[] = [];
-    const start = Math.max(1, current - 2);
-    const end = Math.min(total, current + 2);
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    return pages;
   }
 
   private navigateWithParams(overrides: { page?: number; pageSize?: number }) {

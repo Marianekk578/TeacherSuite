@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { PagedResult } from './teacher.service';
+import { PagedResult } from '../models/paged-result.model';
 
 export interface AgeGroup {
   id: number;
