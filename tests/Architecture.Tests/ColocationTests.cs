@@ -6,7 +6,7 @@ public class ColocationTests
 {
     private static readonly Assembly ApplicationAssembly = Assembly.Load("TeacherSuite.Application");
 
-    public static IEnumerable<object[]> CommandHandlerData()
+    private static IEnumerable<object[]> GetHandlerRequestPairs(string namespaceSegment)
     {
         var handlerInterfaceType = typeof(MediatR.IRequestHandler<,>);
 
@@ -14,37 +14,21 @@ public class ColocationTests
             .Where(t => t is { IsClass: true, IsAbstract: false })
             .Where(t => t.GetInterfaces().Any(i =>
                 i.IsGenericType && i.GetGenericTypeDefinition() == handlerInterfaceType))
-            .Where(t => t.Namespace?.Contains("Commands") == true);
+            .Where(t => t.Namespace?.Contains(namespaceSegment) == true);
 
         foreach (var handler in handlers)
         {
             var requestInterface = handler.GetInterfaces()
                 .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == handlerInterfaceType);
-            var commandType = requestInterface.GetGenericArguments()[0];
+            var requestType = requestInterface.GetGenericArguments()[0];
 
-            yield return [commandType, handler];
+            yield return [requestType, handler];
         }
     }
 
-    public static IEnumerable<object[]> QueryHandlerData()
-    {
-        var handlerInterfaceType = typeof(MediatR.IRequestHandler<,>);
+    public static IEnumerable<object[]> CommandHandlerData() => GetHandlerRequestPairs("Commands");
 
-        var handlers = ApplicationAssembly.GetTypes()
-            .Where(t => t is { IsClass: true, IsAbstract: false })
-            .Where(t => t.GetInterfaces().Any(i =>
-                i.IsGenericType && i.GetGenericTypeDefinition() == handlerInterfaceType))
-            .Where(t => t.Namespace?.Contains("Queries") == true);
-
-        foreach (var handler in handlers)
-        {
-            var requestInterface = handler.GetInterfaces()
-                .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == handlerInterfaceType);
-            var queryType = requestInterface.GetGenericArguments()[0];
-
-            yield return [queryType, handler];
-        }
-    }
+    public static IEnumerable<object[]> QueryHandlerData() => GetHandlerRequestPairs("Queries");
 
     [Theory]
     [MemberData(nameof(CommandHandlerData))]

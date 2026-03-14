@@ -6,7 +6,7 @@ public class VisibilityTests
 {
     private static readonly Assembly ApplicationAssembly = Assembly.Load("TeacherSuite.Application");
 
-    public static IEnumerable<object[]> CommandHandlerTypes()
+    private static IEnumerable<object[]> GetHandlerTypes(string namespaceSegment)
     {
         var handlerInterfaceType = typeof(MediatR.IRequestHandler<,>);
 
@@ -14,21 +14,13 @@ public class VisibilityTests
             .Where(t => t is { IsClass: true, IsAbstract: false })
             .Where(t => t.GetInterfaces().Any(i =>
                 i.IsGenericType && i.GetGenericTypeDefinition() == handlerInterfaceType))
-            .Where(t => t.Namespace?.Contains("Commands") == true)
+            .Where(t => t.Namespace?.Contains(namespaceSegment) == true)
             .Select(t => new object[] { t });
     }
 
-    public static IEnumerable<object[]> QueryHandlerTypes()
-    {
-        var handlerInterfaceType = typeof(MediatR.IRequestHandler<,>);
+    public static IEnumerable<object[]> CommandHandlerTypes() => GetHandlerTypes("Commands");
 
-        return ApplicationAssembly.GetTypes()
-            .Where(t => t is { IsClass: true, IsAbstract: false })
-            .Where(t => t.GetInterfaces().Any(i =>
-                i.IsGenericType && i.GetGenericTypeDefinition() == handlerInterfaceType))
-            .Where(t => t.Namespace?.Contains("Queries") == true)
-            .Select(t => new object[] { t });
-    }
+    public static IEnumerable<object[]> QueryHandlerTypes() => GetHandlerTypes("Queries");
 
     [Theory]
     [MemberData(nameof(CommandHandlerTypes))]
