@@ -1,11 +1,11 @@
 # TeacherSuite
 
- TeacherSuite single-page application will serve as a teacher's record book, to be used in many different locations. For now, TeacherSuite is focusing on teaching programming courses. Teachers facilitating lessons can register absences and grades and prepare materials. There will be multiple locations, each with many groups, courses and teachers. TeacherSuite will facilitate the maintenance and proposal of lesson materials.
+ **TeacherSuite** single-page application will serve as a **teacher's record book**, to be used in many different locations. For now, TeacherSuite is focusing on **teaching programming courses**. Teachers facilitating lessons can register absences and grades and prepare materials. There will be multiple locations, each with many groups, courses and teachers. TeacherSuite will facilitate the maintenance and proposal of lesson materials.
 
 ![.Net](https://img.shields.io/badge/.NET-5C2D91?style=for-the-badge&logo=.net&logoColor=white)  ![Angular](https://img.shields.io/badge/angular-%23DD0031.svg?style=for-the-badge&logo=angular&logoColor=white) ![Postgres|105](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)  ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) ![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens) 
 
 ### Setup
-As of March 2026 - TeacherSuite is  available only on the development environment. It requires containarization software for running PostgreSQL and Keycloak.
+As of March 2026 - TeacherSuite is available **only on the development environment**. It requires containarization software for running PostgreSQL and Keycloak.
 
 ![Teachers](documentation/images/teachers.png)
 
