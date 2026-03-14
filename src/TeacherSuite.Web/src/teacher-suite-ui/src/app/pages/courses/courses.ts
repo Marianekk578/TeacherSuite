@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener, DestroyRef, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener, DestroyRef, inject, signal, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
 import { CommonModule } from '@angular/common';
 import {
@@ -8,7 +8,6 @@ import {
   Validators
 } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
 import { CourseService, Course, AgeGroup, ProgrammingLanguage, CreateCourseDto, UpdateCourseDto } from '../../services/course.service';
 import { PagedResult } from '../../services/teacher.service';
 import { KeycloakService } from '../../auth/keycloak.service';
@@ -19,7 +18,7 @@ import { KeycloakService } from '../../auth/keycloak.service';
   templateUrl: './courses.html',
   styleUrl: './courses.scss',
 })
-export class Courses implements OnInit, OnDestroy {
+export class Courses implements OnInit {
   private destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -52,8 +51,6 @@ export class Courses implements OnInit, OnDestroy {
   selectedCourse: Course | null = null;
   detailsLoading = false;
 
-  private subscriptions: Subscription[] = [];
-
   constructor(
     private courseService: CourseService,
     private cdr: ChangeDetectorRef,
@@ -68,23 +65,16 @@ export class Courses implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.subscriptions.push(
-      this.route.queryParams.subscribe(params => {
+    this.route.queryParams
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
         const p = parseInt(params['page'], 10) || 1;
         const ps = parseInt(params['pageSize'], 10) || 12;
 
         this.page.set(p);
         this.pageSize.set(ps);
         this.loadCourses();
-      })
-    );
 
-    this.loadAgeGroups();
-    this.loadProgrammingLanguages();
-
-    this.route.queryParams
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(params => {
         const courseIdParam = params['courseId'];
         if (courseIdParam !== undefined && courseIdParam !== null) {
           const parsedCourseId = Number.parseInt(courseIdParam, 10);
@@ -92,11 +82,10 @@ export class Courses implements OnInit, OnDestroy {
             this.openDetailsById(parsedCourseId);
           }
         }
-    });
-  }
+      });
 
-  ngOnDestroy() {
-    this.subscriptions.forEach(s => s.unsubscribe());
+    this.loadAgeGroups();
+    this.loadProgrammingLanguages();
   }
 
   onPageSizeChange(event: Event) {
