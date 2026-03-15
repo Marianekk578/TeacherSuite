@@ -4,7 +4,7 @@ namespace TeacherSuite.Application.Teachers.Commands.Update;
 
 public record UpdateTeacherCommand(Guid Id, string FirstName, string LastName, string Email, string PhoneNumber, DateTimeOffset DateOfBirth) : IRequest<Unit>;
 
-public class UpdateTeacherHandler(IApplicationDbContext context) : IRequestHandler<UpdateTeacherCommand, Unit>
+internal sealed class UpdateTeacherCommandHandler(IApplicationDbContext context) : IRequestHandler<UpdateTeacherCommand, Unit>
 {
     public async Task<Unit> Handle(UpdateTeacherCommand request, CancellationToken cancellationToken)
     {

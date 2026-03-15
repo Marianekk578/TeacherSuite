@@ -5,7 +5,7 @@ namespace TeacherSuite.Application.Groups.Commands.AssignCourse;
 
 public record UpdateGroupCourseStatusCommand(Guid GroupId, int CourseId, CourseAssignmentStatus Status) : IRequest<Unit>;
 
-public class UpdateGroupCourseStatusHandler(IApplicationDbContext context) : IRequestHandler<UpdateGroupCourseStatusCommand, Unit>
+internal sealed class UpdateGroupCourseStatusCommandHandler(IApplicationDbContext context) : IRequestHandler<UpdateGroupCourseStatusCommand, Unit>
 {
     private static readonly Dictionary<CourseAssignmentStatus, CourseAssignmentStatus[]> AllowedTransitions = new()
     {

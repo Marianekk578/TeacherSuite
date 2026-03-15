@@ -2,12 +2,12 @@ using TeacherSuite.Application.Common.Interfaces;
 
 namespace TeacherSuite.Application.ProgrammingLanguages.Commands.Update;
 
-public record UpdateProgrammingLanguageCommand(int Id, string? Name) : IRequest<Unit>, ICacheInvalidationCommand
+public record UpdateProgrammingLanguageCommand(int Id, string Name, string? Label, string? Color) : IRequest<Unit>, ICacheInvalidationCommand
 {
     public IReadOnlyCollection<string> TagsToInvalidate => ["programming-languages"];
 }
 
-public class UpdateProgrammingLanguageHandler(IApplicationDbContext context) : IRequestHandler<UpdateProgrammingLanguageCommand, Unit>
+internal sealed class UpdateProgrammingLanguageCommandHandler(IApplicationDbContext context) : IRequestHandler<UpdateProgrammingLanguageCommand, Unit>
 {
     public async Task<Unit> Handle(UpdateProgrammingLanguageCommand request, CancellationToken cancellationToken)
     {
@@ -16,6 +16,8 @@ public class UpdateProgrammingLanguageHandler(IApplicationDbContext context) : I
         Guard.Against.NotFound(request.Id, entity);
 
         entity.Name = request.Name;
+        entity.Label = request.Label ?? request.Name;
+        entity.Color = request.Color;
 
         await context.SaveChangesAsync(cancellationToken);
         return Unit.Value;

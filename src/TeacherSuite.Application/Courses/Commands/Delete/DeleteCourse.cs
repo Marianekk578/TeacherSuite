@@ -8,7 +8,7 @@ public record DeleteCourseCommand(int Id) : IRequest<Unit>, ICacheInvalidationCo
     public IReadOnlyCollection<string> TagsToInvalidate => ["courses"];
 }
 
-public class DeleteCourseHandler(IApplicationDbContext context) : IRequestHandler<DeleteCourseCommand, Unit>
+internal sealed class DeleteCourseCommandHandler(IApplicationDbContext context) : IRequestHandler<DeleteCourseCommand, Unit>
 {
     public async Task<Unit> Handle(DeleteCourseCommand request, CancellationToken cancellationToken)
     {

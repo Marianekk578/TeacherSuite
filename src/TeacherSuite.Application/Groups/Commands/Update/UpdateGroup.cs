@@ -4,7 +4,7 @@ namespace TeacherSuite.Application.Groups.Commands.Update;
 
 public record UpdateGroupCommand(Guid Id, string? Name, Guid TeacherId, int AgeGroupID) : IRequest<Unit>;
 
-public class UpdateGroupHandler(IApplicationDbContext context) : IRequestHandler<UpdateGroupCommand, Unit>
+internal sealed class UpdateGroupCommandHandler(IApplicationDbContext context) : IRequestHandler<UpdateGroupCommand, Unit>
 {
     public async Task<Unit> Handle(UpdateGroupCommand request, CancellationToken cancellationToken)
     {

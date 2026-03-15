@@ -5,7 +5,7 @@ namespace TeacherSuite.Application.Groups.Queries;
 
 public record GetGroupByIdQuery(Guid Id) : IRequest<GroupDto?>;
 
-public class GetGroupByIdQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetGroupByIdQuery, GroupDto?>
+internal sealed class GetGroupByIdQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetGroupByIdQuery, GroupDto?>
 {
     public async Task<GroupDto?> Handle(GetGroupByIdQuery request, CancellationToken cancellationToken)
     {

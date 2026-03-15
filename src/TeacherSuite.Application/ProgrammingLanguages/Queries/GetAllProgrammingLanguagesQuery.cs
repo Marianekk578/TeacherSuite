@@ -9,7 +9,7 @@ public record GetAllProgrammingLanguagesQuery : IRequest<List<ProgrammingLanguag
     public IReadOnlyCollection<string>? Tags => ["programming-languages"];
 }
 
-public class GetAllProgrammingLanguagesQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetAllProgrammingLanguagesQuery, List<ProgrammingLanguageDto>>
+internal sealed class GetAllProgrammingLanguagesQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetAllProgrammingLanguagesQuery, List<ProgrammingLanguageDto>>
 {
     public async Task<List<ProgrammingLanguageDto>> Handle(GetAllProgrammingLanguagesQuery request, CancellationToken cancellationToken)
     {

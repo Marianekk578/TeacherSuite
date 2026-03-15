@@ -9,7 +9,7 @@ public record GetAgeGroupsQuery : IRequest<List<AgeGroupDto>>, ICacheableQuery
     public IReadOnlyCollection<string>? Tags => ["agegroups"];
 }
 
-public class GetAgeGroupsQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetAgeGroupsQuery, List<AgeGroupDto>>
+internal sealed class GetAgeGroupsQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetAgeGroupsQuery, List<AgeGroupDto>>
 {
     public async Task<List<AgeGroupDto>> Handle(GetAgeGroupsQuery request, CancellationToken cancellationToken)
     {

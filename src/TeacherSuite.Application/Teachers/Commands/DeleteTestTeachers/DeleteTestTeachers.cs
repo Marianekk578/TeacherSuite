@@ -7,7 +7,7 @@ namespace TeacherSuite.Application.Teachers.Commands.DeleteTestTeachers;
 [Authorize(Roles = AppRoles.Admin)]
 public record DeleteTestTeachersCommand() : IRequest<int>;
 
-public class DeleteTestTeachersHandler(IApplicationDbContext context, ISender sender)
+internal sealed class DeleteTestTeachersCommandHandler(IApplicationDbContext context, ISender sender)
     : IRequestHandler<DeleteTestTeachersCommand, int>
 {
     public async Task<int> Handle(DeleteTestTeachersCommand request, CancellationToken cancellationToken)

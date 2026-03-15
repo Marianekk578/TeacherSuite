@@ -5,7 +5,7 @@ namespace TeacherSuite.Application.AgeGroups.Queries;
 
 public record GetAgeGroupByIdQuery(int id) : IRequest<AgeGroupDto?>;
 
-public class GetAgeGroupByIdQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetAgeGroupByIdQuery, AgeGroupDto?>
+internal sealed class GetAgeGroupByIdQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetAgeGroupByIdQuery, AgeGroupDto?>
 {
     public async Task<AgeGroupDto?> Handle(GetAgeGroupByIdQuery request, CancellationToken cancellationToken)
     {
