@@ -169,7 +169,7 @@
               <div class="suggestion-name">{{ teacher.firstName }} {{ teacher.lastName }}</div>
               <div class="suggestion-email">{{ teacher.email }}</div>
               <div *ngIf="teacher.programmingLanguages && teacher.programmingLanguages.length > 0" class="suggestion-languages">
-                <span class="lang-tag" *ngFor="let lang of teacher.programmingLanguages">{{ lang.label || lang.name }}</span>
+                <span class="lang-tag" *ngFor="let lang of teacher.programmingLanguages" [ngStyle]="lang.color ? { 'background-color': lang.color, 'color': 'white' } : {}">{{ lang.label || lang.name }}</span>
               </div>
             </div>
           </div>
@@ -284,6 +284,6 @@
   <div class="tooltip-name">{{ hoveredTeacher.firstName }} {{ hoveredTeacher.lastName }}</div>
   <div class="tooltip-email">{{ hoveredTeacher.email }}</div>
   <div *ngIf="hoveredTeacher.programmingLanguages && hoveredTeacher.programmingLanguages.length > 0" class="tooltip-languages">
-    <span class="lang-tag" *ngFor="let lang of hoveredTeacher.programmingLanguages">{{ lang.label || lang.name }}</span>
+    <span class="lang-tag" *ngFor="let lang of hoveredTeacher.programmingLanguages" [ngStyle]="lang.color ? { 'background-color': lang.color, 'color': 'white' } : {}">{{ lang.label || lang.name }}</span>
   </div>
 </div>
