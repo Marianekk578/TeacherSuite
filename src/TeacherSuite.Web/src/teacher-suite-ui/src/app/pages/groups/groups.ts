@@ -198,13 +198,6 @@ export class Groups implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  getTeacherLanguages(teacher: Teacher): string {
-    if (!teacher.programmingLanguages || teacher.programmingLanguages.length === 0) {
-      return '';
-    }
-    return teacher.programmingLanguages.map(pl => pl.label || pl.name).join(', ');
-  }
-
   onTeacherSearchBlur() {
     setTimeout(() => {
       this.showTeacherSuggestions = false;
