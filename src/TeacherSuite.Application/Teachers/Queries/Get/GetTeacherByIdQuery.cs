@@ -5,7 +5,7 @@ namespace TeacherSuite.Application.Teachers.Queries.Get;
 
 public record GetTeacherByIdQuery(Guid Id) : IRequest<TeacherDto?>;
 
-public class GetTeacherByIdQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetTeacherByIdQuery, TeacherDto?>
+internal sealed class GetTeacherByIdQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetTeacherByIdQuery, TeacherDto?>
 {
     public async Task<TeacherDto?> Handle(GetTeacherByIdQuery request, CancellationToken cancellationToken)
     {

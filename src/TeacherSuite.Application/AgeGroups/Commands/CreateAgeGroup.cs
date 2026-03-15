@@ -6,7 +6,7 @@ namespace TeacherSuite.Application.AgeGroups.Commands;
 
 public record CreateAgeGroupCommand(string Name, string? Label, int MinAge, int MaxAge) : IRequest<int>;
 
-public class CreateAgeGroupHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateAgeGroupCommand, int>
+internal sealed class CreateAgeGroupCommandHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateAgeGroupCommand, int>
 {
     public async Task<int> Handle(CreateAgeGroupCommand request, CancellationToken cancellationToken)
     {

@@ -5,7 +5,7 @@ namespace TeacherSuite.Application.Teachers.Queries.Get;
 
 public record GetTeacherAssignedToGroupQuery(Guid groupId) : IRequest<TeacherDto?>;
 
-public class GetTeacherAssignedToGroupQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetTeacherAssignedToGroupQuery, TeacherDto?>
+internal sealed class GetTeacherAssignedToGroupQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetTeacherAssignedToGroupQuery, TeacherDto?>
 {
     public async Task<TeacherDto?> Handle(GetTeacherAssignedToGroupQuery request, CancellationToken cancellationToken)
     {

@@ -5,7 +5,7 @@ namespace TeacherSuite.Application.Groups.Queries;
 
 public record GetAllGroupsQuery(string? CourseName = null) : IRequest<List<GroupDto>>;
 
-public class GetAllGroupsQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetAllGroupsQuery, List<GroupDto>>
+internal sealed class GetAllGroupsQueryHandler(IApplicationDbContext db, IMapper mapper) : IRequestHandler<GetAllGroupsQuery, List<GroupDto>>
 {
     public async Task<List<GroupDto>> Handle(GetAllGroupsQuery request, CancellationToken cancellationToken)
     {
