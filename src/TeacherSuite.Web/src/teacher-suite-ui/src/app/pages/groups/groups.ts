@@ -175,6 +175,7 @@ export class Groups implements OnInit, OnDestroy {
     } else {
       this.teacherSuggestions = [];
       this.showTeacherSuggestions = false;
+      this.teacherSearchLoading = false;
       this.cdr.detectChanges();
     }
   }
