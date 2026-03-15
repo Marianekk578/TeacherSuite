@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
+import { PagedResult } from '../models/paged-result.model';
 
 export interface Teacher {
   id: string;
@@ -33,13 +34,6 @@ export interface UpdateTeacherDto {
   email: string;
   phoneNumber: string;
   dateOfBirth: string;
-}
-
-export interface PagedResult<T> {
-  items: T[];
-  totalCount: number;
-  page: number;
-  pageSize: number;
 }
 
 export interface TeacherQuery {

@@ -1,5 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener, DestroyRef, inject } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { Component, OnInit, ChangeDetectorRef, HostListener, DestroyRef, inject, signal, computed } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -9,16 +9,27 @@ import {
 } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CourseService, Course, AgeGroup, ProgrammingLanguage, CreateCourseDto, UpdateCourseDto } from '../../services/course.service';
+import { PagedResult } from '../../models/paged-result.model';
+import { PaginationBarComponent } from '../../components/pagination-bar/pagination-bar';
 import { KeycloakService } from '../../auth/keycloak.service';
 
 @Component({
   selector: 'app-courses',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PaginationBarComponent],
   templateUrl: './courses.html',
   styleUrl: './courses.scss',
 })
 export class Courses implements OnInit {
   private destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
+  readonly page = signal(1);
+  readonly pageSize = signal(12);
+  readonly pageSizeOptions = [12, 20, 30, 50];
+
+  readonly totalCount = signal(0);
+  readonly totalPages = computed(() => Math.ceil(this.totalCount() / this.pageSize()) || 1);
 
   courses: Course[] = [];
   ageGroups: AgeGroup[] = [];
@@ -45,8 +56,6 @@ export class Courses implements OnInit {
     private courseService: CourseService,
     private cdr: ChangeDetectorRef,
     private fb: FormBuilder,
-    private router: Router,
-    private route: ActivatedRoute,
     private keycloakService: KeycloakService
   ) {
     this.courseForm = this.fb.group({
@@ -57,13 +66,16 @@ export class Courses implements OnInit {
   }
 
   ngOnInit() {
-    this.loadCourses();
-    this.loadAgeGroups();
-    this.loadProgrammingLanguages();
-
     this.route.queryParams
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
+        const p = parseInt(params['page'], 10) || 1;
+        const ps = parseInt(params['pageSize'], 10) || 12;
+
+        this.page.set(p);
+        this.pageSize.set(ps);
+        this.loadCourses();
+
         const courseIdParam = params['courseId'];
         if (courseIdParam !== undefined && courseIdParam !== null) {
           const parsedCourseId = Number.parseInt(courseIdParam, 10);
@@ -71,6 +83,32 @@ export class Courses implements OnInit {
             this.openDetailsById(parsedCourseId);
           }
         }
+      });
+
+    this.loadAgeGroups();
+    this.loadProgrammingLanguages();
+  }
+
+  onPageSizeChange(newSize: number) {
+    this.navigateWithParams({ pageSize: newSize, page: 1 });
+  }
+
+  goToPage(p: number) {
+    if (p < 1 || p > this.totalPages()) return;
+    this.navigateWithParams({ page: p });
+  }
+
+  private navigateWithParams(overrides: { page?: number; pageSize?: number }) {
+    const page = overrides.page ?? this.page();
+    const pageSize = overrides.pageSize ?? this.pageSize();
+
+    const queryParams: Record<string, string | undefined> = {};
+    if (page > 1) queryParams['page'] = String(page);
+    if (pageSize !== 12) queryParams['pageSize'] = String(pageSize);
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
     });
   }
 
@@ -79,10 +117,20 @@ export class Courses implements OnInit {
     this.error = null;
     this.cdr.detectChanges();
     
-    this.courseService.getAllCourses().subscribe({
-      next: (courses) => {
-        this.courses = courses;
+    this.courseService.getAllCourses({
+      page: this.page(),
+      pageSize: this.pageSize()
+    }).subscribe({
+      next: (result: PagedResult<Course>) => {
+        this.courses = result.items;
+        this.totalCount.set(result.totalCount);
         this.loading = false;
+
+        if (this.page() > this.totalPages() && result.totalCount > 0) {
+          this.navigateWithParams({ page: this.totalPages() });
+          return;
+        }
+
         this.cdr.detectChanges();
       },
       error: (error) => {

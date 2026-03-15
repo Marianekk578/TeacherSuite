@@ -80,6 +80,17 @@
       </div>
     </div>
   </div>
+
+  <!-- Pagination -->
+  <app-pagination-bar
+    *ngIf="!loading"
+    [page]="page()"
+    [pageSize]="pageSize()"
+    [totalPages]="totalPages()"
+    [pageSizeOptions]="pageSizeOptions"
+    (pageChange)="goToPage($event)"
+    (pageSizeChange)="onPageSizeChange($event)">
+  </app-pagination-bar>
 </div>
 
 <!-- Course Details Modal -->

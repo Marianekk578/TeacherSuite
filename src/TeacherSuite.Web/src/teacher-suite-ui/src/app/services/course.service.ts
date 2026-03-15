@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
+import { PagedResult } from '../models/paged-result.model';
 
 export interface AgeGroup {
   id: number;
@@ -40,6 +41,11 @@ export interface UpdateCourseDto {
   programmingLanguageIds?: number[];
 }
 
+export interface CourseQuery {
+  page: number;
+  pageSize: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -48,8 +54,12 @@ export class CourseService extends ApiService {
   private readonly ageGroupUrl = '/AgeGroups';
   private readonly programmingLanguageUrl = '/ProgrammingLanguages';
 
-  getAllCourses(): Observable<Course[]> {
-    return this.get<Course[]>(this.apiUrl);
+  getAllCourses(query: CourseQuery): Observable<PagedResult<Course>> {
+    const params = new URLSearchParams();
+    params.set('page', String(query.page));
+    params.set('pageSize', String(query.pageSize));
+
+    return this.get<PagedResult<Course>>(`${this.apiUrl}?${params.toString()}`);
   }
 
   getCourseById(id: number): Observable<Course> {

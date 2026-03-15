@@ -7,6 +7,7 @@ using TeacherSuite.Domain.Entities;
 using TeacherSuite.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace Application.UnitTests;
 
@@ -221,10 +222,4 @@ internal class TestAsyncEnumerator<T>(IEnumerator<T> inner) : IAsyncEnumerator<T
         inner.Dispose();
         return ValueTask.CompletedTask;
     }
-}
-
-// Required interface for EF Core async query operations
-internal interface IAsyncQueryProvider : IQueryProvider
-{
-    TResult ExecuteAsync<TResult>(System.Linq.Expressions.Expression expression, CancellationToken cancellationToken = default);
 }
