@@ -112,7 +112,7 @@ export class Groups implements OnInit, OnDestroy {
       ).subscribe({
         next: (teachers) => {
           this.teacherSuggestions = teachers;
-          this.showTeacherSuggestions = teachers.length > 0;
+          this.showTeacherSuggestions = true;
           this.teacherSearchLoading = false;
           this.cdr.detectChanges();
         },
