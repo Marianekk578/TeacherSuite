@@ -15,7 +15,7 @@ public class CachingBehaviour<TRequest, TResponse>(ICacheService cacheService)
             request.CacheKey,
             async ct =>
             {
-                var response = await next();
+                var response = await next(ct);
                 return response;
             },
             request.L1Expiration,

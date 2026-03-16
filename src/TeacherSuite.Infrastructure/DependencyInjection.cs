@@ -29,8 +29,6 @@ public static class DependencyInjection
         var redisConnectionString = configuration.GetConnectionString("RedisCache")
                                     ?? Environment.GetEnvironmentVariable("CONNECTION_STRINGS__RedisCache");
 
-        Guard.Against.NullOrWhiteSpace(redisConnectionString, message: "Connection string 'RedisCache' not found!");
-
         services.AddStackExchangeRedisCache(options =>
         {
             options.Configuration = redisConnectionString;
