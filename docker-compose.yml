@@ -24,7 +24,6 @@ services:
     depends_on:
       - db
 
-<<<<<<< HEAD
   redis-cache:
     image: redis:7-alpine
     restart: always
@@ -34,7 +33,7 @@ services:
       - teachersuite_redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-=======
+
   keycloak:
     image: quay.io/keycloak/keycloak:26.0
     restart: unless-stopped
@@ -48,11 +47,11 @@ services:
       KC_HTTP_PORT: 8081
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-        ports:
-          - "8081:8081"
-        depends_on:
-          keycloak-db:
-            condition: service_healthy
+    ports:
+      - "8081:8081"
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
 
   keycloak-db:
     image: postgres:15
@@ -65,15 +64,11 @@ services:
       - keycloak_db_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${KC_DB_USERNAME:-keycloak} -d keycloak"]
->>>>>>> development
       interval: 10s
       timeout: 5s
       retries: 5
 
 volumes:
   teachersuite_db_data:
-<<<<<<< HEAD
   teachersuite_redis_data:
-=======
   keycloak_db_data:
->>>>>>> development

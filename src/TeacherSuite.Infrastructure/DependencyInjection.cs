@@ -35,7 +35,6 @@ public static class DependencyInjection
             options.InstanceName = "TeacherSuite:";
         });
 
-#pragma warning disable EXTEXP0018
         services.AddHybridCache(options =>
         {
             options.DefaultEntryOptions = new Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryOptions
@@ -44,7 +43,6 @@ public static class DependencyInjection
                 Expiration = TimeSpan.FromMinutes(10)
             };
         });
-#pragma warning restore EXTEXP0018
 
         services.AddSingleton<ICacheService, CacheService>();
     }

@@ -20,6 +20,7 @@ internal sealed class UpdateProgrammingLanguageCommandHandler(IApplicationDbCont
         entity.Color = request.Color;
 
         await context.SaveChangesAsync(cancellationToken);
+
         return Unit.Value;
     }
 }
