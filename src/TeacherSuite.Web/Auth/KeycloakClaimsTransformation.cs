@@ -55,7 +55,7 @@ public class KeycloakClaimsTransformation : IClaimsTransformation
     private static void MapPreferredUsername(ClaimsIdentity identity)
     {
         var preferredUsername = identity.FindFirst("preferred_username");
-        if (preferredUsername != null && !identity.HasClaim(ClaimTypes.Name, preferredUsername.Value))
+        if (preferredUsername != null && !identity.HasClaim(c => c.Type == ClaimTypes.Name))
         {
             identity.AddClaim(new Claim(ClaimTypes.Name, preferredUsername.Value));
         }
