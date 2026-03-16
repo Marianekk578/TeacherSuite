@@ -30,7 +30,7 @@ public class AuthorizationBehaviour<TRequest, TResponse>(ICurrentUserService cur
         {
             var authorized = false;
 
-            foreach (var roles in attributesWithRoles.Select(a => a.Roles!.Split(',')))
+            foreach (var roles in attributesWithRoles.Select(a => a.Roles!.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)))
             {
                 foreach (var role in roles)
                 {
