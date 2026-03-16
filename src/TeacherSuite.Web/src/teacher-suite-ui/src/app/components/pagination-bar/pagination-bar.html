@@ -1,0 +1,22 @@
+<div class="pagination-bar" *ngIf="totalPages() > 1">
+  <div class="page-size-selector">
+    <label for="paginationPageSize">Show</label>
+    <select id="paginationPageSize" [value]="pageSize()" (change)="onPageSizeChange($event)" aria-label="Page size">
+      <option *ngFor="let size of pageSizeOptions()" [value]="size" [selected]="size === pageSize()">{{ size }}</option>
+    </select>
+    <span>per page</span>
+  </div>
+  <div class="pagination">
+    <button class="btn-page" [disabled]="page() === 1" (click)="goToPage(1)" aria-label="First page">&laquo;</button>
+    <button class="btn-page" [disabled]="page() === 1" (click)="goToPage(page() - 1)" aria-label="Previous page">&lsaquo;</button>
+    <button
+      *ngFor="let p of visiblePages"
+      class="btn-page"
+      [class.active]="p === page()"
+      (click)="goToPage(p)">
+      {{ p }}
+    </button>
+    <button class="btn-page" [disabled]="page() === totalPages()" (click)="goToPage(page() + 1)" aria-label="Next page">&rsaquo;</button>
+    <button class="btn-page" [disabled]="page() === totalPages()" (click)="goToPage(totalPages())" aria-label="Last page">&raquo;</button>
+  </div>
+</div>

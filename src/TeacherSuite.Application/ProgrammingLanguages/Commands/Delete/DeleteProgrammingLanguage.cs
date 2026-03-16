@@ -3,9 +3,12 @@ using TeacherSuite.Application.Common.Interfaces;
 
 namespace TeacherSuite.Application.ProgrammingLanguages.Commands.Delete;
 
-public record DeleteProgrammingLanguageCommand(int Id) : IRequest<Unit>;
+public record DeleteProgrammingLanguageCommand(int Id) : IRequest<Unit>, ICacheInvalidationCommand
+{
+    public IReadOnlyCollection<string> TagsToInvalidate => ["programming-languages"];
+}
 
-public class DeleteProgrammingLanguageHandler(IApplicationDbContext context) : IRequestHandler<DeleteProgrammingLanguageCommand, Unit>
+internal sealed class DeleteProgrammingLanguageCommandHandler(IApplicationDbContext context) : IRequestHandler<DeleteProgrammingLanguageCommand, Unit>
 {
     public async Task<Unit> Handle(DeleteProgrammingLanguageCommand request, CancellationToken cancellationToken)
     {

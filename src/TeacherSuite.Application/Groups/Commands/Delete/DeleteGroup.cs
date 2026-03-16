@@ -4,7 +4,7 @@ namespace TeacherSuite.Application.Groups.Commands.Delete;
 
 public record DeleteGroupCommand(Guid Id) : IRequest<Unit>;
 
-public class DeleteGroupHandler(IApplicationDbContext context) : IRequestHandler<DeleteGroupCommand, Unit>
+internal sealed class DeleteGroupCommandHandler(IApplicationDbContext context) : IRequestHandler<DeleteGroupCommand, Unit>
 {
     public async Task<Unit> Handle(DeleteGroupCommand request, CancellationToken cancellationToken)
     {

@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -6,6 +7,9 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
 import { GroupService, Group, CreateGroupDto, UpdateGroupDto, GroupCourseAssignment } from '../../services/group.service';
 import { Teacher } from '../../services/teacher.service';
 import { Course, AgeGroup } from '../../services/course.service';
@@ -16,13 +20,29 @@ import { Course, AgeGroup } from '../../services/course.service';
   templateUrl: './groups.html',
   styleUrl: './groups.scss',
 })
-export class Groups implements OnInit {
+export class Groups implements OnInit, OnDestroy {
+  private destroyRef = inject(DestroyRef);
+
   groups: Group[] = [];
   teachers: Teacher[] = [];
   courses: Course[] = [];
   ageGroups: AgeGroup[] = [];
   loading = false;
   error: string | null = null;
+  courseNameFilter: string | null = null;
+
+  // Teacher search autocomplete
+  teacherSearchText = '';
+  teacherSuggestions: Teacher[] = [];
+  showTeacherSuggestions = false;
+  selectedTeacher: Teacher | null = null;
+  teacherSearchLoading = false;
+  private teacherSearchSubject = new Subject<string>();
+  private subscriptions: Subscription[] = [];
+
+  // Teacher tooltip on group cards
+  hoveredTeacher: Teacher | null = null;
+  tooltipStyle: { top: string; left: string } = { top: '0px', left: '0px' };
 
   showModal = false;
   isEditMode = false;
@@ -58,7 +78,9 @@ export class Groups implements OnInit {
   constructor(
     private groupService: GroupService,
     private cdr: ChangeDetectorRef,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     this.groupForm = this.fb.group({
       name: ['', [Validators.required]],
@@ -75,10 +97,46 @@ export class Groups implements OnInit {
   }
 
   ngOnInit() {
-    this.loadGroups();
-    this.loadTeachers();
     this.loadCourses();
     this.loadAgeGroups();
+
+    this.subscriptions.push(
+      this.teacherSearchSubject.pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        tap(() => {
+          this.teacherSearchLoading = true;
+          this.cdr.detectChanges();
+        }),
+        switchMap(search => this.groupService.searchTeachers(search))
+      ).subscribe({
+        next: (teachers) => {
+          this.teacherSuggestions = teachers;
+          this.showTeacherSuggestions = true;
+          this.teacherSearchLoading = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.teacherSuggestions = [];
+          this.showTeacherSuggestions = false;
+          this.teacherSearchLoading = false;
+          this.cdr.detectChanges();
+        }
+      })
+    );
+
+    this.route.queryParams
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const courseName = params['courseName'] ?? null;
+        this.courseNameFilter = courseName;
+        this.loadGroups();
+    });
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach(s => s.unsubscribe());
+    this.teacherSearchSubject.complete();
   }
 
   loadGroups() {
@@ -86,7 +144,11 @@ export class Groups implements OnInit {
     this.error = null;
     this.cdr.detectChanges();
 
-    this.groupService.getAllGroups().subscribe({
+    const source$ = this.courseNameFilter
+      ? this.groupService.getGroupsByCourseName(this.courseNameFilter)
+      : this.groupService.getAllGroups();
+
+    source$.subscribe({
       next: (groups) => {
         this.groups = groups;
         this.loading = false;
@@ -101,16 +163,72 @@ export class Groups implements OnInit {
     });
   }
 
-  loadTeachers() {
-    this.groupService.getAllTeachers().subscribe({
-      next: (teachers) => {
-        this.teachers = teachers;
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        console.error('Error loading teachers:', error);
-      }
-    });
+  onTeacherSearchInput(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.teacherSearchText = value;
+    if (this.selectedTeacher) {
+      this.selectedTeacher = null;
+      this.groupForm.patchValue({ teacherId: null });
+    }
+    if (value.trim().length >= 2) {
+      this.teacherSearchSubject.next(value.trim());
+    } else {
+      this.teacherSuggestions = [];
+      this.showTeacherSuggestions = false;
+      this.teacherSearchLoading = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  selectTeacher(teacher: Teacher) {
+    this.selectedTeacher = teacher;
+    this.teacherSearchText = `${teacher.firstName} ${teacher.lastName}`;
+    this.groupForm.patchValue({ teacherId: teacher.id });
+    this.showTeacherSuggestions = false;
+    this.teacherSuggestions = [];
+    this.cdr.detectChanges();
+  }
+
+  clearTeacherSelection() {
+    this.selectedTeacher = null;
+    this.teacherSearchText = '';
+    this.groupForm.patchValue({ teacherId: null });
+    this.teacherSuggestions = [];
+    this.showTeacherSuggestions = false;
+    this.cdr.detectChanges();
+  }
+
+  onTeacherSearchBlur() {
+    setTimeout(() => {
+      this.showTeacherSuggestions = false;
+      this.cdr.detectChanges();
+    }, 200);
+  }
+
+  onTeacherSearchFocus() {
+    if (this.teacherSuggestions.length > 0 && !this.selectedTeacher) {
+      this.showTeacherSuggestions = true;
+      this.cdr.detectChanges();
+    }
+  }
+
+  // Teacher tooltip on group cards
+  showTeacherTooltip(event: MouseEvent, group: Group) {
+    if (group.teacher) {
+      this.hoveredTeacher = group.teacher;
+      const target = event.target as HTMLElement;
+      const rect = target.getBoundingClientRect();
+      this.tooltipStyle = {
+        top: `${rect.bottom + window.scrollY + 8}px`,
+        left: `${rect.left + window.scrollX}px`
+      };
+      this.cdr.detectChanges();
+    }
+  }
+
+  hideTeacherTooltip() {
+    this.hoveredTeacher = null;
+    this.cdr.detectChanges();
   }
 
   loadCourses() {
@@ -141,6 +259,10 @@ export class Groups implements OnInit {
     this.isEditMode = false;
     this.currentGroupId = null;
     this.modalError = null;
+    this.teacherSearchText = '';
+    this.selectedTeacher = null;
+    this.teacherSuggestions = [];
+    this.showTeacherSuggestions = false;
     this.groupForm.reset({
       name: '',
       teacherId: null,
@@ -153,6 +275,12 @@ export class Groups implements OnInit {
     this.isEditMode = true;
     this.currentGroupId = group.id;
     this.modalError = null;
+    this.selectedTeacher = group.teacher ?? null;
+    this.teacherSearchText = group.teacher
+      ? `${group.teacher.firstName} ${group.teacher.lastName}`
+      : '';
+    this.teacherSuggestions = [];
+    this.showTeacherSuggestions = false;
     this.groupForm.reset({
       name: group.name,
       teacherId: group.teacherId,
@@ -166,6 +294,10 @@ export class Groups implements OnInit {
     this.isEditMode = false;
     this.currentGroupId = null;
     this.modalError = null;
+    this.teacherSearchText = '';
+    this.selectedTeacher = null;
+    this.teacherSuggestions = [];
+    this.showTeacherSuggestions = false;
   }
 
   @HostListener('document:keydown.escape', ['$event'])
@@ -258,12 +390,13 @@ export class Groups implements OnInit {
     return 'Unassigned';
   }
 
-  getAgeGroupName(group: Group): string {
-    if (group.ageGroup) {
-      return group.ageGroup.name;
+  getAgeGroupLabel(group: Group): string {
+    const ag = group.ageGroup || this.ageGroups.find(a => a.id === group.ageGroupID);
+    if (ag) {
+      const label = ag.label || ag.name;
+      return `${label} (${ag.minAge}-${ag.maxAge})`;
     }
-    const ag = this.ageGroups.find(a => a.id === group.ageGroupID);
-    return ag ? ag.name : 'Unknown';
+    return 'Unknown';
   }
 
   getStatusLabel(status: number): string {
@@ -411,5 +544,20 @@ export class Groups implements OnInit {
     }
 
     return 'Please fix the errors in the form.';
+  }
+
+  navigateToCourseDetails(courseId: number) {
+    this.router.navigate(['/courses'], {
+      queryParams: { courseId: courseId }
+    });
+  }
+
+  clearCourseFilter() {
+    this.courseNameFilter = null;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true
+    });
   }
 }

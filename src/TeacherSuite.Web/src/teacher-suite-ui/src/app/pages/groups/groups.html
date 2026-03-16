@@ -15,6 +15,11 @@
     <button class="alert-close" (click)="error = null">&times;</button>
   </div>
 
+  <div *ngIf="courseNameFilter" class="filter-banner">
+    <span>Showing groups assigned to course: <strong>{{ courseNameFilter }}</strong></span>
+    <button class="btn btn-secondary btn-small-filter" (click)="clearCourseFilter()">Clear filter</button>
+  </div>
+
   <div *ngIf="loading" class="loading-state">
     <div class="spinner"></div>
     <p>Loading groups...</p>
@@ -22,9 +27,10 @@
 
   <div *ngIf="!loading && groups.length === 0" class="empty-state">
     <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-      <polyline points="2 17 12 22 22 17"></polyline>
-      <polyline points="2 12 12 17 22 12"></polyline>
+      <rect x="3" y="3" width="7" height="7"></rect>
+      <rect x="14" y="3" width="7" height="7"></rect>
+      <rect x="3" y="14" width="7" height="7"></rect>
+      <rect x="14" y="14" width="7" height="7"></rect>
     </svg>
     <h2>No Groups Yet</h2>
     <p>Start by adding your first group to the system.</p>
@@ -36,28 +42,36 @@
       <div class="group-card-header">
         <div class="group-icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-            <polyline points="2 17 12 22 22 17"></polyline>
-            <polyline points="2 12 12 17 22 12"></polyline>
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
           </svg>
         </div>
         <div class="group-info">
           <h3>{{ group.name }}</h3>
-          <div class="detail-item">
+          <div class="detail-item teacher-detail-item">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
-            <span>{{ getTeacherName(group) }}</span>
+            <span
+              class="teacher-name-hover"
+              (mouseenter)="showTeacherTooltip($event, group)"
+              (mouseleave)="hideTeacherTooltip()"
+            >{{ getTeacherName(group) }}</span>
           </div>
           <div class="detail-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-            <span>{{ getAgeGroupName(group) }}</span>
+            <span class="age-group-label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <circle cx="19" cy="11" r="2"></circle>
+                <path d="M19 8v1"></path>
+                <path d="M19 13v1"></path>
+              </svg>
+              {{ getAgeGroupLabel(group) }}
+            </span>
           </div>
         </div>
         <div class="group-actions">
@@ -83,7 +97,7 @@
         <div *ngIf="group.courses && group.courses.length > 0" class="courses-list">
           <div class="course-item" *ngFor="let assignment of group.courses">
             <div class="course-item-info">
-              <span class="course-name">{{ assignment.courseName }}</span>
+              <button type="button" class="course-name course-name-link" (click)="navigateToCourseDetails(assignment.courseId)">{{ assignment.courseName }}</button>
               <span class="status-badge" [ngClass]="getStatusClass(assignment.status)">{{ getStatusLabel(assignment.status) }}</span>
             </div>
             <div class="course-item-actions">
@@ -123,17 +137,46 @@
         />
       </div>
       <div class="form-group">
-        <label for="teacherId">Teacher *</label>
-        <select 
-          id="teacherId" 
-          formControlName="teacherId"
-          required
-        >
-          <option [ngValue]="null">Select a teacher</option>
-          <option *ngFor="let teacher of teachers" [ngValue]="teacher.id">
-            {{ teacher.firstName }} {{ teacher.lastName }}
-          </option>
-        </select>
+        <label for="teacherSearch">Teacher *</label>
+        <div class="teacher-autocomplete">
+          <div class="teacher-search-input-wrapper">
+            <input
+              type="text"
+              id="teacherSearch"
+              [value]="teacherSearchText"
+              (input)="onTeacherSearchInput($event)"
+              (blur)="onTeacherSearchBlur()"
+              (focus)="onTeacherSearchFocus()"
+              placeholder="Search by name or email..."
+              autocomplete="off"
+              [class.has-selection]="selectedTeacher"
+            />
+            <button
+              *ngIf="selectedTeacher"
+              type="button"
+              class="teacher-clear-btn"
+              (click)="clearTeacherSelection()"
+              aria-label="Clear teacher selection"
+            >&times;</button>
+            <div *ngIf="teacherSearchLoading" class="teacher-search-spinner"></div>
+          </div>
+          <div *ngIf="showTeacherSuggestions" class="teacher-suggestions">
+            <div
+              class="teacher-suggestion-item"
+              *ngFor="let teacher of teacherSuggestions"
+              (mousedown)="$event.preventDefault(); selectTeacher(teacher)"
+            >
+              <div class="suggestion-name">{{ teacher.firstName }} {{ teacher.lastName }}</div>
+              <div class="suggestion-email">{{ teacher.email }}</div>
+              <div *ngIf="teacher.programmingLanguages && teacher.programmingLanguages.length > 0" class="suggestion-languages">
+                <span class="lang-tag" *ngFor="let lang of teacher.programmingLanguages" [ngStyle]="lang.color ? { 'background-color': lang.color, 'color': 'white' } : {}">{{ lang.label || lang.name }}</span>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="showTeacherSuggestions && teacherSuggestions.length === 0 && !teacherSearchLoading" class="teacher-suggestions">
+            <div class="teacher-suggestion-empty">No teachers found</div>
+          </div>
+        </div>
       </div>
       <div class="form-group">
         <label for="ageGroupID">Age Group *</label>
@@ -233,5 +276,14 @@
         <button type="submit" class="btn btn-primary">Update</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Teacher Tooltip -->
+<div *ngIf="hoveredTeacher" class="teacher-tooltip" [ngStyle]="tooltipStyle">
+  <div class="tooltip-name">{{ hoveredTeacher.firstName }} {{ hoveredTeacher.lastName }}</div>
+  <div class="tooltip-email">{{ hoveredTeacher.email }}</div>
+  <div *ngIf="hoveredTeacher.programmingLanguages && hoveredTeacher.programmingLanguages.length > 0" class="tooltip-languages">
+    <span class="lang-tag" *ngFor="let lang of hoveredTeacher.programmingLanguages" [ngStyle]="lang.color ? { 'background-color': lang.color, 'color': 'white' } : {}">{{ lang.label || lang.name }}</span>
   </div>
 </div>

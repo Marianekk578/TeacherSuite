@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TeacherSuite.Application.Common.Interfaces;
+using TeacherSuite.Infrastructure.Caching;
 using TeacherSuite.Infrastructure.Data;
 
 namespace TeacherSuite.Infrastructure;
@@ -24,5 +25,25 @@ public static class DependencyInjection
             }));
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+
+        var redisConnectionString = configuration.GetConnectionString("RedisCache")
+                                    ?? Environment.GetEnvironmentVariable("CONNECTION_STRINGS__RedisCache");
+
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = redisConnectionString;
+            options.InstanceName = "TeacherSuite:";
+        });
+
+        services.AddHybridCache(options =>
+        {
+            options.DefaultEntryOptions = new Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryOptions
+            {
+                LocalCacheExpiration = TimeSpan.FromMinutes(2),
+                Expiration = TimeSpan.FromMinutes(10)
+            };
+        });
+
+        services.AddSingleton<ICacheService, CacheService>();
     }
 }

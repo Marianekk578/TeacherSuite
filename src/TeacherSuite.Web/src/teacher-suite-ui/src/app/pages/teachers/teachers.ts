@@ -11,12 +11,14 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { TeacherService, Teacher, CreateTeacherDto, UpdateTeacherDto, PagedResult } from '../../services/teacher.service';
+import { TeacherService, Teacher, CreateTeacherDto, UpdateTeacherDto } from '../../services/teacher.service';
 import { ProgrammingLanguageService, ProgrammingLanguage } from '../../services/programming-language.service';
+import { PagedResult } from '../../models/paged-result.model';
+import { PaginationBarComponent } from '../../components/pagination-bar/pagination-bar';
 
 @Component({
   selector: 'app-teachers',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PaginationBarComponent],
   templateUrl: './teachers.html',
   styleUrl: './teachers.scss',
 })
@@ -104,26 +106,13 @@ export class Teachers implements OnInit, OnDestroy {
     this.searchSubject.next(value);
   }
 
-  onPageSizeChange(event: Event) {
-    const value = parseInt((event.target as HTMLSelectElement).value, 10);
-    this.navigateWithParams({ pageSize: value, page: 1 });
+  onPageSizeChange(newSize: number) {
+    this.navigateWithParams({ pageSize: newSize, page: 1 });
   }
 
   goToPage(p: number) {
     if (p < 1 || p > this.totalPages()) return;
     this.navigateWithParams({ page: p });
-  }
-
-  get visiblePages(): number[] {
-    const total = this.totalPages();
-    const current = this.page();
-    const pages: number[] = [];
-    const start = Math.max(1, current - 2);
-    const end = Math.min(total, current + 2);
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-    return pages;
   }
 
   private navigateWithParams(overrides: { search?: string; page?: number; pageSize?: number }) {
@@ -382,7 +371,7 @@ export class Teachers implements OnInit, OnDestroy {
           if (this.languageTeacher) {
             this.languageTeacher.programmingLanguages = [
               ...this.languageTeacher.programmingLanguages,
-              { id: language.id, name: language.name }
+              { id: language.id, name: language.name, label: language.label, color: language.color }
             ];
           }
           this.loadTeachers();
