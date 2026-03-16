@@ -274,7 +274,7 @@ export class Courses implements OnInit {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParamsHandling: 'merge',
-      queryParams: {courseName: null},
+      queryParams: {courseId: null},
       replaceUrl: true
     });
   }
