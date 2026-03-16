@@ -273,7 +273,8 @@ export class Courses implements OnInit {
     this.selectedCourse = null;
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: {},
+      queryParamsHandling: 'merge',
+      queryParams: {courseName: null},
       replaceUrl: true
     });
   }

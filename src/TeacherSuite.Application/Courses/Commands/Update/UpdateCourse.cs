@@ -3,7 +3,10 @@ using TeacherSuite.Domain.Entities;
 
 namespace TeacherSuite.Application.Courses.Commands.Update;
 
-public record UpdateCourseCommand(int Id, string? Name, string? Description, int AgeGroupID, List<int>? ProgrammingLanguageIds) : IRequest<Unit>;
+public record UpdateCourseCommand(int Id, string? Name, string? Description, int AgeGroupID, List<int>? ProgrammingLanguageIds) : IRequest<Unit>, ICacheInvalidationCommand
+{
+    public IReadOnlyCollection<string> TagsToInvalidate => ["courses"];
+}
 
 internal sealed class UpdateCourseCommandHandler(IApplicationDbContext context) : IRequestHandler<UpdateCourseCommand, Unit>
 {

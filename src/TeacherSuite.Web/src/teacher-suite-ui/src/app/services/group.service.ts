@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { ApiService } from './api.service';
-import { Teacher, PagedResult } from './teacher.service';
+import { Teacher } from './teacher.service';
 import { Course, AgeGroup } from './course.service';
-
+import { PagedResult } from '../models/paged-result.model';
 export interface GroupCourseAssignment {
   courseId: number;
   courseName: string;
