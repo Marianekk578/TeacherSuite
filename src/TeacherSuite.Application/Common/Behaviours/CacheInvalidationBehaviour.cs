@@ -11,7 +11,7 @@ public class CacheInvalidationBehaviour<TRequest, TResponse>(ICacheService cache
         RequestHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
-        var response = await next();
+        var response = await next(cancellationToken);
 
         foreach (var tag in request.TagsToInvalidate)
         {

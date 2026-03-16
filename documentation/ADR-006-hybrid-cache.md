@@ -1,7 +1,7 @@
-# ADR-005: Hybrid Cache with Redis
+# ADR-006: Hybrid Cache with Redis
 
 ## Date:
-2026-03-05
+2026-03-16
 
 ## Status:
 Accepted
