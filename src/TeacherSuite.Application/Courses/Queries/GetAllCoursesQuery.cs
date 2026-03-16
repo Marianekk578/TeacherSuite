@@ -6,7 +6,7 @@ namespace TeacherSuite.Application.Courses.Queries;
 
 public record GetAllCoursesQuery : IRequest<PagedResult<CourseDto>>, ICacheableQuery
 {
-    public string CacheKey => "teachersuite:courses:all";
+    public string CacheKey => $"teachersuite:courses:page:{Page ?? 1}:size:{PageSize ?? 12}";
     public IReadOnlyCollection<string>? Tags => ["courses"];
     public int? Page { get; init; }
     public int? PageSize { get; init; }
