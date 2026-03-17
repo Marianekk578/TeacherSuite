@@ -1,0 +1,354 @@
+<div class="students-page">
+  <div class="page-header">
+    <h1>Students</h1>
+    <div class="search-bar">
+      <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="text"
+        placeholder="Search by name or email..."
+        [value]="search()"
+        (input)="onSearchInput($event)"
+        aria-label="Search students"
+      />
+      <span class="search-count" *ngIf="!loading">{{ totalCount() }} result{{ totalCount() === 1 ? '' : 's' }}</span>
+    </div>
+    <div class="page-header-actions">
+      <button aria-label="AddStudent" class="btn btn-sm btn-primary" (click)="openAddModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Add Student
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-error">
+    {{ error }}
+    <button class="alert-close" (click)="error = null">&times;</button>
+  </div>
+
+  <div *ngIf="loading" class="students-grid">
+    <div class="student-card skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12]">
+      <div class="skeleton-avatar skeleton-pulse"></div>
+      <div class="skeleton-info">
+        <div class="skeleton-line skeleton-line-name skeleton-pulse"></div>
+        <div class="skeleton-line skeleton-line-detail skeleton-pulse"></div>
+        <div class="skeleton-line skeleton-line-detail skeleton-pulse"></div>
+        <div class="skeleton-line skeleton-line-short skeleton-pulse"></div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && students.length === 0" class="empty-state">
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+      <path d="M6 12v5c0 1.1 2.7 3 6 3s6-1.9 6-3v-5"></path>
+    </svg>
+    <h2 *ngIf="!search()">No Students Yet</h2>
+    <h2 *ngIf="search()">No Results Found</h2>
+    <p *ngIf="!search()">Start by adding your first student to the system.</p>
+    <p *ngIf="search()">No students match "{{ search() }}". Try a different search.</p>
+    <button *ngIf="!search()" class="btn btn-primary" (click)="openAddModal()">Add First Student</button>
+  </div>
+
+  <div *ngIf="!loading && students.length > 0" class="students-grid">
+    <div class="student-card" *ngFor="let student of students">
+      <div class="student-avatar">
+        {{ (student.firstName || '').charAt(0) }}{{ (student.lastName || '').charAt(0) }}
+      </div>
+      <div class="student-info">
+        <h3>{{ getFullName(student) }}</h3>
+        <div class="student-groups" *ngIf="student.groups && student.groups.length > 0">
+          <span class="group-label" *ngFor="let g of student.groups">{{ g.groupName }}</span>
+        </div>
+        <div class="student-details">
+          <div class="detail-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            <span>{{ student.contactEmail }}</span>
+          </div>
+          <div class="detail-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>{{ formatDate(student.dateOfBirth) }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="student-actions">
+        <button class="btn-icon btn-icon-details" (click)="openDetailsModal(student)" title="View Details">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+        </button>
+        <button class="btn-icon btn-icon-group" (click)="openGroupModal(student)" title="Manage Groups">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+          </svg>
+        </button>
+        <button class="btn-icon btn-icon-edit" (click)="openEditModal(student)" title="Edit">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+        </button>
+        <button *ngIf="isAdminOrSupervisor" class="btn-icon btn-icon-delete" type="button" (click)="confirmDelete(student)" title="Delete">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <app-pagination-bar
+    *ngIf="!loading"
+    [page]="page()"
+    [pageSize]="pageSize()"
+    [totalPages]="totalPages()"
+    [pageSizeOptions]="pageSizeOptions"
+    (pageChange)="goToPage($event)"
+    (pageSizeChange)="onPageSizeChange($event)">
+  </app-pagination-bar>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" *ngIf="showModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="modalTitle">{{ isEditMode ? 'Edit Student' : 'Add New Student' }}</h2>
+      <button class="modal-close" (click)="closeModal()">&times;</button>
+    </div>
+    <form class="modal-body" [formGroup]="studentForm" (ngSubmit)="saveStudent()">
+      <div *ngIf="modalError" class="alert alert-error modal-alert">
+        {{ modalError }}
+        <button type="button" class="alert-close" (click)="modalError = null">&times;</button>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">First Name *</label>
+          <input
+            type="text"
+            id="firstName"
+            formControlName="firstName"
+            required
+            placeholder="Enter first name"
+          />
+        </div>
+        <div class="form-group">
+          <label for="lastName">Last Name *</label>
+          <input
+            type="text"
+            id="lastName"
+            formControlName="lastName"
+            required
+            placeholder="Enter last name"
+          />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="dateOfBirth">Date of Birth *</label>
+        <input
+          type="date"
+          id="dateOfBirth"
+          formControlName="dateOfBirth"
+          [max]="getCurrentDate()"
+          required
+        />
+      </div>
+      <div class="form-section-label">{{ getContactLabel() }} Details</div>
+      <div class="form-row" *ngIf="!isAdult()">
+        <div class="form-group">
+          <label for="parentFirstName">Parent's First Name</label>
+          <input
+            type="text"
+            id="parentFirstName"
+            formControlName="parentFirstName"
+            placeholder="Enter parent's first name"
+          />
+        </div>
+        <div class="form-group">
+          <label for="parentLastName">Parent's Last Name</label>
+          <input
+            type="text"
+            id="parentLastName"
+            formControlName="parentLastName"
+            placeholder="Enter parent's last name"
+          />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="contactEmail">{{ isAdult() ? 'Email' : "Parent's Email" }} *</label>
+        <input
+          type="email"
+          id="contactEmail"
+          formControlName="contactEmail"
+          required
+          [placeholder]="isAdult() ? 'student@example.com' : 'parent@example.com'"
+        />
+      </div>
+      <div class="form-group">
+        <label for="contactPhone">{{ isAdult() ? 'Phone' : "Parent's Phone" }} *</label>
+        <input
+          type="tel"
+          id="contactPhone"
+          formControlName="contactPhone"
+          required
+          placeholder="+48 123 456 789"
+        />
+      </div>
+      <div class="form-group" *ngIf="!isEditMode">
+        <label for="groupId">Assign to Group (optional)</label>
+        <select id="groupId" formControlName="groupId">
+          <option value="">No group</option>
+          <option *ngFor="let group of allGroups" [value]="group.id">
+            {{ group.name }} {{ group.ageGroup ? '(' + group.ageGroup.label + ')' : '' }}
+          </option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Create' }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+  <div class="modal modal-small" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="deleteConfirmTitle">Confirm Delete</h2>
+      <button class="modal-close" (click)="cancelDelete()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to delete <strong>{{ studentToDelete ? getFullName(studentToDelete) : '' }}</strong>? This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="cancelDelete()">Cancel</button>
+        <button type="button" class="btn btn-danger" (click)="deleteStudent()">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal-overlay" *ngIf="showDetailsModal" (click)="closeDetailsModal()">
+  <div class="modal modal-large" role="dialog" aria-modal="true" aria-labelledby="detailsModalTitle" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="detailsModalTitle">Student Details</h2>
+      <button class="modal-close" (click)="closeDetailsModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div *ngIf="detailsLoading" class="details-loading">
+        <div class="spinner"></div>
+        <p>Loading student details...</p>
+      </div>
+      <div *ngIf="!detailsLoading && selectedStudentDetail" class="student-detail-content">
+        <div class="detail-section">
+          <h3>{{ getFullName(selectedStudentDetail) }}</h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Date of Birth</span>
+              <span>{{ formatDate(selectedStudentDetail.dateOfBirth) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">{{ isStudentAdult(selectedStudentDetail) ? 'Email' : "Parent's Email" }}</span>
+              <span>{{ selectedStudentDetail.contactEmail }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">{{ isStudentAdult(selectedStudentDetail) ? 'Phone' : "Parent's Phone" }}</span>
+              <span>{{ selectedStudentDetail.contactPhone }}</span>
+            </div>
+            <div class="detail-item" *ngIf="!isStudentAdult(selectedStudentDetail) && selectedStudentDetail.parentFirstName">
+              <span class="detail-label">Parent's Name</span>
+              <span>{{ selectedStudentDetail.parentFirstName }} {{ selectedStudentDetail.parentLastName }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section" *ngIf="selectedStudentDetail.programmingLanguages.length > 0">
+          <h4>Programming Languages Learned</h4>
+          <div class="language-tags">
+            <span class="language-tag" *ngFor="let lang of selectedStudentDetail.programmingLanguages" [style.background-color]="lang.color || '#667eea'">
+              {{ lang.label || lang.name }}
+            </span>
+          </div>
+        </div>
+
+        <div class="detail-section" *ngIf="selectedStudentDetail.groups.length > 0">
+          <h4>Assigned Groups</h4>
+          <div class="assigned-groups">
+            <div class="assigned-group-item" *ngFor="let g of selectedStudentDetail.groups">
+              <span class="group-name">{{ g.groupName }}</span>
+              <span class="age-group-badge" *ngIf="g.ageGroup">{{ g.ageGroup.label || g.ageGroup.name }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section" *ngIf="selectedStudentDetail.courseHistory.length > 0">
+          <h4>Course History</h4>
+          <div class="course-history">
+            <div class="course-history-item" *ngFor="let course of selectedStudentDetail.courseHistory">
+              <div class="course-history-header">
+                <span class="course-name">{{ course.courseName }}</span>
+                <span class="course-status" [class]="'status-' + course.status">{{ courseStatusLabels[course.status] || 'Unknown' }}</span>
+              </div>
+              <div class="course-history-meta">
+                <span>Group: {{ course.groupName }}</span>
+                <span>Started: {{ formatDate(course.startDate) }}</span>
+                <span *ngIf="course.endDate">Ended: {{ formatDate(course.endDate) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeDetailsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Group Assignment Modal -->
+<div class="modal-overlay" *ngIf="showGroupModal" (click)="closeGroupModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="groupModalTitle" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="groupModalTitle">Manage Groups — {{ groupStudent ? getFullName(groupStudent) : '' }}</h2>
+      <button class="modal-close" (click)="closeGroupModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p *ngIf="allGroups.length === 0" class="no-groups-message">No groups available. Create groups from the Groups page first.</p>
+      <div class="group-chips" *ngIf="allGroups.length > 0">
+        <button
+          type="button"
+          class="group-chip"
+          *ngFor="let group of allGroups"
+          [class.selected]="isGroupAssigned(group)"
+          (click)="toggleGroup(group)"
+        >
+          {{ group.name }}
+          <span class="chip-age" *ngIf="group.ageGroup">{{ group.ageGroup.label || group.ageGroup.name }}</span>
+        </button>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeGroupModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
