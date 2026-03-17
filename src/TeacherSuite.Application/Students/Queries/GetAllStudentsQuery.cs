@@ -16,7 +16,7 @@ internal sealed class GetAllStudentsQueryHandler(IApplicationDbContext db, IMapp
 {
     public async Task<PagedResult<StudentDto>> Handle(GetAllStudentsQuery request, CancellationToken cancellationToken)
     {
-        var query = db.Students.AsQueryable();
+        IQueryable<Domain.Entities.Student> query = db.Students;
 
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
