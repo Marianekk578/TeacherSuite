@@ -11,7 +11,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { StudentService, Student, StudentDetail, CreateStudentDto, UpdateStudentDto } from '../../services/student.service';
+import { StudentService, Student, StudentDetail, CreateStudentDto, UpdateStudentDto, GroupWithAgeGroup } from '../../services/student.service';
 import { PagedResult } from '../../models/paged-result.model';
 import { PaginationBarComponent } from '../../components/pagination-bar/pagination-bar';
 import { KeycloakService } from '../../auth/keycloak.service';
@@ -54,7 +54,7 @@ export class Students implements OnInit, OnDestroy {
 
   showGroupModal = false;
   groupStudent: Student | null = null;
-  allGroups: { id: string; name: string; ageGroupID: number; ageGroup?: { id: number; name: string; label?: string; minAge: number; maxAge: number } }[] = [];
+  allGroups: GroupWithAgeGroup[] = [];
 
   isAdminOrSupervisor = false;
 
@@ -408,7 +408,14 @@ export class Students implements OnInit, OnDestroy {
         error: (error) => {
           const status = error?.status as number | undefined;
           if (status === 409) {
-            this.error = 'Student age does not match the group\'s age range, or student is already assigned.';
+            const message = error?.message ?? '';
+            if (message.toLowerCase().includes('age')) {
+              this.error = 'Student age does not match the group\'s age range.';
+            } else if (message.toLowerCase().includes('already')) {
+              this.error = 'Student is already assigned to this group.';
+            } else {
+              this.error = 'Conflict: unable to assign student to this group.';
+            }
           } else {
             this.error = 'Failed to assign student to group. Please try again.';
           }

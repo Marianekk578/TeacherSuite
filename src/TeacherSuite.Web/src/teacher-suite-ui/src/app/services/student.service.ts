@@ -83,6 +83,21 @@ export interface UpdateStudentDto {
   parentLastName?: string;
 }
 
+export interface GroupAgeGroup {
+  id: number;
+  name: string;
+  label?: string;
+  minAge: number;
+  maxAge: number;
+}
+
+export interface GroupWithAgeGroup {
+  id: string;
+  name: string;
+  ageGroupID: number;
+  ageGroup?: GroupAgeGroup;
+}
+
 export interface StudentQuery {
   search: string;
   page: number;
@@ -141,8 +156,8 @@ export class StudentService extends ApiService {
     return this.delete(`${this.apiUrl}/${studentId}/groups/${groupId}`);
   }
 
-  getAllGroups(): Observable<{ id: string; name: string; ageGroupID: number; ageGroup?: { id: number; name: string; label?: string; minAge: number; maxAge: number } }[]> {
-    return this.get<{ id: string; name: string; ageGroupID: number; ageGroup?: { id: number; name: string; label?: string; minAge: number; maxAge: number } }[]>(this.groupUrl);
+  getAllGroups(): Observable<GroupWithAgeGroup[]> {
+    return this.get<GroupWithAgeGroup[]>(this.groupUrl);
   }
 
   private convertToUtcIsoString(dateString: string): string {
