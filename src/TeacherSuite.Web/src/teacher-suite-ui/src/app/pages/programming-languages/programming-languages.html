@@ -2,10 +2,7 @@
   <div class="page-header">
     <h1>Programming Languages</h1>
     <button aria-label="AddProgrammingLanguage" class="btn btn-primary" (click)="openAddModal()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19"></line>
-        <line x1="5" y1="12" x2="19" y2="12"></line>
-      </svg>
+      <ng-icon name="heroPlus" size="20" />
       Add Language
     </button>
   </div>
@@ -21,10 +18,7 @@
   </div>
 
   <div *ngIf="!loading && programmingLanguages.length === 0" class="empty-state">
-    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="16 18 22 12 16 6"></polyline>
-      <polyline points="8 6 2 12 8 18"></polyline>
-    </svg>
+    <ng-icon name="heroCodeBracket" size="64" />
     <h2>No Programming Languages Yet</h2>
     <p>Start by adding your first programming language to the system.</p>
     <button class="btn btn-primary" (click)="openAddModal()">Add First Language</button>
@@ -33,10 +27,7 @@
   <div *ngIf="!loading && programmingLanguages.length > 0" class="languages-grid">
     <div class="language-card" *ngFor="let language of programmingLanguages">
       <div class="language-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="16 18 22 12 16 6"></polyline>
-          <polyline points="8 6 2 12 8 18"></polyline>
-        </svg>
+        <ng-icon name="heroCodeBracket" size="24" />
       </div>
       <div class="language-info">
         <h3>{{ language.name }}</h3>
@@ -44,16 +35,10 @@
       </div>
       <div class="language-actions">
         <button class="btn-icon btn-icon-edit" (click)="openEditModal(language)" title="Edit">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-          </svg>
+          <ng-icon name="heroPencil" size="18" />
         </button>
         <button class="btn-icon btn-icon-delete" type="button" (click)="confirmDelete(language)" title="Delete">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-          </svg>
+          <ng-icon name="heroTrash" size="18" />
         </button>
       </div>
     </div>

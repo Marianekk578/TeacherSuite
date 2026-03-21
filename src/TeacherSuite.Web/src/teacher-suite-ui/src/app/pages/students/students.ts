@@ -15,10 +15,23 @@ import { StudentService, Student, StudentDetail, CreateStudentDto, UpdateStudent
 import { PagedResult } from '../../models/paged-result.model';
 import { PaginationBarComponent } from '../../components/pagination-bar/pagination-bar';
 import { KeycloakService } from '../../auth/keycloak.service';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  heroAcademicCap,
+  heroMagnifyingGlass,
+  heroPlus,
+  heroInformationCircle,
+  heroUserGroup,
+  heroPencil,
+  heroTrash,
+  heroEnvelope,
+  heroCalendarDays,
+} from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-students',
-  imports: [CommonModule, ReactiveFormsModule, PaginationBarComponent],
+  imports: [CommonModule, ReactiveFormsModule, PaginationBarComponent, NgIconComponent],
+  providers: [provideIcons({ heroAcademicCap, heroMagnifyingGlass, heroPlus, heroInformationCircle, heroUserGroup, heroPencil, heroTrash, heroEnvelope, heroCalendarDays })],
   templateUrl: './students.html',
   styleUrl: './students.scss',
 })

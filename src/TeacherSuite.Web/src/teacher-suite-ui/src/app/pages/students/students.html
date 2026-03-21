@@ -2,10 +2,7 @@
   <div class="page-header">
     <h1>Students</h1>
     <div class="search-bar">
-      <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
+      <ng-icon class="search-icon" name="heroMagnifyingGlass" size="18" />
       <input
         type="text"
         placeholder="Search by name or email..."
@@ -17,10 +14,7 @@
     </div>
     <div class="page-header-actions">
       <button aria-label="AddStudent" class="btn btn-sm btn-primary" (click)="openAddModal()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
+        <ng-icon name="heroPlus" size="16" />
         Add Student
       </button>
     </div>
@@ -44,10 +38,7 @@
   </div>
 
   <div *ngIf="!loading && students.length === 0" class="empty-state">
-    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-      <path d="M6 12v5c0 1.1 2.7 3 6 3s6-1.9 6-3v-5"></path>
-    </svg>
+    <ng-icon name="heroAcademicCap" size="64" />
     <h2 *ngIf="!search()">No Students Yet</h2>
     <h2 *ngIf="search()">No Results Found</h2>
     <p *ngIf="!search()">Start by adding your first student to the system.</p>
@@ -65,31 +56,16 @@
           <h3>{{ getFullName(student) }}</h3>
           <div class="student-actions">
             <button class="btn-icon btn-icon-details" (click)="openDetailsModal(student)" title="View Details">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-              </svg>
+              <ng-icon name="heroInformationCircle" size="18" />
             </button>
             <button class="btn-icon btn-icon-group" (click)="openGroupModal(student)" title="Manage Groups">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="7" height="7"></rect>
-                <rect x="14" y="3" width="7" height="7"></rect>
-                <rect x="3" y="14" width="7" height="7"></rect>
-                <rect x="14" y="14" width="7" height="7"></rect>
-              </svg>
+              <ng-icon name="heroUserGroup" size="18" />
             </button>
             <button class="btn-icon btn-icon-edit" (click)="openEditModal(student)" title="Edit">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-              </svg>
+              <ng-icon name="heroPencil" size="18" />
             </button>
             <button *ngIf="isAdminOrSupervisor" class="btn-icon btn-icon-delete" type="button" (click)="confirmDelete(student)" title="Delete">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              </svg>
+              <ng-icon name="heroTrash" size="18" />
             </button>
           </div>
         </div>
@@ -98,19 +74,11 @@
         </div>
         <div class="student-details">
           <div class="detail-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-              <polyline points="22,6 12,13 2,6"></polyline>
-            </svg>
+            <ng-icon name="heroEnvelope" size="16" />
             <span>{{ student.contactEmail }}</span>
           </div>
           <div class="detail-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
+            <ng-icon name="heroCalendarDays" size="16" />
             <span>{{ formatDate(student.dateOfBirth) }}</span>
           </div>
         </div>

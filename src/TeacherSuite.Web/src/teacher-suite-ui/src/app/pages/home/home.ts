@@ -1,9 +1,18 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  heroAcademicCap,
+  heroBookOpen,
+  heroUserGroup,
+  heroUsers,
+  heroCodeBracket,
+} from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-home',
-  imports: [],
+  imports: [NgIconComponent],
+  providers: [provideIcons({ heroAcademicCap, heroBookOpen, heroUserGroup, heroUsers, heroCodeBracket })],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })

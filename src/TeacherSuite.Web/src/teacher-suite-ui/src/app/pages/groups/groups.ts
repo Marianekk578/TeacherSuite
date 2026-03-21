@@ -13,10 +13,20 @@ import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operato
 import { GroupService, Group, CreateGroupDto, UpdateGroupDto, GroupCourseAssignment } from '../../services/group.service';
 import { Teacher } from '../../services/teacher.service';
 import { Course, AgeGroup } from '../../services/course.service';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  heroUserGroup,
+  heroUser,
+  heroUsers,
+  heroPlus,
+  heroPencil,
+  heroTrash,
+} from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-groups',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, NgIconComponent],
+  providers: [provideIcons({ heroUserGroup, heroUser, heroUsers, heroPlus, heroPencil, heroTrash })],
   templateUrl: './groups.html',
   styleUrl: './groups.scss',
 })

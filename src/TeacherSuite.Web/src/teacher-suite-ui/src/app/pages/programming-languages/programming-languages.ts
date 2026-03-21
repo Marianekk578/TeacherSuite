@@ -7,10 +7,18 @@ import {
   Validators
 } from '@angular/forms';
 import { ProgrammingLanguageService, ProgrammingLanguage, CreateProgrammingLanguageDto, UpdateProgrammingLanguageDto } from '../../services/programming-language.service';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  heroCodeBracket,
+  heroPlus,
+  heroPencil,
+  heroTrash,
+} from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-programming-languages',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, NgIconComponent],
+  providers: [provideIcons({ heroCodeBracket, heroPlus, heroPencil, heroTrash })],
   templateUrl: './programming-languages.html',
   styleUrl: './programming-languages.scss',
 })

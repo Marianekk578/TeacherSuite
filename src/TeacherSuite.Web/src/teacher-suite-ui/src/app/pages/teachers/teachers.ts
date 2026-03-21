@@ -15,10 +15,23 @@ import { TeacherService, Teacher, CreateTeacherDto, UpdateTeacherDto } from '../
 import { ProgrammingLanguageService, ProgrammingLanguage } from '../../services/programming-language.service';
 import { PagedResult } from '../../models/paged-result.model';
 import { PaginationBarComponent } from '../../components/pagination-bar/pagination-bar';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  heroAcademicCap,
+  heroMagnifyingGlass,
+  heroPlus,
+  heroEnvelope,
+  heroPhone,
+  heroCalendarDays,
+  heroCodeBracket,
+  heroPencil,
+  heroTrash,
+} from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-teachers',
-  imports: [CommonModule, ReactiveFormsModule, PaginationBarComponent],
+  imports: [CommonModule, ReactiveFormsModule, PaginationBarComponent, NgIconComponent],
+  providers: [provideIcons({ heroAcademicCap, heroMagnifyingGlass, heroPlus, heroEnvelope, heroPhone, heroCalendarDays, heroCodeBracket, heroPencil, heroTrash })],
   templateUrl: './teachers.html',
   styleUrl: './teachers.scss',
 })
