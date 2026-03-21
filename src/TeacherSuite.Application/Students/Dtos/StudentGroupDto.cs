@@ -12,7 +12,7 @@ public class StudentGroupDto
         public Mapping()
         {
             CreateMap<StudentGroup, StudentGroupDto>()
-                .ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group!.Name));
+                .ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group != null ? src.Group.Name : null));
         }
     }
 }

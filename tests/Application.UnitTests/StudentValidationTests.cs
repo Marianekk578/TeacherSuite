@@ -44,9 +44,9 @@ public class StudentValidationTests
     }
 
     [Fact]
-    public void Validate_StudentBornLastDayOfMaxYear_Succeeds()
+    public void Validate_StudentBornStartOfMaxYear_Succeeds()
     {
-        // Born 31.12 of the max birth year — should be valid as long as age >= 7
+        // Born January 1st of the max birth year — should be valid as age >= 7
         var maxYear = AgeCalculator.GetMaxBirthYear();
         var dob = new DateTimeOffset(maxYear, 1, 1, 0, 0, 0, TimeSpan.Zero);
         var command = CreateCommand(dob);
