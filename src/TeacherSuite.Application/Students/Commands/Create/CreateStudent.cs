@@ -36,8 +36,6 @@ internal sealed class CreateStudentCommandHandler(IApplicationDbContext db, IPub
             });
         }
 
-        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
-
         var normalizedDob = request.DateOfBirth.Date;
         var duplicate = await db.Students.AnyAsync(s =>
             s.FirstName == request.FirstName &&
@@ -104,7 +102,6 @@ internal sealed class CreateStudentCommandHandler(IApplicationDbContext db, IPub
         }
 
         await db.SaveChangesAsync(cancellationToken);
-        await transaction.CommitAsync(cancellationToken);
 
         await publisher.Publish(new StudentCreatedEvent(entity), cancellationToken);
 
