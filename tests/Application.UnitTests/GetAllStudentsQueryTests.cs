@@ -3,6 +3,7 @@ using Moq;
 using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Application.Students.Dtos;
 using TeacherSuite.Application.Students.Queries;
+using TeacherSuite.Domain.Common;
 using TeacherSuite.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -12,6 +13,7 @@ namespace Application.UnitTests;
 public class GetAllStudentsQueryTests
 {
     private readonly IMapper _mapper;
+    private readonly Mock<ICurrentUserService> _mockCurrentUser;
 
     public GetAllStudentsQueryTests()
     {
@@ -19,6 +21,12 @@ public class GetAllStudentsQueryTests
             cfg => cfg.AddMaps(typeof(StudentDto).Assembly),
             NullLoggerFactory.Instance);
         _mapper = config.CreateMapper();
+
+        _mockCurrentUser = new Mock<ICurrentUserService>();
+        _mockCurrentUser.Setup(x => x.IsInRole(AppRoles.Admin)).Returns(true);
+        _mockCurrentUser.Setup(x => x.IsInRole(AppRoles.Teacher)).Returns(false);
+        _mockCurrentUser.Setup(x => x.IsInRole(AppRoles.Supervisor)).Returns(false);
+        _mockCurrentUser.Setup(x => x.IsAuthenticated).Returns(true);
     }
 
     [Fact]
@@ -42,7 +50,7 @@ public class GetAllStudentsQueryTests
         var mockDb = new Mock<IApplicationDbContext>();
         mockDb.Setup(x => x.Students).Returns(mockDbSet.Object);
 
-        var handler = new GetAllStudentsQueryHandler(mockDb.Object, _mapper);
+        var handler = new GetAllStudentsQueryHandler(mockDb.Object, _mapper, _mockCurrentUser.Object);
 
         // Act
         var result = await handler.Handle(new GetAllStudentsQuery(), CancellationToken.None);
@@ -75,7 +83,7 @@ public class GetAllStudentsQueryTests
         var mockDb = new Mock<IApplicationDbContext>();
         mockDb.Setup(x => x.Students).Returns(mockDbSet.Object);
 
-        var handler = new GetAllStudentsQueryHandler(mockDb.Object, _mapper);
+        var handler = new GetAllStudentsQueryHandler(mockDb.Object, _mapper, _mockCurrentUser.Object);
 
         // Act
         var result = await handler.Handle(new GetAllStudentsQuery { Page = 2, PageSize = 10 }, CancellationToken.None);
@@ -101,7 +109,7 @@ public class GetAllStudentsQueryTests
         var mockDb = new Mock<IApplicationDbContext>();
         mockDb.Setup(x => x.Students).Returns(mockDbSet.Object);
 
-        var handler = new GetAllStudentsQueryHandler(mockDb.Object, _mapper);
+        var handler = new GetAllStudentsQueryHandler(mockDb.Object, _mapper, _mockCurrentUser.Object);
 
         // Act
         var result = await handler.Handle(new GetAllStudentsQuery { PageSize = 200 }, CancellationToken.None);
@@ -124,7 +132,7 @@ public class GetAllStudentsQueryTests
         var mockDb = new Mock<IApplicationDbContext>();
         mockDb.Setup(x => x.Students).Returns(mockDbSet.Object);
 
-        var handler = new GetAllStudentsQueryHandler(mockDb.Object, _mapper);
+        var handler = new GetAllStudentsQueryHandler(mockDb.Object, _mapper, _mockCurrentUser.Object);
 
         // Act
         var result = await handler.Handle(new GetAllStudentsQuery { Page = -5 }, CancellationToken.None);
@@ -149,7 +157,7 @@ public class GetAllStudentsQueryTests
         var mockDb = new Mock<IApplicationDbContext>();
         mockDb.Setup(x => x.Students).Returns(mockDbSet.Object);
 
-        var handler = new GetAllStudentsQueryHandler(mockDb.Object, _mapper);
+        var handler = new GetAllStudentsQueryHandler(mockDb.Object, _mapper, _mockCurrentUser.Object);
 
         // Act
         var result = await handler.Handle(new GetAllStudentsQuery { Search = "alice" }, CancellationToken.None);

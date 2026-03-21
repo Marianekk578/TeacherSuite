@@ -1,4 +1,5 @@
 using TeacherSuite.Application.Common;
+using TeacherSuite.Application.Common.Exceptions;
 using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Application.Students.Commands.Common;
 using TeacherSuite.Domain.Common;
@@ -18,10 +19,23 @@ public record CreateStudentCommand(
     string? ParentLastName,
     Guid? GroupId) : IRequest<Guid>;
 
-internal sealed class CreateStudentCommandHandler(IApplicationDbContext db, IPublisher publisher) : IRequestHandler<CreateStudentCommand, Guid>
+internal sealed class CreateStudentCommandHandler(IApplicationDbContext db, IPublisher publisher, ICurrentUserService currentUser) : IRequestHandler<CreateStudentCommand, Guid>
 {
     public async Task<Guid> Handle(CreateStudentCommand request, CancellationToken cancellationToken)
     {
+        var isTeacherOnly = currentUser.IsInRole(AppRoles.Teacher)
+            && !currentUser.IsInRole(AppRoles.Admin)
+            && !currentUser.IsInRole(AppRoles.Supervisor);
+
+        if (isTeacherOnly && !request.GroupId.HasValue)
+        {
+            throw new Application.Common.ValidationException(new[]
+            {
+                new FluentValidation.Results.ValidationFailure("GroupId",
+                    "Teachers must assign a student to one of their groups during creation.")
+            });
+        }
+
         var duplicate = await db.Students.AnyAsync(s =>
             s.FirstName == request.FirstName &&
             s.LastName == request.LastName &&
@@ -37,9 +51,18 @@ internal sealed class CreateStudentCommandHandler(IApplicationDbContext db, IPub
         {
             var group = await db.Groups
                 .Include(g => g.AgeGroup)
+                .Include(g => g.Teacher)
                 .FirstOrDefaultAsync(g => g.Id == request.GroupId.Value, cancellationToken);
 
             Guard.Against.NotFound(request.GroupId.Value, group);
+
+            if (isTeacherOnly)
+            {
+                if (group.Teacher == null || group.Teacher.Email != currentUser.Email)
+                {
+                    throw new ForbiddenAccessException("You can only assign students to your own groups.");
+                }
+            }
 
             if (group.AgeGroup != null)
             {
@@ -67,7 +90,6 @@ internal sealed class CreateStudentCommandHandler(IApplicationDbContext db, IPub
         };
 
         db.Students.Add(entity);
-        await db.SaveChangesAsync(cancellationToken);
 
         if (request.GroupId.HasValue)
         {
@@ -76,8 +98,9 @@ internal sealed class CreateStudentCommandHandler(IApplicationDbContext db, IPub
                 StudentId = entity.Id,
                 GroupId = request.GroupId.Value
             });
-            await db.SaveChangesAsync(cancellationToken);
         }
+
+        await db.SaveChangesAsync(cancellationToken);
 
         await publisher.Publish(new StudentCreatedEvent(entity), cancellationToken);
 

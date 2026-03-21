@@ -98,7 +98,7 @@ export class Students implements OnInit, OnDestroy {
 
     this.isAdminOrSupervisor = this.keycloakService.hasRole('Admin') || this.keycloakService.hasRole('Supervisor');
 
-    this.studentForm.get('dateOfBirth')?.valueChanges.subscribe(() => {
+    const dobSub = this.studentForm.get('dateOfBirth')?.valueChanges.subscribe(() => {
       if (this.isAdult()) {
         this.studentForm.patchValue({
           parentFirstName: '',
@@ -106,6 +106,9 @@ export class Students implements OnInit, OnDestroy {
         }, { emitEvent: false });
       }
     });
+    if (dobSub) {
+      this.subscriptions.push(dobSub);
+    }
   }
 
   ngOnInit() {

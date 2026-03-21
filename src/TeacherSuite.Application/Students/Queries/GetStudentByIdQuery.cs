@@ -1,12 +1,14 @@
+using TeacherSuite.Application.Common.Exceptions;
 using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Application.Students.Dtos;
+using TeacherSuite.Domain.Common;
 
 namespace TeacherSuite.Application.Students.Queries;
 
 [Authorize]
 public record GetStudentByIdQuery(Guid Id) : IRequest<StudentDetailDto>;
 
-internal sealed class GetStudentByIdQueryHandler(IApplicationDbContext db) : IRequestHandler<GetStudentByIdQuery, StudentDetailDto>
+internal sealed class GetStudentByIdQueryHandler(IApplicationDbContext db, ICurrentUserService currentUser) : IRequestHandler<GetStudentByIdQuery, StudentDetailDto>
 {
     public async Task<StudentDetailDto> Handle(GetStudentByIdQuery request, CancellationToken cancellationToken)
     {
@@ -23,6 +25,21 @@ internal sealed class GetStudentByIdQueryHandler(IApplicationDbContext db) : IRe
             .FirstOrDefaultAsync(s => s.Id == request.Id, cancellationToken);
 
         Guard.Against.NotFound(request.Id, student);
+
+        if (currentUser.IsInRole(AppRoles.Teacher)
+            && !currentUser.IsInRole(AppRoles.Admin)
+            && !currentUser.IsInRole(AppRoles.Supervisor))
+        {
+            var teacherGroupIds = await db.Groups
+                .Where(g => g.Teacher != null && g.Teacher.Email == currentUser.Email)
+                .Select(g => g.Id)
+                .ToListAsync(cancellationToken);
+
+            if (!student.StudentGroups.Any(sg => teacherGroupIds.Contains(sg.GroupId)))
+            {
+                throw new ForbiddenAccessException("You can only view students assigned to your groups.");
+            }
+        }
 
         var allCourseHistories = student.StudentGroups
             .Where(sg => sg.Group != null)

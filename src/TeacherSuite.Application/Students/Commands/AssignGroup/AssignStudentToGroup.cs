@@ -1,4 +1,5 @@
 using TeacherSuite.Application.Common;
+using TeacherSuite.Application.Common.Exceptions;
 using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Application.Students.Commands.Common;
 using TeacherSuite.Domain.Common;
@@ -9,7 +10,7 @@ namespace TeacherSuite.Application.Students.Commands.AssignGroup;
 [Authorize(Roles = AppRoles.Policies.AdminSupervisorOrTeacher)]
 public record AssignStudentToGroupCommand(Guid StudentId, Guid GroupId) : IRequest<Unit>;
 
-internal sealed class AssignStudentToGroupCommandHandler(IApplicationDbContext db) : IRequestHandler<AssignStudentToGroupCommand, Unit>
+internal sealed class AssignStudentToGroupCommandHandler(IApplicationDbContext db, ICurrentUserService currentUser) : IRequestHandler<AssignStudentToGroupCommand, Unit>
 {
     public async Task<Unit> Handle(AssignStudentToGroupCommand request, CancellationToken cancellationToken)
     {
@@ -18,8 +19,19 @@ internal sealed class AssignStudentToGroupCommandHandler(IApplicationDbContext d
 
         var group = await db.Groups
             .Include(g => g.AgeGroup)
+            .Include(g => g.Teacher)
             .FirstOrDefaultAsync(g => g.Id == request.GroupId, cancellationToken);
         Guard.Against.NotFound(request.GroupId, group);
+
+        if (currentUser.IsInRole(AppRoles.Teacher)
+            && !currentUser.IsInRole(AppRoles.Admin)
+            && !currentUser.IsInRole(AppRoles.Supervisor))
+        {
+            if (group.Teacher == null || group.Teacher.Email != currentUser.Email)
+            {
+                throw new ForbiddenAccessException("You can only assign students to your own groups.");
+            }
+        }
 
         if (group.AgeGroup != null)
         {
