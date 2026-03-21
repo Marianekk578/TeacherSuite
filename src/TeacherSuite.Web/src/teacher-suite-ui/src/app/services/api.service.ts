@@ -5,11 +5,15 @@ import { KeycloakService } from '../auth/keycloak.service';
 export class ApiError extends Error {
   status: number;
   statusText: string;
+  detail?: string;
+  errors?: Record<string, string[]>;
 
-  constructor(status: number, statusText: string, message?: string) {
+  constructor(status: number, statusText: string, message?: string, detail?: string, errors?: Record<string, string[]>) {
     super(message ?? `Request failed: ${status} ${statusText}`);
     this.status = status;
     this.statusText = statusText;
+    this.detail = detail;
+    this.errors = errors;
   }
 }
 
@@ -50,12 +54,25 @@ export class ApiService {
     }
   }
 
+  private async throwApiError(response: Response): Promise<never> {
+    let detail: string | undefined;
+    let errors: Record<string, string[]> | undefined;
+    try {
+      const body = await response.json();
+      detail = body?.detail;
+      errors = body?.errors;
+    } catch {
+      // response body is not JSON — leave detail/errors undefined
+    }
+    throw new ApiError(response.status, response.statusText, undefined, detail, errors);
+  }
+
   protected get<T>(url: string): Observable<T> {
     return from(
       this.getAuthHeaders().then((headers) =>
         fetch(url, { headers }).then((response) => {
           if (!response.ok) {
-            throw new ApiError(response.status, response.statusText);
+            return this.throwApiError(response);
           }
           return this.parseJsonIfPresent<T>(response);
         })
@@ -72,7 +89,7 @@ export class ApiService {
           body: JSON.stringify(body),
         }).then((response) => {
           if (!response.ok) {
-            throw new ApiError(response.status, response.statusText);
+            return this.throwApiError(response);
           }
           return this.parseJsonIfPresent<T>(response);
         })
@@ -87,9 +104,9 @@ export class ApiService {
           method: 'PUT',
           headers,
           body: JSON.stringify(body),
-        }).then((response) => {
+        }).then(async (response) => {
           if (!response.ok) {
-            throw new ApiError(response.status, response.statusText);
+            await this.throwApiError(response);
           }
         })
       )
@@ -102,9 +119,9 @@ export class ApiService {
         fetch(url, {
           method: 'DELETE',
           headers,
-        }).then((response) => {
+        }).then(async (response) => {
           if (!response.ok) {
-            throw new ApiError(response.status, response.statusText);
+            await this.throwApiError(response);
           }
         })
       )
@@ -118,9 +135,9 @@ export class ApiService {
           method: 'PATCH',
           headers,
           body: JSON.stringify(body),
-        }).then((response) => {
+        }).then(async (response) => {
           if (!response.ok) {
-            throw new ApiError(response.status, response.statusText);
+            await this.throwApiError(response);
           }
         })
       )

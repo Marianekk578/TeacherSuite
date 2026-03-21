@@ -11,5 +11,6 @@ public class StudentConfiguration : IEntityTypeConfiguration<Student>
         builder.HasKey(s => s.Id);
         builder.HasIndex(s => new { s.LastName, s.FirstName });
         builder.HasIndex(s => s.ContactEmail);
+        builder.HasIndex(s => new { s.FirstName, s.LastName, s.DateOfBirth }).IsUnique();
     }
 }

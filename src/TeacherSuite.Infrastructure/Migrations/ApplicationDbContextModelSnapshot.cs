@@ -241,6 +241,9 @@ namespace TeacherSuite.Infrastructure.Migrations
 
                     b.HasIndex("ContactEmail");
 
+                    b.HasIndex("FirstName", "LastName", "DateOfBirth")
+                        .IsUnique();
+
                     b.HasIndex("LastName", "FirstName");
 
                     b.ToTable("Students");

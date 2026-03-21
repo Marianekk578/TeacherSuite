@@ -436,13 +436,13 @@ export class Students implements OnInit, OnDestroy {
         error: (error) => {
           const status = error?.status as number | undefined;
           if (status === 409) {
-            const message = error?.message ?? '';
-            if (message.toLowerCase().includes('age')) {
+            const detail = (error?.detail ?? error?.message ?? '') as string;
+            if (detail.toLowerCase().includes('age')) {
               this.error = 'Student age does not match the group\'s age range.';
-            } else if (message.toLowerCase().includes('already')) {
+            } else if (detail.toLowerCase().includes('already')) {
               this.error = 'Student is already assigned to this group.';
             } else {
-              this.error = 'Conflict: unable to assign student to this group.';
+              this.error = detail || 'Conflict: unable to assign student to this group.';
             }
           } else {
             this.error = 'Failed to assign student to group. Please try again.';
