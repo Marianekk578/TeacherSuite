@@ -9,6 +9,8 @@ public interface IApplicationDbContext
     DbSet<Course> Courses { get; }
     DbSet<Group> Groups { get; }
     DbSet<GroupCourse> GroupCourses { get; }
+    DbSet<Student> Students { get; }
+    DbSet<StudentGroup> StudentGroups { get; }
     DbSet<ProgrammingLanguage> ProgrammingLanguages { get; }
     DbSet<TeacherProgrammingLanguage> TeacherProgrammingLanguages { get; }
 

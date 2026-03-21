@@ -13,6 +13,7 @@ namespace TeacherSuite.Infrastructure.Data
         public DbSet<Group> Groups => Set<Group>();
         public DbSet<Teacher> Teachers => Set<Teacher>();
         public DbSet<Student> Students => Set<Student>();
+        public DbSet<StudentGroup> StudentGroups => Set<StudentGroup>();
         public DbSet<ProgrammingLanguage> ProgrammingLanguages => Set<ProgrammingLanguage>();
         public DbSet<TeacherProgrammingLanguage> TeacherProgrammingLanguages => Set<TeacherProgrammingLanguage>();
         public DbSet<CourseProgrammingLanguage> CourseProgrammingLanguages => Set<CourseProgrammingLanguage>();
