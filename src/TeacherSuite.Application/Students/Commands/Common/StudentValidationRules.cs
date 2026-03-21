@@ -31,7 +31,7 @@ public static class StudentValidationRules
         validator.RuleFor(dateOfBirthSelector)
             .NotEmpty()
             .WithMessage("A valid date of birth is required")
-            .LessThan(DateTimeOffset.Now)
+            .LessThan(DateTimeOffset.UtcNow)
             .WithMessage("Date of birth must be in the past")
             .Must(dob => AgeCalculator.CalculateAge(dob) >= AgeCalculator.MinimumStudentAge)
             .WithMessage($"Student must be at least {AgeCalculator.MinimumStudentAge} years old. Maximum birth year: {AgeCalculator.GetMaxBirthYear()}");
