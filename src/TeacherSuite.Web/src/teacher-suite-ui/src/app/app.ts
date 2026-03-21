@@ -7,12 +7,13 @@ import {
   heroUserGroup,
   heroUsers,
   heroCodeBracket,
+  heroUserCircle,
 } from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, RouterLink, RouterLinkActive, NgIconComponent],
-  providers: [provideIcons({ heroAcademicCap, heroBookOpen, heroUserGroup, heroUsers, heroCodeBracket })],
+  providers: [provideIcons({ heroAcademicCap, heroBookOpen, heroUserGroup, heroUsers, heroCodeBracket, heroUserCircle })],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

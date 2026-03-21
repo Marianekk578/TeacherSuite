@@ -17,7 +17,6 @@ import { PaginationBarComponent } from '../../components/pagination-bar/paginati
 import { KeycloakService } from '../../auth/keycloak.service';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
-  heroAcademicCap,
   heroMagnifyingGlass,
   heroPlus,
   heroInformationCircle,
@@ -26,12 +25,13 @@ import {
   heroTrash,
   heroEnvelope,
   heroCalendarDays,
+  heroUserCircle,
 } from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-students',
   imports: [CommonModule, ReactiveFormsModule, PaginationBarComponent, NgIconComponent],
-  providers: [provideIcons({ heroAcademicCap, heroMagnifyingGlass, heroPlus, heroInformationCircle, heroUserGroup, heroPencil, heroTrash, heroEnvelope, heroCalendarDays })],
+  providers: [provideIcons({ heroMagnifyingGlass, heroPlus, heroInformationCircle, heroUserGroup, heroPencil, heroTrash, heroEnvelope, heroCalendarDays, heroUserCircle })],
   templateUrl: './students.html',
   styleUrl: './students.scss',
 })
