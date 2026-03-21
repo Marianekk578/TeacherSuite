@@ -1,3 +1,4 @@
+using TeacherSuite.Application.Common;
 using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Domain.Common;
 using TeacherSuite.Domain.Entities;
@@ -20,6 +21,17 @@ internal sealed class CreateStudentCommandHandler(IApplicationDbContext db, IPub
 {
     public async Task<Guid> Handle(CreateStudentCommand request, CancellationToken cancellationToken)
     {
+        var duplicate = await db.Students.AnyAsync(s =>
+            s.FirstName == request.FirstName &&
+            s.LastName == request.LastName &&
+            s.DateOfBirth == request.DateOfBirth, cancellationToken);
+
+        if (duplicate)
+        {
+            throw new ConflictException(
+                $"A student with the name '{request.FirstName} {request.LastName}' and the same date of birth already exists.");
+        }
+
         if (request.GroupId.HasValue)
         {
             var group = await db.Groups

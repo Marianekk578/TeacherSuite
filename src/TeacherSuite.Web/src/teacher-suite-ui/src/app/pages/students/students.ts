@@ -55,6 +55,17 @@ export class Students implements OnInit, OnDestroy {
   showGroupModal = false;
   groupStudent: Student | null = null;
   allGroups: GroupWithAgeGroup[] = [];
+  filteredGroupsForAssign: GroupWithAgeGroup[] = [];
+
+  get filteredGroupsForCreate(): GroupWithAgeGroup[] {
+    const dob = this.studentForm.get('dateOfBirth')?.value;
+    if (!dob) return this.allGroups;
+    const age = this.calculateAge(dob);
+    return this.allGroups.filter(g => {
+      if (!g.ageGroup) return true;
+      return age >= g.ageGroup.minAge && age <= g.ageGroup.maxAge;
+    });
+  }
 
   isAdminOrSupervisor = false;
 
@@ -351,9 +362,14 @@ export class Students implements OnInit, OnDestroy {
 
   openGroupModal(student: Student) {
     this.groupStudent = student;
+    const studentAge = this.calculateAge(student.dateOfBirth);
     this.studentService.getAllGroups().subscribe({
       next: (groups) => {
         this.allGroups = groups;
+        this.filteredGroupsForAssign = groups.filter(g => {
+          if (!g.ageGroup) return true;
+          return studentAge >= g.ageGroup.minAge && studentAge <= g.ageGroup.maxAge;
+        });
         this.showGroupModal = true;
         this.cdr.detectChanges();
       },
