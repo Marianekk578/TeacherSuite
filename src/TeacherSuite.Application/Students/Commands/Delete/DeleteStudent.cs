@@ -3,7 +3,7 @@ using TeacherSuite.Domain.Common;
 
 namespace TeacherSuite.Application.Students.Commands.Delete;
 
-[Authorize(Roles = AppRoles.Admin + "," + AppRoles.Supervisor)]
+[Authorize(Roles = AppRoles.Policies.AdminOrSupervisor)]
 public record DeleteStudentCommand(Guid Id) : IRequest<Unit>;
 
 internal sealed class DeleteStudentCommandHandler(IApplicationDbContext db) : IRequestHandler<DeleteStudentCommand, Unit>

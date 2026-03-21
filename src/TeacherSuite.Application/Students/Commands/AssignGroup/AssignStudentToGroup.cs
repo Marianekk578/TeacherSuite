@@ -1,11 +1,12 @@
 using TeacherSuite.Application.Common;
 using TeacherSuite.Application.Common.Interfaces;
+using TeacherSuite.Application.Students.Commands.Common;
 using TeacherSuite.Domain.Common;
 using TeacherSuite.Domain.Entities;
 
 namespace TeacherSuite.Application.Students.Commands.AssignGroup;
 
-[Authorize(Roles = AppRoles.Admin + "," + AppRoles.Supervisor + "," + AppRoles.Teacher)]
+[Authorize(Roles = AppRoles.Policies.AdminSupervisorOrTeacher)]
 public record AssignStudentToGroupCommand(Guid StudentId, Guid GroupId) : IRequest<Unit>;
 
 internal sealed class AssignStudentToGroupCommandHandler(IApplicationDbContext db) : IRequestHandler<AssignStudentToGroupCommand, Unit>
@@ -22,7 +23,7 @@ internal sealed class AssignStudentToGroupCommandHandler(IApplicationDbContext d
 
         if (group.AgeGroup != null)
         {
-            var age = CalculateAge(student.DateOfBirth);
+            var age = AgeCalculator.CalculateAge(student.DateOfBirth);
             if (age < group.AgeGroup.MinAge || age > group.AgeGroup.MaxAge)
             {
                 throw new ConflictException(
@@ -47,13 +48,5 @@ internal sealed class AssignStudentToGroupCommandHandler(IApplicationDbContext d
         await db.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;
-    }
-
-    private static int CalculateAge(DateTimeOffset dateOfBirth)
-    {
-        var today = DateTimeOffset.UtcNow;
-        var age = today.Year - dateOfBirth.Year;
-        if (dateOfBirth > today.AddYears(-age)) age--;
-        return age;
     }
 }

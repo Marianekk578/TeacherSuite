@@ -29,8 +29,7 @@ internal sealed class GetAllStudentsQueryHandler(IApplicationDbContext db, IMapp
 
         var totalCount = await query.CountAsync(cancellationToken);
 
-        var page = Math.Max(1, request.Page ?? 1);
-        var pageSize = Math.Clamp(request.PageSize ?? 12, 1, 100);
+        var (page, pageSize) = PaginationDefaults.Normalize(request.Page, request.PageSize);
 
         var items = await query
             .OrderBy(s => s.LastName)

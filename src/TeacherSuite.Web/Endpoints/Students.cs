@@ -24,10 +24,10 @@ public class Students
         return TypedResults.Ok(students);
     }
 
-    public async Task<Results<Ok<StudentDetailDto>, NotFound>> GetStudentById(ISender sender, Guid id)
+    public async Task<Ok<StudentDetailDto>> GetStudentById(ISender sender, Guid id)
     {
         var student = await sender.Send(new GetStudentByIdQuery(id));
-        return student is null ? TypedResults.NotFound() : TypedResults.Ok(student);
+        return TypedResults.Ok(student);
     }
 
     public async Task<NoContent> UpdateStudent(ISender sender, Guid id, UpdateStudentCommand command)
@@ -43,13 +43,13 @@ public class Students
         return TypedResults.NoContent();
     }
 
-    public async Task<NoContent> AssignToGroup(ISender sender, Guid studentId, Guid groupId)
+    public async Task<NoContent> AssignStudentToGroup(ISender sender, Guid studentId, Guid groupId)
     {
         await sender.Send(new AssignStudentToGroupCommand(studentId, groupId));
         return TypedResults.NoContent();
     }
 
-    public async Task<NoContent> UnassignFromGroup(ISender sender, Guid studentId, Guid groupId)
+    public async Task<NoContent> UnassignStudentFromGroup(ISender sender, Guid studentId, Guid groupId)
     {
         await sender.Send(new UnassignStudentFromGroupCommand(studentId, groupId));
         return TypedResults.NoContent();

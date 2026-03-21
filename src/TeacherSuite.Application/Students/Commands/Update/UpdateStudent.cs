@@ -3,7 +3,7 @@ using TeacherSuite.Domain.Common;
 
 namespace TeacherSuite.Application.Students.Commands.Update;
 
-[Authorize(Roles = AppRoles.Admin + "," + AppRoles.Supervisor + "," + AppRoles.Teacher)]
+[Authorize(Roles = AppRoles.Policies.AdminSupervisorOrTeacher)]
 public record UpdateStudentCommand(
     Guid Id,
     string FirstName,

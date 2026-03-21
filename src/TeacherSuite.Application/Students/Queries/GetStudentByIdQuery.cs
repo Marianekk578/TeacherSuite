@@ -4,11 +4,11 @@ using TeacherSuite.Application.Students.Dtos;
 namespace TeacherSuite.Application.Students.Queries;
 
 [Authorize]
-public record GetStudentByIdQuery(Guid Id) : IRequest<StudentDetailDto?>;
+public record GetStudentByIdQuery(Guid Id) : IRequest<StudentDetailDto>;
 
-internal sealed class GetStudentByIdQueryHandler(IApplicationDbContext db) : IRequestHandler<GetStudentByIdQuery, StudentDetailDto?>
+internal sealed class GetStudentByIdQueryHandler(IApplicationDbContext db) : IRequestHandler<GetStudentByIdQuery, StudentDetailDto>
 {
-    public async Task<StudentDetailDto?> Handle(GetStudentByIdQuery request, CancellationToken cancellationToken)
+    public async Task<StudentDetailDto> Handle(GetStudentByIdQuery request, CancellationToken cancellationToken)
     {
         var student = await db.Students
             .Include(s => s.StudentGroups)
@@ -22,8 +22,7 @@ internal sealed class GetStudentByIdQueryHandler(IApplicationDbContext db) : IRe
                                 .ThenInclude(cpl => cpl.ProgrammingLanguage)
             .FirstOrDefaultAsync(s => s.Id == request.Id, cancellationToken);
 
-        if (student == null)
-            return null;
+        Guard.Against.NotFound(request.Id, student);
 
         var allCourseHistories = student.StudentGroups
             .Where(sg => sg.Group != null)

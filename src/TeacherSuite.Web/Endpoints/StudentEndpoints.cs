@@ -25,9 +25,9 @@ public static class StudentEndpoints
             await endpoints.DeleteStudent(sender, id));
 
         app.MapPut("/Students/{studentId:guid}/groups/{groupId:guid}", async (Students endpoints, ISender sender, Guid studentId, Guid groupId) =>
-            await endpoints.AssignToGroup(sender, studentId, groupId));
+            await endpoints.AssignStudentToGroup(sender, studentId, groupId));
 
         app.MapDelete("/Students/{studentId:guid}/groups/{groupId:guid}", async (Students endpoints, ISender sender, Guid studentId, Guid groupId) =>
-            await endpoints.UnassignFromGroup(sender, studentId, groupId));
+            await endpoints.UnassignStudentFromGroup(sender, studentId, groupId));
     }
 }

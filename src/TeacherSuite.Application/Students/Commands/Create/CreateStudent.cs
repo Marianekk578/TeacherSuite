@@ -1,12 +1,13 @@
 using TeacherSuite.Application.Common;
 using TeacherSuite.Application.Common.Interfaces;
+using TeacherSuite.Application.Students.Commands.Common;
 using TeacherSuite.Domain.Common;
 using TeacherSuite.Domain.Entities;
 using TeacherSuite.Domain.Events;
 
 namespace TeacherSuite.Application.Students.Commands.Create;
 
-[Authorize(Roles = AppRoles.Admin + "," + AppRoles.Supervisor + "," + AppRoles.Teacher)]
+[Authorize(Roles = AppRoles.Policies.AdminSupervisorOrTeacher)]
 public record CreateStudentCommand(
     string FirstName,
     string LastName,
@@ -42,7 +43,7 @@ internal sealed class CreateStudentCommandHandler(IApplicationDbContext db, IPub
 
             if (group.AgeGroup != null)
             {
-                var age = CalculateAge(request.DateOfBirth);
+                var age = AgeCalculator.CalculateAge(request.DateOfBirth);
                 if (age < group.AgeGroup.MinAge || age > group.AgeGroup.MaxAge)
                 {
                     throw new Application.Common.ValidationException(new[]
@@ -81,13 +82,5 @@ internal sealed class CreateStudentCommandHandler(IApplicationDbContext db, IPub
         await publisher.Publish(new StudentCreatedEvent(entity), cancellationToken);
 
         return entity.Id;
-    }
-
-    private static int CalculateAge(DateTimeOffset dateOfBirth)
-    {
-        var today = DateTimeOffset.UtcNow;
-        var age = today.Year - dateOfBirth.Year;
-        if (dateOfBirth > today.AddYears(-age)) age--;
-        return age;
     }
 }

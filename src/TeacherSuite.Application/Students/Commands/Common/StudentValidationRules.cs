@@ -29,8 +29,11 @@ public static class StudentValidationRules
             .WithMessage("Contact phone is required");
 
         validator.RuleFor(dateOfBirthSelector)
-            .LessThan(DateTimeOffset.Now)
             .NotEmpty()
-            .WithMessage("A valid date of birth is required");
+            .WithMessage("A valid date of birth is required")
+            .LessThan(DateTimeOffset.Now)
+            .WithMessage("Date of birth must be in the past")
+            .Must(dob => AgeCalculator.CalculateAge(dob) >= AgeCalculator.MinimumStudentAge)
+            .WithMessage($"Student must be at least {AgeCalculator.MinimumStudentAge} years old. Maximum birth year: {AgeCalculator.GetMaxBirthYear()}");
     }
 }

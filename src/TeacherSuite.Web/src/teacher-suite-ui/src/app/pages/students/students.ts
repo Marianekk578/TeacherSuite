@@ -485,7 +485,8 @@ export class Students implements OnInit, OnDestroy {
     const dob = this.studentForm.get('dateOfBirth')?.value;
     if (!dob) return false;
     const date = new Date(dob);
-    return !isNaN(date.getTime()) && date < new Date();
+    if (isNaN(date.getTime()) || date >= new Date()) return false;
+    return this.calculateAge(dob) >= 7;
   }
 
   isAdult(): boolean {
@@ -503,6 +504,10 @@ export class Students implements OnInit, OnDestroy {
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
     return `${today.getFullYear()}-${month}-${day}`;
+  }
+
+  getMaxBirthYear(): number {
+    return new Date().getFullYear() - 7;
   }
 
   private calculateAge(dateString: string): number {
@@ -533,6 +538,11 @@ export class Students implements OnInit, OnDestroy {
       return { futureDate: true };
     }
 
+    const age = this.calculateAge(control.value);
+    if (age < 7) {
+      return { tooYoung: true };
+    }
+
     return null;
   }
 
@@ -553,6 +563,10 @@ export class Students implements OnInit, OnDestroy {
 
     if (controls['dateOfBirth']?.errors?.['futureDate']) {
       return 'Date of birth cannot be in the future';
+    }
+
+    if (controls['dateOfBirth']?.errors?.['tooYoung']) {
+      return `Student must be at least 7 years old. Maximum birth year: ${new Date().getFullYear() - 7}`;
     }
 
     if (controls['contactEmail']?.errors?.['required']) {

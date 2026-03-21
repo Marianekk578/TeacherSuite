@@ -3,7 +3,7 @@ using TeacherSuite.Domain.Common;
 
 namespace TeacherSuite.Application.Students.Commands.AssignGroup;
 
-[Authorize(Roles = AppRoles.Admin + "," + AppRoles.Supervisor + "," + AppRoles.Teacher)]
+[Authorize(Roles = AppRoles.Policies.AdminSupervisorOrTeacher)]
 public record UnassignStudentFromGroupCommand(Guid StudentId, Guid GroupId) : IRequest<Unit>;
 
 internal sealed class UnassignStudentFromGroupCommandHandler(IApplicationDbContext db) : IRequestHandler<UnassignStudentFromGroupCommand, Unit>
