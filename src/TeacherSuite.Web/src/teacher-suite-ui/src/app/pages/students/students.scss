@@ -174,16 +174,11 @@
   animation: skeleton-pulse 1.5s ease-in-out infinite;
 }
 
-.skeleton-card {
-  pointer-events: none;
-}
-
 .skeleton-avatar {
   width: 60px;
   height: 60px;
   border-radius: 50%;
   background: #e0e7ff;
-  flex-shrink: 0;
 }
 
 .skeleton-info {
@@ -202,12 +197,10 @@
   width: 60%;
   height: 1.125rem;
 }
-
 .skeleton-line-detail {
   width: 80%;
   height: 0.875rem;
 }
-
 .skeleton-line-short {
   width: 45%;
   height: 0.875rem;
@@ -357,11 +350,6 @@
   border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 500;
-  transition: all 0.2s ease;
-
-  &:hover {
-    transform: scale(1.05);
-  }
 }
 
 .detail-item {
@@ -390,6 +378,15 @@
 }
 
 // Form section
+.contact-section {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .form-section-label {
   font-size: 0.875rem;
   font-weight: 600;
@@ -430,10 +427,7 @@
   }
 }
 
-.no-groups-message {
-  text-align: center;
-  color: #666;
-}
+.no-groups-message { text-align: center; color: #666 }
 
 // Details Modal
 .details-loading {
@@ -459,7 +453,6 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
-
 .student-detail-content {
   .detail-section {
     margin-bottom: 1.5rem;
@@ -551,23 +544,11 @@
   padding: 0.75rem;
   background: #f9fafb;
   border-radius: 8px;
-  border-left: 3px solid #e5e7eb;
 
-  &:has(.status-2) {
-    border-left-color: #10b981;
-  }
-
-  &:has(.status-1) {
-    border-left-color: #3b82f6;
-  }
-
-  &:has(.status-0) {
-    border-left-color: #f59e0b;
-  }
-
-  &:has(.status-3) {
-    border-left-color: #ef4444;
-  }
+  &:has(.status-2) { border-left: 3px solid #10b981; }
+  &:has(.status-1) { border-left: 3px solid #3b82f6; }
+  &:has(.status-0) { border-left: 3px solid #f59e0b; }
+  &:has(.status-3) { border-left: 3px solid #ef4444; }
 }
 
 .course-history-header {
@@ -588,25 +569,10 @@
   border-radius: 4px;
   font-weight: 500;
 
-  &.status-0 {
-    background: #fef3c7;
-    color: #92400e;
-  }
-
-  &.status-1 {
-    background: #dbeafe;
-    color: #1e40af;
-  }
-
-  &.status-2 {
-    background: #dcfce7;
-    color: #166534;
-  }
-
-  &.status-3 {
-    background: #fee2e2;
-    color: #991b1b;
-  }
+  &.status-0 { background: #fef3c7; color: #92400e; }
+  &.status-1 { background: #dbeafe; color: #1e40af; }
+  &.status-2 { background: #dcfce7; color: #166534; }
+  &.status-3 { background: #fee2e2; color: #991b1b; }
 }
 
 .course-history-meta {
@@ -751,54 +717,18 @@
 
 // Responsive Design
 @media (max-width: 768px) {
-  .students-page {
-    padding: 1rem;
+  .students-page { padding: 1rem; }
+  .page-header { flex-direction: column; align-items: flex-start; gap: 1rem;
+    h1 { font-size: 1.5rem; }
   }
-
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-
-    h1 {
-      font-size: 1.5rem;
-    }
-  }
-
-  .page-header-actions {
-    flex-wrap: wrap;
-  }
-
-  .students-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .student-card {
-    flex-direction: column;
-  }
-
-  .student-info-header {
-    flex-wrap: wrap;
-  }
-
-  .student-actions {
-    flex-direction: row;
-    justify-content: flex-end;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .student-detail-content .detail-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .modal-actions {
-    flex-direction: column-reverse;
-
-    button {
-      width: 100%;
-    }
+  .page-header-actions { flex-wrap: wrap; }
+  .students-grid { grid-template-columns: 1fr; }
+  .student-card { flex-direction: column; }
+  .student-info-header { flex-wrap: wrap; }
+  .student-actions { justify-content: flex-end; }
+  .form-row { grid-template-columns: 1fr; }
+  .student-detail-content .detail-grid { grid-template-columns: 1fr; }
+  .modal-actions { flex-direction: column-reverse;
+    button { width: 100%; }
   }
 }

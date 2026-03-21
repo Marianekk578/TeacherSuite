@@ -174,46 +174,48 @@
           required
         />
       </div>
-      <div class="form-section-label">{{ getContactLabel() }} Details</div>
-      <div class="form-row" *ngIf="!isAdult()">
+      <div class="contact-section" *ngIf="hasDateOfBirth()">
+        <div class="form-section-label">{{ getContactLabel() }} Details</div>
+        <div class="form-row" *ngIf="!isAdult()">
+          <div class="form-group">
+            <label for="parentFirstName">Parent's First Name</label>
+            <input
+              type="text"
+              id="parentFirstName"
+              formControlName="parentFirstName"
+              placeholder="Enter parent's first name"
+            />
+          </div>
+          <div class="form-group">
+            <label for="parentLastName">Parent's Last Name</label>
+            <input
+              type="text"
+              id="parentLastName"
+              formControlName="parentLastName"
+              placeholder="Enter parent's last name"
+            />
+          </div>
+        </div>
         <div class="form-group">
-          <label for="parentFirstName">Parent's First Name</label>
+          <label for="contactEmail">{{ isAdult() ? 'Email' : "Parent's Email" }} *</label>
           <input
-            type="text"
-            id="parentFirstName"
-            formControlName="parentFirstName"
-            placeholder="Enter parent's first name"
+            type="email"
+            id="contactEmail"
+            formControlName="contactEmail"
+            required
+            [placeholder]="isAdult() ? 'student@example.com' : 'parent@example.com'"
           />
         </div>
         <div class="form-group">
-          <label for="parentLastName">Parent's Last Name</label>
+          <label for="contactPhone">{{ isAdult() ? 'Phone' : "Parent's Phone" }} *</label>
           <input
-            type="text"
-            id="parentLastName"
-            formControlName="parentLastName"
-            placeholder="Enter parent's last name"
+            type="tel"
+            id="contactPhone"
+            formControlName="contactPhone"
+            required
+            placeholder="+48 123 456 789"
           />
         </div>
-      </div>
-      <div class="form-group">
-        <label for="contactEmail">{{ isAdult() ? 'Email' : "Parent's Email" }} *</label>
-        <input
-          type="email"
-          id="contactEmail"
-          formControlName="contactEmail"
-          required
-          [placeholder]="isAdult() ? 'student@example.com' : 'parent@example.com'"
-        />
-      </div>
-      <div class="form-group">
-        <label for="contactPhone">{{ isAdult() ? 'Phone' : "Parent's Phone" }} *</label>
-        <input
-          type="tel"
-          id="contactPhone"
-          formControlName="contactPhone"
-          required
-          placeholder="+48 123 456 789"
-        />
       </div>
       <div class="form-group" *ngIf="!isEditMode">
         <label for="groupId">Assign to Group (optional)</label>

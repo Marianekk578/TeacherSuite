@@ -97,6 +97,15 @@ export class Students implements OnInit, OnDestroy {
     });
 
     this.isAdminOrSupervisor = this.keycloakService.hasRole('Admin') || this.keycloakService.hasRole('Supervisor');
+
+    this.studentForm.get('dateOfBirth')?.valueChanges.subscribe(() => {
+      if (this.isAdult()) {
+        this.studentForm.patchValue({
+          parentFirstName: '',
+          parentLastName: ''
+        }, { emitEvent: false });
+      }
+    });
   }
 
   ngOnInit() {
@@ -470,6 +479,13 @@ export class Students implements OnInit, OnDestroy {
     if (!dob) return 'Contact';
     const age = this.calculateAge(dob);
     return age >= 18 ? 'Contact' : "Parent's Contact";
+  }
+
+  hasDateOfBirth(): boolean {
+    const dob = this.studentForm.get('dateOfBirth')?.value;
+    if (!dob) return false;
+    const date = new Date(dob);
+    return !isNaN(date.getTime()) && date < new Date();
   }
 
   isAdult(): boolean {
