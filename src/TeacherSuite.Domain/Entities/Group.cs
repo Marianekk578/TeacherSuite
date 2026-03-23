@@ -10,6 +10,6 @@ public class Group : BaseAuditableEntity
     public Teacher? Teacher { get; set; }
     public int AgeGroupID { get; set; }
     public AgeGroup? AgeGroup { get; set; }
-    public ICollection<Student> Students { get; set; } = new List<Student>();
+    public ICollection<StudentGroup> StudentGroups { get; set; } = new List<StudentGroup>();
     public ICollection<GroupCourse> GroupCourses { get; set; } = new List<GroupCourse>();
 }

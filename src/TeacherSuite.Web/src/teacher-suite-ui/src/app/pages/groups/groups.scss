@@ -38,7 +38,6 @@
 // Empty State
 .empty-state {
   text-align: center; padding: 4rem 2rem;
-  svg { color: #667eea; margin-bottom: 1.5rem; opacity: 0.6; }
   h2 { font-size: 1.5rem; color: #1a1a2e; margin-bottom: 0.5rem; }
   p { color: #666; margin-bottom: 1.5rem; }
 }
@@ -54,9 +53,9 @@
 .group-card-header { display: flex; gap: 1rem; }
 .group-icon { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .group-info { flex: 1; min-width: 0; h3 { font-size: 1.125rem; color: #1a1a2e; margin-bottom: 0.75rem; } }
-.detail-item { display: flex; align-items: center; gap: 0.5rem; color: #666; font-size: 0.875rem; svg { flex-shrink: 0; color: #667eea; } span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } }
+.detail-item { display: flex; align-items: center; gap: 0.5rem; color: #666; font-size: 0.875rem; span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } }
 .teacher-detail-item { margin-bottom: 0.5rem; }
-.age-group-label { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.75rem; background: #e0e7ff; color: #4338ca; border-radius: 6px; font-size: 0.8rem; font-weight: 500; svg { flex-shrink: 0; color: #4338ca; } }
+.age-group-label { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.75rem; background: #e0e7ff; color: #4338ca; border-radius: 6px; font-size: 0.8rem; font-weight: 500; ng-icon { color: #4338ca; } }
 .group-actions { display: flex; gap: 0.5rem; flex-shrink: 0; align-self: flex-start; }
 
 // Modal

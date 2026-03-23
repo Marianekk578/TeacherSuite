@@ -184,6 +184,7 @@ namespace TeacherSuite.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -197,8 +198,13 @@ namespace TeacherSuite.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Age")
-                        .HasColumnType("integer");
+                    b.Property<string>("ContactEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContactPhone")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("Created")
                         .HasColumnType("timestamp with time zone");
@@ -207,7 +213,53 @@ namespace TeacherSuite.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTimeOffset>("DateOfBirth")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastModifiedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ParentFirstName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ParentLastName")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContactEmail");
+
+                    b.HasIndex("FirstName", "LastName", "DateOfBirth")
+                        .IsUnique();
+
+                    b.HasIndex("LastName", "FirstName");
+
+                    b.ToTable("Students");
+                });
+
+            modelBuilder.Entity("TeacherSuite.Domain.Entities.StudentGroup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("GroupId")
@@ -220,18 +272,17 @@ namespace TeacherSuite.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("LastName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ParentsEmail")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("Students");
+                    b.HasIndex("StudentId", "GroupId")
+                        .IsUnique();
+
+                    b.ToTable("StudentGroups");
                 });
 
             modelBuilder.Entity("TeacherSuite.Domain.Entities.Teacher", b =>
@@ -368,15 +419,23 @@ namespace TeacherSuite.Infrastructure.Migrations
                     b.Navigation("Group");
                 });
 
-            modelBuilder.Entity("TeacherSuite.Domain.Entities.Student", b =>
+            modelBuilder.Entity("TeacherSuite.Domain.Entities.StudentGroup", b =>
                 {
                     b.HasOne("TeacherSuite.Domain.Entities.Group", "Group")
-                        .WithMany("Students")
+                        .WithMany("StudentGroups")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("TeacherSuite.Domain.Entities.Student", "Student")
+                        .WithMany("StudentGroups")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Group");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("TeacherSuite.Domain.Entities.TeacherProgrammingLanguage", b =>
@@ -409,7 +468,7 @@ namespace TeacherSuite.Infrastructure.Migrations
                 {
                     b.Navigation("GroupCourses");
 
-                    b.Navigation("Students");
+                    b.Navigation("StudentGroups");
                 });
 
             modelBuilder.Entity("TeacherSuite.Domain.Entities.ProgrammingLanguage", b =>
@@ -417,6 +476,11 @@ namespace TeacherSuite.Infrastructure.Migrations
                     b.Navigation("CourseProgrammingLanguages");
 
                     b.Navigation("TeacherProgrammingLanguages");
+                });
+
+            modelBuilder.Entity("TeacherSuite.Domain.Entities.Student", b =>
+                {
+                    b.Navigation("StudentGroups");
                 });
 
             modelBuilder.Entity("TeacherSuite.Domain.Entities.Teacher", b =>

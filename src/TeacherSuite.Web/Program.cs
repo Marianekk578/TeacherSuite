@@ -67,6 +67,7 @@ builder.Services.AddScoped<Teachers>();
 builder.Services.AddScoped<Courses>();
 builder.Services.AddScoped<Groups>();
 builder.Services.AddScoped<ProgrammingLanguages>();
+builder.Services.AddScoped<Students>();
 
 var app = builder.Build();
 
@@ -86,6 +87,7 @@ app.MapTeacherEndpoints();
 app.MapCourseEndpoints();
 app.MapGroupEndpoints();
 app.MapProgrammingLanguageEndpoints();
+app.MapStudentEndpoints();
 
 if (app.Environment.IsDevelopment())
 {

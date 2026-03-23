@@ -12,10 +12,19 @@ import { CourseService, Course, AgeGroup, ProgrammingLanguage, CreateCourseDto, 
 import { PagedResult } from '../../models/paged-result.model';
 import { PaginationBarComponent } from '../../components/pagination-bar/pagination-bar';
 import { KeycloakService } from '../../auth/keycloak.service';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  heroBookOpen,
+  heroUsers,
+  heroPlus,
+  heroPencil,
+  heroTrash,
+} from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-courses',
-  imports: [CommonModule, ReactiveFormsModule, PaginationBarComponent],
+  imports: [CommonModule, ReactiveFormsModule, PaginationBarComponent, NgIconComponent],
+  providers: [provideIcons({ heroBookOpen, heroUsers, heroPlus, heroPencil, heroTrash })],
   templateUrl: './courses.html',
   styleUrl: './courses.scss',
 })

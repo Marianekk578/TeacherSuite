@@ -23,5 +23,10 @@
     "target": "https://localhost:7030",
     "secure": false,
     "changeOrigin": true
+  },
+  "/Students": {
+    "target": "https://localhost:7030",
+    "secure": false,
+    "changeOrigin": true
   }
 }

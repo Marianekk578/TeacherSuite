@@ -65,12 +65,6 @@
     border-left-color: #667eea;
   }
 
-  svg {
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
-  }
-
   span {
     font-size: 0.95rem;
     font-weight: 500;
@@ -129,7 +123,7 @@
       font-size: 0.75rem;
     }
 
-    svg {
+    ng-icon {
       width: 24px;
       height: 24px;
     }
