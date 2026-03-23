@@ -98,6 +98,8 @@ export class Students implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private fb: FormBuilder
   ) {
+    this.isAdminOrSupervisor = this.keycloakService.hasRole('Admin') || this.keycloakService.hasRole('Supervisor');
+
     this.studentForm = this.fb.group({
       firstName: ['', [Validators.required]],
       lastName: ['', [Validators.required]],
@@ -106,10 +108,8 @@ export class Students implements OnInit, OnDestroy {
       contactPhone: ['', [Validators.required]],
       parentFirstName: [''],
       parentLastName: [''],
-      groupId: ['']
+      groupId: ['', this.isAdminOrSupervisor ? [] : [Validators.required]]
     });
-
-    this.isAdminOrSupervisor = this.keycloakService.hasRole('Admin') || this.keycloakService.hasRole('Supervisor');
 
     const dobSub = this.studentForm.get('dateOfBirth')?.valueChanges.subscribe(() => {
       if (this.isAdult()) {
@@ -315,7 +315,7 @@ export class Students implements OnInit, OnDestroy {
         contactPhone: formValue.contactPhone,
         parentFirstName: formValue.parentFirstName || undefined,
         parentLastName: formValue.parentLastName || undefined,
-        groupId: formValue.groupId || undefined,
+        groupId: (formValue.groupId && formValue.groupId.trim() !== '') ? formValue.groupId : undefined,
       };
 
       this.studentService.createStudent(payload).subscribe({
@@ -542,7 +542,7 @@ export class Students implements OnInit, OnDestroy {
       return null;
     }
 
-    const date = new Date(control.value);
+    const date = new Date(control.value + 'T00:00:00Z');
     if (isNaN(date.getTime())) {
       return { invalidDate: true };
     }
@@ -595,6 +595,10 @@ export class Students implements OnInit, OnDestroy {
 
     if (controls['contactPhone']?.errors?.['required']) {
       return 'Contact phone is required';
+    }
+
+    if (controls['groupId']?.errors?.['required']) {
+      return 'Student to group assignment is required';
     }
 
     return 'Please check the form for errors';
