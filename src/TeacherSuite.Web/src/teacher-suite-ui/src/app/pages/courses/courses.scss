@@ -191,12 +191,6 @@
   text-align: center;
   padding: 4rem 2rem;
 
-  svg {
-    color: #667eea;
-    margin-bottom: 1.5rem;
-    opacity: 0.6;
-  }
-
   h2 {
     font-size: 1.5rem;
     color: #1a1a2e;
@@ -276,10 +270,6 @@
   border-radius: 6px;
   font-size: 0.8rem;
   font-weight: 500;
-
-  svg {
-    flex-shrink: 0;
-  }
 }
 
 .programming-language-label {
