@@ -17,6 +17,10 @@ namespace TeacherSuite.Infrastructure.Data
         public DbSet<ProgrammingLanguage> ProgrammingLanguages => Set<ProgrammingLanguage>();
         public DbSet<TeacherProgrammingLanguage> TeacherProgrammingLanguages => Set<TeacherProgrammingLanguage>();
         public DbSet<CourseProgrammingLanguage> CourseProgrammingLanguages => Set<CourseProgrammingLanguage>();
+        public DbSet<Lesson> Lessons => Set<Lesson>();
+        public DbSet<LessonAttendance> LessonAttendances => Set<LessonAttendance>();
+        public DbSet<LessonSuggestion> LessonSuggestions => Set<LessonSuggestion>();
+        public DbSet<SuggestionVote> SuggestionVotes => Set<SuggestionVote>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
