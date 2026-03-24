@@ -60,14 +60,32 @@ services:
 
   chibisafe:
     image: chibisafe/chibisafe:latest
-    container_name: chibisafe
+    environment:
+      - BASE_API_URL=http://chibisafe_server:8000
+    expose:
+      - 8001
+    restart: unless-stopped
+
+  chibisafe_server:
+    image: chibisafe/chibisafe-server:latest
     volumes:
-      - ./database:/home/node/chibisafe/database:rw
-      - ./uploads:/home/node/chibisafe/uploads:rw
-      - ./logs:/home/node/chibisafe/logs:rw
+      - ./database:/app/database:rw
+      - ./uploads:/app/uploads:rw
+      - ./logs:/app/logs:rw
+    expose:
+      - 8000
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./uploads:/app/uploads:ro
     ports:
-      - 24424:8000
-    restart: always
+      - 24424:80
+    environment:
+      - BASE_URL=":80"
+    restart: unless-stopped
 
 volumes:
   teachersuite_db_data:
