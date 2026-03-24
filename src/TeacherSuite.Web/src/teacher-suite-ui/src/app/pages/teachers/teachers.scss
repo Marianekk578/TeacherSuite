@@ -311,8 +311,16 @@
   h3 {
     font-size: 1.125rem;
     color: #1a1a2e;
-    margin-bottom: 0.75rem;
+    margin: 0;
   }
+}
+
+.teacher-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .teacher-details {
@@ -409,7 +417,6 @@
   display: flex;
   gap: 0.5rem;
   flex-shrink: 0;
-  align-self: flex-start;
 }
 
 // Modal
@@ -560,9 +567,11 @@
     flex-direction: column;
   }
 
+  .teacher-info-header {
+    flex-wrap: wrap;
+  }
+
   .teacher-actions {
-    flex-direction: row;
-    width: 100%;
     justify-content: flex-end;
   }
 

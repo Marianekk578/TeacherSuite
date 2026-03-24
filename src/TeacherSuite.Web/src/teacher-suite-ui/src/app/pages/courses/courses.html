@@ -36,7 +36,17 @@
         <ng-icon name="heroBookOpen" size="24" />
       </div>
       <div class="course-info">
-        <h3 class="course-name-link" (click)="openDetailsModal(course)">{{ course.name }}</h3>
+        <div class="course-info-header">
+          <h3 class="course-name-link" (click)="openDetailsModal(course)">{{ course.name }}</h3>
+          <div class="course-actions">
+            <button class="btn-icon btn-icon-edit" (click)="openEditModal(course)" title="Edit">
+              <ng-icon name="heroPencil" size="18" />
+            </button>
+            <button class="btn-icon btn-icon-delete" type="button" (click)="confirmDelete(course)" title="Delete">
+              <ng-icon name="heroTrash" size="18" />
+            </button>
+          </div>
+        </div>
         <div class="course-labels">
           <span class="age-group-label" *ngIf="course.ageGroup">
             <ng-icon name="heroUsers" size="12" />
@@ -48,14 +58,6 @@
             </span>
           </div>
         </div>
-      </div>
-      <div class="course-actions">
-        <button class="btn-icon btn-icon-edit" (click)="openEditModal(course)" title="Edit">
-          <ng-icon name="heroPencil" size="18" />
-        </button>
-        <button class="btn-icon btn-icon-delete" type="button" (click)="confirmDelete(course)" title="Delete">
-          <ng-icon name="heroTrash" size="18" />
-        </button>
       </div>
     </div>
   </div>
