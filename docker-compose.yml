@@ -14,16 +14,6 @@ services:
       timeout: 5s
       retries: 5
 
-  pgadmin:
-    image: dpage/pgadmin4:7
-    restart: unless-stopped
-    env_file:
-      - .env
-    ports:
-      - "8080:80"
-    depends_on:
-      - db
-
   redis-cache:
     image: redis:7-alpine
     restart: always
@@ -67,6 +57,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  chibisafe:
+    image: chibisafe/chibisafe:latest
+    container_name: chibisafe
+    volumes:
+      - ./database:/home/node/chibisafe/database:rw
+      - ./uploads:/home/node/chibisafe/uploads:rw
+      - ./logs:/home/node/chibisafe/logs:rw
+    ports:
+      - 24424:8000
+    restart: always
 
 volumes:
   teachersuite_db_data:
