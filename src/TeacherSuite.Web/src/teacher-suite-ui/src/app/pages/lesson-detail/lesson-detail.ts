@@ -22,11 +22,6 @@ const MaterialType = { None: 0, Markdown: 1, Word: 2 } as const;
 const REQUIREMENT_ICON_DEFS: { key: string; emoji: string; label: string }[] = [
   { key: 'phone', emoji: '📱', label: 'Mobile phone needed' },
   { key: 'laptop', emoji: '💻', label: 'Laptop/computer needed' },
-  { key: 'headphones', emoji: '🎧', label: 'Headphones needed' },
-  { key: 'book', emoji: '📖', label: 'Textbook needed' },
-  { key: 'calculator', emoji: '🔢', label: 'Calculator needed' },
-  { key: 'scissors', emoji: '✂️', label: 'Scissors needed' },
-  { key: 'pen', emoji: '✏️', label: 'Pen/pencil needed' },
 ];
 
 @Component({
