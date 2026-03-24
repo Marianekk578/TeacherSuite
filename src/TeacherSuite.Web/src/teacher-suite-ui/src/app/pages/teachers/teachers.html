@@ -66,7 +66,20 @@
         {{ teacher.firstName.charAt(0) }}{{ teacher.lastName.charAt(0) }}
       </div>
       <div class="teacher-info">
-        <h3>{{ getFullName(teacher) }}</h3>
+        <div class="teacher-info-header">
+          <h3>{{ getFullName(teacher) }}</h3>
+          <div class="teacher-actions">
+            <button class="btn-icon btn-icon-lang" (click)="openLanguageModal(teacher)" title="Manage Languages">
+              <ng-icon name="heroCodeBracket" size="18" />
+            </button>
+            <button class="btn-icon btn-icon-edit" (click)="openEditModal(teacher)" title="Edit">
+              <ng-icon name="heroPencil" size="18" />
+            </button>
+            <button class="btn-icon btn-icon-delete" type="button" (click)="confirmDelete(teacher)" title="Delete">
+              <ng-icon name="heroTrash" size="18" />
+            </button>
+          </div>
+        </div>
         <div class="teacher-languages" *ngIf="teacher.programmingLanguages && teacher.programmingLanguages.length > 0">
           <span class="language-label" *ngFor="let lang of teacher.programmingLanguages" [style.background-color]="lang.color || '#667eea'">{{ lang.label || lang.name }}</span>
         </div>
@@ -84,17 +97,6 @@
             <span>{{ formatDate(teacher.dateOfBirth) }}</span>
           </div>
         </div>
-      </div>
-      <div class="teacher-actions">
-        <button class="btn-icon btn-icon-lang" (click)="openLanguageModal(teacher)" title="Manage Languages">
-          <ng-icon name="heroCodeBracket" size="18" />
-        </button>
-        <button class="btn-icon btn-icon-edit" (click)="openEditModal(teacher)" title="Edit">
-          <ng-icon name="heroPencil" size="18" />
-        </button>
-        <button class="btn-icon btn-icon-delete" type="button" (click)="confirmDelete(teacher)" title="Delete">
-          <ng-icon name="heroTrash" size="18" />
-        </button>
       </div>
     </div>
   </div>
