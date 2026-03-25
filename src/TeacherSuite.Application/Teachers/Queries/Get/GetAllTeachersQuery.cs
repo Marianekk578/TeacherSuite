@@ -28,7 +28,7 @@ internal sealed class GetAllTeachersQueryHandler(IApplicationDbContext db, IMapp
                 (t.FirstName != null && t.FirstName.ToLower().Contains(search)) ||
                 (t.LastName != null && t.LastName.ToLower().Contains(search)) ||
                 t.Email.ToLower().Contains(search) ||
-                (t.FirstName + " " + t.LastName).ToLower().Contains(search));
+                (t.FirstName != null && t.LastName != null && (t.FirstName + " " + t.LastName).ToLower().Contains(search)));
         }
 
         var totalCount = await query.CountAsync(cancellationToken);
