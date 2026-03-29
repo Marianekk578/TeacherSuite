@@ -8,6 +8,7 @@ using TeacherSuite.Infrastructure;
 using TeacherSuite.Web.Auth;
 using TeacherSuite.Web.Endpoints;
 using TeacherSuite.Web.Middleware;
+using TeacherSuite.Web.RateLimiting;
 using TeacherSuite.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -62,6 +63,8 @@ builder.Services.AddAuthorizationBuilder()
         .RequireAuthenticatedUser()
         .Build());
 
+builder.Services.AddRateLimitingPolicy(builder.Configuration);
+
 builder.Services.AddScoped<AgeGroups>();
 builder.Services.AddScoped<Teachers>();
 builder.Services.AddScoped<Courses>();
@@ -76,6 +79,7 @@ app.UseGlobalExceptionHandler();
 
 app.UseCors();
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 if (app.Environment.IsDevelopment()) {
