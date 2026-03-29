@@ -65,4 +65,36 @@ public class ChibiSafeFileStorageService : IFileStorageService
         var response = await _httpClient.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
     }
+
+    public async Task<string> CreateAlbumAsync(string albumName, CancellationToken cancellationToken = default)
+    {
+        var url = $"{_baseUrl.TrimEnd('/')}/api/album/create";
+        var body = JsonSerializer.Serialize(new { name = albumName });
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, url);
+        request.Headers.Add("x-api-key", _apiKey);
+        request.Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.SendAsync(request, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadAsStringAsync(cancellationToken);
+        using var doc = JsonDocument.Parse(json);
+        var uuid = doc.RootElement.GetProperty("uuid").GetString()
+                   ?? throw new InvalidOperationException("ChibiSafe album creation did not return a UUID.");
+        return uuid;
+    }
+
+    public async Task AddFileToAlbumAsync(string albumId, string fileUuid, CancellationToken cancellationToken = default)
+    {
+        var url = $"{_baseUrl.TrimEnd('/')}/api/album/{albumId}/link";
+        var body = JsonSerializer.Serialize(new { uuid = fileUuid });
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, url);
+        request.Headers.Add("x-api-key", _apiKey);
+        request.Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.SendAsync(request, cancellationToken);
+        response.EnsureSuccessStatusCode();
+    }
 }

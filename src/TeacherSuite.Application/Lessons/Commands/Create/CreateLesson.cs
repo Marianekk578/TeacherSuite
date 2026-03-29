@@ -13,7 +13,6 @@ public record CreateLessonCommand(
     string? Title,
     string? Description,
     int DurationMinutes,
-    int Order,
     LessonMaterialType MaterialType,
     string? MarkdownContent,
     List<string>? RequirementIcons) : IRequest<int>, ICacheInvalidationCommand
@@ -25,13 +24,18 @@ internal sealed class CreateLessonCommandHandler(IApplicationDbContext db, IPubl
 {
     public async Task<int> Handle(CreateLessonCommand request, CancellationToken cancellationToken)
     {
+        var maxOrder = await db.Lessons
+            .Where(l => l.CourseId == request.CourseId)
+            .Select(l => (int?)l.Order)
+            .MaxAsync(cancellationToken) ?? 0;
+
         var entity = new Lesson
         {
             CourseId = request.CourseId,
             Title = request.Title ?? string.Empty,
             Description = request.Description,
             DurationMinutes = request.DurationMinutes,
-            Order = request.Order,
+            Order = maxOrder + 1,
             MaterialType = request.MaterialType,
             MarkdownContent = request.MarkdownContent,
             RequirementIcons = request.RequirementIcons is { Count: > 0 }

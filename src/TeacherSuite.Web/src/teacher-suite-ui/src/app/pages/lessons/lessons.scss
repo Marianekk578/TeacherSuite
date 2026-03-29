@@ -118,6 +118,15 @@
   }
 }
 
+.btn-icon-reorder {
+  background: #f0f0ff;
+  color: #667eea;
+
+  &:hover {
+    background: #e0e7ff;
+  }
+}
+
 .file-input-hidden {
   display: none;
 }

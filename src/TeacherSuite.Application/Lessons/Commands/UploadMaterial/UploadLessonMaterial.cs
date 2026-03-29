@@ -18,12 +18,14 @@ internal sealed class UploadLessonMaterialCommandHandler(IApplicationDbContext d
 
         Guard.Against.NotFound(request.LessonId, entity);
 
-        if (!string.IsNullOrEmpty(entity.MaterialStorageKey))
+        if (string.IsNullOrEmpty(entity.AlbumId))
         {
-            await fileStorage.DeleteAsync(entity.MaterialStorageKey, cancellationToken);
+            entity.AlbumId = await fileStorage.CreateAlbumAsync(entity.Title, cancellationToken);
         }
 
         var storageKey = await fileStorage.UploadAsync(request.FileName, request.FileContent, cancellationToken);
+
+        await fileStorage.AddFileToAlbumAsync(entity.AlbumId, storageKey, cancellationToken);
 
         entity.MaterialFileName = request.FileName;
         entity.MaterialStorageKey = storageKey;

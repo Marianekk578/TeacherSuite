@@ -1,5 +1,6 @@
 using MediatR;
 using TeacherSuite.Application.Lessons.Commands.Create;
+using TeacherSuite.Application.Lessons.Commands.Reorder;
 using TeacherSuite.Application.Lessons.Commands.Update;
 using TeacherSuite.Application.Lessons.Queries;
 
@@ -35,5 +36,7 @@ public static class LessonEndpoints
             await endpoints.GetAttendances(sender, id));
         app.MapPost("/Lessons/{id:int}/attendances", async (Lessons endpoints, ISender sender, int id, RecordAttendanceRequest request) =>
             await endpoints.RecordAttendance(sender, id, request));
+        app.MapPost("/Lessons/{id:int}/reorder", async (Lessons endpoints, ISender sender, int id, ReorderLessonRequest request) =>
+            await endpoints.ReorderLesson(sender, id, request));
     }
 }

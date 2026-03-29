@@ -9,7 +9,6 @@ public class CreateLessonCommandValidator : AbstractValidator<CreateLessonComman
         LessonValidationRules.ApplyCommonRules(this,
             x => x.Title,
             x => x.CourseId,
-            x => x.Order,
             x => x.DurationMinutes);
     }
 }

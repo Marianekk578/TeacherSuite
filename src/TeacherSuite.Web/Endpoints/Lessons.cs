@@ -5,6 +5,7 @@ using TeacherSuite.Application.Lessons.Commands.CreateSuggestion;
 using TeacherSuite.Application.Lessons.Commands.Delete;
 using TeacherSuite.Application.Lessons.Commands.DeleteSuggestion;
 using TeacherSuite.Application.Lessons.Commands.RecordAttendance;
+using TeacherSuite.Application.Lessons.Commands.Reorder;
 using TeacherSuite.Application.Lessons.Commands.Update;
 using TeacherSuite.Application.Lessons.Commands.UploadMaterial;
 using TeacherSuite.Application.Lessons.Commands.VoteSuggestion;
@@ -19,6 +20,8 @@ public record CreateSuggestionRequest(string? Content, string? SelectedText, int
 public record RecordAttendanceRequest(Guid GroupId, DateTimeOffset AttendedAt);
 
 public record VoteSuggestionRequest(int Vote);
+
+public record ReorderLessonRequest(string Direction);
 
 public class Lessons
 {
@@ -102,5 +105,11 @@ public class Lessons
         var attendanceId = await sender.Send(new RecordLessonAttendanceCommand(
             id, request.GroupId, request.AttendedAt));
         return TypedResults.Created($"/{nameof(Lessons)}/{id}/attendances/{attendanceId}", attendanceId);
+    }
+
+    public async Task<NoContent> ReorderLesson(ISender sender, int id, ReorderLessonRequest request)
+    {
+        await sender.Send(new ReorderLessonCommand(id, request.Direction));
+        return TypedResults.NoContent();
     }
 }

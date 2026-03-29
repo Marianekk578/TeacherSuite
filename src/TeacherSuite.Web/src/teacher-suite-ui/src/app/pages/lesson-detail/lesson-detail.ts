@@ -1,8 +1,8 @@
 import { Component, OnInit, ChangeDetectorRef, HostListener, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import {
   LessonService,
   LessonDetail,
@@ -15,18 +15,17 @@ import {
 import { GroupService, Group } from '../../services/group.service';
 import { KeycloakService } from '../../auth/keycloak.service';
 
-/** Material type enum values matching the backend */
 const MaterialType = { None: 0, Markdown: 1, Word: 2 } as const;
 
-/** Requirement icon definitions */
 const REQUIREMENT_ICON_DEFS: { key: string; emoji: string; label: string }[] = [
   { key: 'phone', emoji: '📱', label: 'Mobile phone needed' },
   { key: 'laptop', emoji: '💻', label: 'Laptop/computer needed' },
+  { key: 'arduino', emoji: '🔌', label: 'Arduino board needed' },
 ];
 
 @Component({
   selector: 'app-lesson-detail',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
   templateUrl: './lesson-detail.html',
   styleUrl: './lesson-detail.scss',
 })
@@ -35,12 +34,10 @@ export class LessonDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
-  // Lesson data
   lesson: LessonDetail | null = null;
   loading = false;
   error: string | null = null;
 
-  // Context menu (right-click on markdown)
   showContextMenu = false;
   contextMenuX = 0;
   contextMenuY = 0;
@@ -49,15 +46,12 @@ export class LessonDetailPage implements OnInit {
   contextSelectionEnd: number | undefined;
   contextSuggestionContent = '';
 
-  // Add comment modal (for Word docs or general comments)
   showCommentModal = false;
   commentContent = '';
   commentError: string | null = null;
 
-  // Suggestions
   sortedSuggestions: LessonSuggestion[] = [];
 
-  // Attendance
   showAttendanceModal = false;
   attendanceForm: FormGroup;
   attendanceError: string | null = null;
@@ -87,8 +81,6 @@ export class LessonDetailPage implements OnInit {
         }
       });
   }
-
-  // --- Data loading ---
 
   loadLesson(id: number) {
     this.loading = true;
@@ -145,8 +137,6 @@ export class LessonDetailPage implements OnInit {
     );
   }
 
-  // --- Navigation ---
-
   goBackToLessons() {
     if (this.lesson) {
       this.router.navigate(['/lessons'], { queryParams: { courseId: this.lesson.courseId } });
@@ -154,8 +144,6 @@ export class LessonDetailPage implements OnInit {
       this.router.navigate(['/lessons']);
     }
   }
-
-  // --- Display helpers ---
 
   canManage(): boolean {
     return this.keycloakService.hasRole('Admin') || this.keycloakService.hasRole('Supervisor');
@@ -194,8 +182,6 @@ export class LessonDetailPage implements OnInit {
     });
   }
 
-  // --- Material download ---
-
   downloadMaterial() {
     if (!this.lesson) return;
     this.lessonService.downloadMaterial(this.lesson.id).subscribe({
@@ -207,16 +193,12 @@ export class LessonDetailPage implements OnInit {
     });
   }
 
-  // --- Context menu (right-click on markdown) ---
-
   onMarkdownContextMenu(event: MouseEvent) {
     event.preventDefault();
-
-    // Capture any selected text from the pre element
     const selection = window.getSelection();
     if (selection && selection.toString().trim().length > 0) {
       this.contextSelectedText = selection.toString().trim();
-      // Try to compute selection offsets relative to markdown content
+
       const markdownContent = this.lesson?.markdownContent ?? '';
       const selectedStr = this.contextSelectedText;
       const startIdx = markdownContent.indexOf(selectedStr);
@@ -266,8 +248,6 @@ export class LessonDetailPage implements OnInit {
     });
   }
 
-  // --- Add comment modal ---
-
   openCommentModal() {
     this.commentContent = '';
     this.commentError = null;
@@ -303,8 +283,6 @@ export class LessonDetailPage implements OnInit {
     });
   }
 
-  // --- Suggestion voting ---
-
   voteSuggestion(suggestion: LessonSuggestion, vote: number) {
     const dto: VoteDto = { vote };
     this.lessonService.voteSuggestion(suggestion.id, dto).subscribe({
@@ -337,8 +315,6 @@ export class LessonDetailPage implements OnInit {
   getVoteScore(suggestion: LessonSuggestion): number {
     return suggestion.upvoteCount - suggestion.downvoteCount;
   }
-
-  // --- Attendance ---
 
   openAttendanceModal() {
     this.attendanceError = null;
@@ -394,8 +370,6 @@ export class LessonDetailPage implements OnInit {
       },
     });
   }
-
-  // --- Keyboard ---
 
   @HostListener('document:keydown.escape', ['$event'])
   onEscapeKey(_event: Event) {

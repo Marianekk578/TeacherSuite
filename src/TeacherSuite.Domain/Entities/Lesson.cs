@@ -15,6 +15,7 @@ public class Lesson
     public string? MarkdownContent { get; set; }
     public string? MaterialFileName { get; set; }
     public string? MaterialStorageKey { get; set; }
+    public string? AlbumId { get; set; }
     public string? RequirementIcons { get; set; }
     public ICollection<LessonAttendance> Attendances { get; set; } = new List<LessonAttendance>();
     public ICollection<LessonSuggestion> Suggestions { get; set; } = new List<LessonSuggestion>();

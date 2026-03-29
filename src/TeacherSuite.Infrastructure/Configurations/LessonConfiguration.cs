@@ -34,6 +34,9 @@ public class LessonConfiguration : IEntityTypeConfiguration<Lesson>
         builder.Property(l => l.MaterialStorageKey)
                .HasMaxLength(500);
 
+        builder.Property(l => l.AlbumId)
+               .HasMaxLength(500);
+
         builder.Property(l => l.RequirementIcons)
                .HasColumnType("text");
     }

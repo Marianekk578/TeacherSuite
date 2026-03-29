@@ -11,7 +11,6 @@ public record UpdateLessonCommand(
     string? Title,
     string? Description,
     int DurationMinutes,
-    int Order,
     LessonMaterialType MaterialType,
     string? MarkdownContent,
     List<string>? RequirementIcons) : IRequest<Unit>, ICacheInvalidationCommand
@@ -30,7 +29,6 @@ internal sealed class UpdateLessonCommandHandler(IApplicationDbContext db) : IRe
         entity.Title = request.Title ?? string.Empty;
         entity.Description = request.Description;
         entity.DurationMinutes = request.DurationMinutes;
-        entity.Order = request.Order;
         entity.MaterialType = request.MaterialType;
         entity.MarkdownContent = request.MarkdownContent;
         entity.RequirementIcons = request.RequirementIcons is { Count: > 0 }

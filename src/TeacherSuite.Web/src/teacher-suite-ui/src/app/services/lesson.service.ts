@@ -49,7 +49,6 @@ export interface CreateLessonDto {
   title: string;
   description?: string;
   durationMinutes: number;
-  order: number;
   materialType: number;
   markdownContent?: string;
   requirementIcons?: string[];
@@ -59,7 +58,6 @@ export interface UpdateLessonDto {
   title: string;
   description?: string;
   durationMinutes: number;
-  order: number;
   materialType: number;
   markdownContent?: string;
   requirementIcons?: string[];
@@ -108,6 +106,10 @@ export class LessonService extends ApiService {
 
   deleteLesson(id: number): Observable<void> {
     return this.delete(`${this.apiUrl}/${id}`);
+  }
+
+  reorderLesson(id: number, direction: string): Observable<void> {
+    return this.post<void>(`${this.apiUrl}/${id}/reorder`, { direction });
   }
 
   // --- Material upload/download ---

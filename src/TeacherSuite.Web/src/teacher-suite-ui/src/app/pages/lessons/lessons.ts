@@ -16,6 +16,8 @@ import {
   heroDocument,
   heroClock,
   heroArrowUpTray,
+  heroArrowUp,
+  heroArrowDown,
 } from '@ng-icons/heroicons/outline';
 
 /** Material type enum values matching the backend */
@@ -25,11 +27,7 @@ const MaterialType = { None: 0, Markdown: 1, Word: 2 } as const;
 const REQUIREMENT_ICON_DEFS: { key: string; emoji: string; label: string }[] = [
   { key: 'phone', emoji: '📱', label: 'Mobile phone needed' },
   { key: 'laptop', emoji: '💻', label: 'Laptop/computer needed' },
-  { key: 'headphones', emoji: '🎧', label: 'Headphones needed' },
-  { key: 'book', emoji: '📖', label: 'Textbook needed' },
-  { key: 'calculator', emoji: '🔢', label: 'Calculator needed' },
-  { key: 'scissors', emoji: '✂️', label: 'Scissors needed' },
-  { key: 'pen', emoji: '✏️', label: 'Pen/pencil needed' },
+  { key: 'arduino', emoji: '🔌', label: 'Arduino board needed' },
 ];
 
 @Component({
@@ -45,6 +43,8 @@ const REQUIREMENT_ICON_DEFS: { key: string; emoji: string; label: string }[] = [
       heroDocument,
       heroClock,
       heroArrowUpTray,
+      heroArrowUp,
+      heroArrowDown,
     }),
   ],
   templateUrl: './lessons.html',
@@ -94,7 +94,6 @@ export class LessonsPage implements OnInit {
       title: ['', [Validators.required]],
       description: [''],
       durationMinutes: [90, [Validators.required, Validators.min(1)]],
-      order: [1, [Validators.required, Validators.min(1)]],
       materialType: [MaterialType.None, [Validators.required]],
       markdownContent: [''],
     });
@@ -227,15 +226,10 @@ export class LessonsPage implements OnInit {
     this.modalError = null;
     this.selectedRequirementIcons = [];
 
-    const nextOrder = this.lessons.length > 0
-      ? Math.max(...this.lessons.map(l => l.order)) + 1
-      : 1;
-
     this.lessonForm.reset({
       title: '',
       description: '',
       durationMinutes: 90,
-      order: nextOrder,
       materialType: MaterialType.None,
       markdownContent: '',
     });
@@ -255,7 +249,6 @@ export class LessonsPage implements OnInit {
           title: detail.title,
           description: detail.description || '',
           durationMinutes: detail.durationMinutes,
-          order: detail.order,
           materialType: detail.materialType,
           markdownContent: detail.markdownContent || '',
         });
@@ -308,7 +301,6 @@ export class LessonsPage implements OnInit {
         title: formValue.title,
         description: formValue.description || undefined,
         durationMinutes: formValue.durationMinutes,
-        order: formValue.order,
         materialType: formValue.materialType,
         markdownContent: formValue.materialType === MaterialType.Markdown ? formValue.markdownContent : undefined,
         requirementIcons: this.selectedRequirementIcons,
@@ -331,7 +323,6 @@ export class LessonsPage implements OnInit {
         title: formValue.title,
         description: formValue.description || undefined,
         durationMinutes: formValue.durationMinutes,
-        order: formValue.order,
         materialType: formValue.materialType,
         markdownContent: formValue.materialType === MaterialType.Markdown ? formValue.markdownContent : undefined,
         requirementIcons: this.selectedRequirementIcons,
@@ -419,6 +410,38 @@ export class LessonsPage implements OnInit {
     }
   }
 
+  // --- Reorder ---
+
+  moveLessonUp(lesson: Lesson) {
+    this.lessonService.reorderLesson(lesson.id, 'up').subscribe({
+      next: () => this.loadLessons(),
+      error: (err) => {
+        this.error = 'Failed to reorder lesson.';
+        console.error('Error reordering lesson:', err);
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  moveLessonDown(lesson: Lesson) {
+    this.lessonService.reorderLesson(lesson.id, 'down').subscribe({
+      next: () => this.loadLessons(),
+      error: (err) => {
+        this.error = 'Failed to reorder lesson.';
+        console.error('Error reordering lesson:', err);
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  isFirstLesson(lesson: Lesson): boolean {
+    return this.lessons.length > 0 && this.lessons[0].id === lesson.id;
+  }
+
+  isLastLesson(lesson: Lesson): boolean {
+    return this.lessons.length > 0 && this.lessons[this.lessons.length - 1].id === lesson.id;
+  }
+
   // --- Form validation helper ---
 
   private getFormErrorMessage(): string | null {
@@ -432,12 +455,6 @@ export class LessonsPage implements OnInit {
     }
     if (controls['durationMinutes']?.errors?.['min']) {
       return 'Duration must be at least 1 minute';
-    }
-    if (controls['order']?.errors?.['required']) {
-      return 'Order is required';
-    }
-    if (controls['order']?.errors?.['min']) {
-      return 'Order must be at least 1';
     }
 
     return 'Please fix the errors in the form.';

@@ -12,10 +12,6 @@ public class UpdateLessonCommandValidator : AbstractValidator<UpdateLessonComman
             .NotEmpty()
             .WithMessage("Lesson title is required");
 
-        RuleFor(x => x.Order)
-            .GreaterThan(0)
-            .WithMessage("Lesson order must be greater than 0");
-
         RuleFor(x => x.DurationMinutes)
             .GreaterThan(0)
             .WithMessage("Duration must be greater than 0 minutes");
