@@ -9,24 +9,31 @@ public class ChibiSafeFileStorageService : IFileStorageService
 {
     private readonly HttpClient _httpClient;
     private readonly string _baseUrl;
+    private readonly string _apiKey;
 
-    public ChibiSafeFileStorageService(HttpClient httpClient, IConfiguration configuration)
+    public ChibiSafeFileStorageService(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _baseUrl = configuration["ChibiSafe:BaseUrl"]?.TrimEnd('/')
+        _baseUrl = Environment.GetEnvironmentVariable("CHIBISAFE__BASEURL")
                    ?? throw new InvalidOperationException("ChibiSafe:BaseUrl is not configured.");
-        var apiKey = configuration["ChibiSafe:ApiKey"]
+        _apiKey = Environment.GetEnvironmentVariable("CHIBISAFE__APIKEY")
                      ?? throw new InvalidOperationException("ChibiSafe:ApiKey is not configured.");
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
     }
 
     public async Task<string> UploadAsync(string fileName, Stream content, CancellationToken cancellationToken = default)
     {
         using var formContent = new MultipartFormDataContent();
         using var streamContent = new StreamContent(content);
+        streamContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
         formContent.Add(streamContent, "file", fileName);
 
-        var response = await _httpClient.PostAsync($"{_baseUrl}/api/upload", formContent, cancellationToken);
+        var url = $"{_baseUrl.TrimEnd('/')}/api/upload";
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, url);
+        request.Headers.Add("x-api-key", _apiKey);
+        request.Content = formContent;
+
+        var response = await _httpClient.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -38,14 +45,24 @@ public class ChibiSafeFileStorageService : IFileStorageService
 
     public async Task<Stream> DownloadAsync(string storageKey, CancellationToken cancellationToken = default)
     {
-        var response = await _httpClient.GetAsync($"{_baseUrl}/api/file/{storageKey}", HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        var url = $"{_baseUrl.TrimEnd('/')}/api/file/{storageKey}";
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Add("x-api-key", _apiKey);
+
+        var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadAsStreamAsync(cancellationToken);
     }
 
     public async Task DeleteAsync(string storageKey, CancellationToken cancellationToken = default)
     {
-        var response = await _httpClient.DeleteAsync($"{_baseUrl}/api/file/{storageKey}", cancellationToken);
+        var url = $"{_baseUrl.TrimEnd('/')}/api/file/{storageKey}";
+
+        using var request = new HttpRequestMessage(HttpMethod.Delete, url);
+        request.Headers.Add("x-api-key", _apiKey);
+
+        var response = await _httpClient.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
     }
 }
