@@ -9,18 +9,13 @@ public record DeleteLessonCommand(int Id) : IRequest<Unit>, ICacheInvalidationCo
     public IReadOnlyCollection<string> TagsToInvalidate => ["lessons"];
 }
 
-internal sealed class DeleteLessonCommandHandler(IApplicationDbContext db, IFileStorageService fileStorage) : IRequestHandler<DeleteLessonCommand, Unit>
+internal sealed class DeleteLessonCommandHandler(IApplicationDbContext db) : IRequestHandler<DeleteLessonCommand, Unit>
 {
     public async Task<Unit> Handle(DeleteLessonCommand request, CancellationToken cancellationToken)
     {
         var entity = await db.Lessons.FindAsync(new object[] { request.Id }, cancellationToken);
 
         Guard.Against.NotFound(request.Id, entity);
-
-        if (!string.IsNullOrEmpty(entity.MaterialStorageKey))
-        {
-            await fileStorage.DeleteAsync(entity.MaterialStorageKey, cancellationToken);
-        }
 
         db.Lessons.Remove(entity);
         await db.SaveChangesAsync(cancellationToken);

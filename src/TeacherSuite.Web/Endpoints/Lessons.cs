@@ -63,10 +63,16 @@ public class Lessons
         return TypedResults.NoContent();
     }
 
-    public async Task<IResult> DownloadMaterial(ISender sender, int id)
+    public async Task<IResult> DownloadMaterial(ISender sender, int id, string fileUuid)
     {
-        var result = await sender.Send(new DownloadLessonMaterialQuery(id));
+        var result = await sender.Send(new DownloadLessonMaterialQuery(id, fileUuid));
         return Results.File(result.Content, "application/octet-stream", result.FileName);
+    }
+
+    public async Task<Ok<List<LessonFileDto>>> GetFiles(ISender sender, int id)
+    {
+        var files = await sender.Send(new GetLessonFilesQuery(id));
+        return TypedResults.Ok(files);
     }
 
     public async Task<Ok<List<LessonSuggestionDto>>> GetSuggestions(ISender sender, int id)
@@ -111,5 +117,11 @@ public class Lessons
     {
         await sender.Send(new ReorderLessonCommand(id, request.Direction));
         return TypedResults.NoContent();
+    }
+
+    public async Task<Ok<List<CourseGroupDto>>> GetCourseGroups(ISender sender, int courseId)
+    {
+        var groups = await sender.Send(new GetCourseGroupsQuery(courseId));
+        return TypedResults.Ok(groups);
     }
 }

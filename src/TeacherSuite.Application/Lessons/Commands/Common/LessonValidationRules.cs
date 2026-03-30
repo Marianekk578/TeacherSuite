@@ -19,6 +19,8 @@ public static class LessonValidationRules
 
         validator.RuleFor(durationMinutesSelector)
             .GreaterThan(0)
-            .WithMessage("Duration must be greater than 0 minutes");
+            .WithMessage("Duration must be greater than 0 minutes")
+            .LessThanOrEqualTo(180)
+            .WithMessage("Duration cannot exceed 3 hours (180 minutes)");
     }
 }

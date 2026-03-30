@@ -11,6 +11,8 @@ internal sealed class GetLessonByIdQueryHandler(IApplicationDbContext db, IMappe
     {
         return await db.Lessons
             .Include(l => l.Course)
+            .Include(l => l.LessonRequirementIcons)
+                .ThenInclude(lr => lr.RequirementIcon)
             .Include(l => l.Suggestions)
                 .ThenInclude(s => s.Teacher)
             .Include(l => l.Suggestions)

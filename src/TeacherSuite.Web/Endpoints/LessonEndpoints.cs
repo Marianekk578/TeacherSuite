@@ -1,6 +1,5 @@
 using MediatR;
 using TeacherSuite.Application.Lessons.Commands.Create;
-using TeacherSuite.Application.Lessons.Commands.Reorder;
 using TeacherSuite.Application.Lessons.Commands.Update;
 using TeacherSuite.Application.Lessons.Queries;
 
@@ -22,8 +21,10 @@ public static class LessonEndpoints
             await endpoints.DeleteLesson(sender, id));
         app.MapPost("/Lessons/{id:int}/material", async (Lessons endpoints, ISender sender, int id, IFormFile file) =>
             await endpoints.UploadMaterial(sender, id, file)).DisableAntiforgery();
-        app.MapGet("/Lessons/{id:int}/material/download", async (Lessons endpoints, ISender sender, int id) =>
-            await endpoints.DownloadMaterial(sender, id));
+        app.MapGet("/Lessons/{id:int}/material/download", async (Lessons endpoints, ISender sender, int id, string fileUuid) =>
+            await endpoints.DownloadMaterial(sender, id, fileUuid));
+        app.MapGet("/Lessons/{id:int}/files", async (Lessons endpoints, ISender sender, int id) =>
+            await endpoints.GetFiles(sender, id));
         app.MapGet("/Lessons/{id:int}/suggestions", async (Lessons endpoints, ISender sender, int id) =>
             await endpoints.GetSuggestions(sender, id));
         app.MapPost("/Lessons/{id:int}/suggestions", async (Lessons endpoints, ISender sender, int id, CreateSuggestionRequest request) =>
@@ -38,5 +39,7 @@ public static class LessonEndpoints
             await endpoints.RecordAttendance(sender, id, request));
         app.MapPost("/Lessons/{id:int}/reorder", async (Lessons endpoints, ISender sender, int id, ReorderLessonRequest request) =>
             await endpoints.ReorderLesson(sender, id, request));
+        app.MapGet("/Lessons/course/{courseId:int}/groups", async (Lessons endpoints, ISender sender, int courseId) =>
+            await endpoints.GetCourseGroups(sender, courseId));
     }
 }

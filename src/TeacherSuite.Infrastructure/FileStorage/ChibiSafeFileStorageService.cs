@@ -1,6 +1,5 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
-using Microsoft.Extensions.Configuration;
 using TeacherSuite.Application.Common.Interfaces;
 
 namespace TeacherSuite.Infrastructure.FileStorage;
@@ -80,21 +79,46 @@ public class ChibiSafeFileStorageService : IFileStorageService
 
         var json = await response.Content.ReadAsStringAsync(cancellationToken);
         using var doc = JsonDocument.Parse(json);
-        var uuid = doc.RootElement.GetProperty("album").GetProperty("uuid").GetString()
+        var uuid = doc.RootElement.GetProperty("uuid").GetString()
                    ?? throw new InvalidOperationException("ChibiSafe album creation did not return a UUID.");
         return uuid;
     }
 
-    public async Task AddFileToAlbumAsync(string albumId, string fileUuid, CancellationToken cancellationToken = default)
+    public async Task AddFileToAlbumAsync(string fileUuid, string albumUuid, CancellationToken cancellationToken = default)
     {
-        var url = $"{_baseUrl.TrimEnd('/')}/api/album/{albumId}/link";
-        var body = JsonSerializer.Serialize(new { uuid = fileUuid });
+        var url = $"{_baseUrl.TrimEnd('/')}/api/file/{fileUuid}/album/{albumUuid}";
 
         using var request = new HttpRequestMessage(HttpMethod.Post, url);
         request.Headers.Add("x-api-key", _apiKey);
-        request.Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
 
         var response = await _httpClient.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
+    }
+
+    public async Task<List<AlbumFile>> GetAlbumFilesAsync(string albumUuid, CancellationToken cancellationToken = default)
+    {
+        var url = $"{_baseUrl.TrimEnd('/')}/api/album/{albumUuid}";
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Add("x-api-key", _apiKey);
+
+        var response = await _httpClient.SendAsync(request, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadAsStringAsync(cancellationToken);
+        using var doc = JsonDocument.Parse(json);
+
+        var files = new List<AlbumFile>();
+        if (doc.RootElement.TryGetProperty("files", out var filesElement))
+        {
+            foreach (var file in filesElement.EnumerateArray())
+            {
+                var uuid = file.GetProperty("uuid").GetString() ?? string.Empty;
+                var name = file.GetProperty("name").GetString() ?? string.Empty;
+                var size = file.TryGetProperty("size", out var sizeElement) ? sizeElement.GetInt64() : 0;
+                files.Add(new AlbumFile(uuid, name, size));
+            }
+        }
+        return files;
     }
 }

@@ -1,8 +1,6 @@
-using System.Text.Json;
 using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Domain.Common;
 using TeacherSuite.Domain.Entities;
-using TeacherSuite.Domain.Enums;
 using TeacherSuite.Domain.Events;
 
 namespace TeacherSuite.Application.Lessons.Commands.Create;
@@ -13,9 +11,7 @@ public record CreateLessonCommand(
     string? Title,
     string? Description,
     int DurationMinutes,
-    LessonMaterialType MaterialType,
-    string? MarkdownContent,
-    List<string>? RequirementIcons) : IRequest<int>, ICacheInvalidationCommand
+    List<string>? RequirementIconKeys) : IRequest<int>, ICacheInvalidationCommand
 {
     public IReadOnlyCollection<string> TagsToInvalidate => ["lessons"];
 }
@@ -36,15 +32,27 @@ internal sealed class CreateLessonCommandHandler(IApplicationDbContext db, IPubl
             Description = request.Description,
             DurationMinutes = request.DurationMinutes,
             Order = maxOrder + 1,
-            MaterialType = request.MaterialType,
-            MarkdownContent = request.MarkdownContent,
-            RequirementIcons = request.RequirementIcons is { Count: > 0 }
-                ? JsonSerializer.Serialize(request.RequirementIcons)
-                : null
         };
 
         db.Lessons.Add(entity);
         await db.SaveChangesAsync(cancellationToken);
+
+        if (request.RequirementIconKeys is { Count: > 0 })
+        {
+            var icons = await db.RequirementIcons
+                .Where(r => request.RequirementIconKeys.Contains(r.Key))
+                .ToListAsync(cancellationToken);
+
+            foreach (var icon in icons)
+            {
+                db.LessonRequirementIcons.Add(new LessonRequirementIcon
+                {
+                    LessonId = entity.Id,
+                    RequirementIconId = icon.Id
+                });
+            }
+            await db.SaveChangesAsync(cancellationToken);
+        }
 
         await publisher.Publish(new LessonCreatedEvent(entity), cancellationToken);
 

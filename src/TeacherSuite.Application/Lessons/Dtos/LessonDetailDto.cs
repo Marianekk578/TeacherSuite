@@ -1,4 +1,3 @@
-using System.Text.Json;
 using TeacherSuite.Domain.Entities;
 
 namespace TeacherSuite.Application.Lessons.Dtos;
@@ -11,10 +10,8 @@ public class LessonDetailDto
     public string Title { get; init; } = string.Empty;
     public string? Description { get; init; }
     public int DurationMinutes { get; init; }
-    public int MaterialType { get; init; }
-    public List<string> RequirementIcons { get; init; } = new();
-    public string? MarkdownContent { get; init; }
-    public string? MaterialFileName { get; init; }
+    public string? AlbumId { get; init; }
+    public List<RequirementIconDto> RequirementIcons { get; init; } = new();
     public string? CourseName { get; init; }
     public List<LessonSuggestionDto> Suggestions { get; init; } = new();
     public List<LessonAttendanceDto> Attendances { get; init; } = new();
@@ -24,12 +21,10 @@ public class LessonDetailDto
         public Mapping()
         {
             CreateMap<Lesson, LessonDetailDto>()
-                .ForMember(dest => dest.MaterialType,
-                    opt => opt.MapFrom(src => (int)src.MaterialType))
                 .ForMember(dest => dest.RequirementIcons,
-                    opt => opt.MapFrom(src => string.IsNullOrEmpty(src.RequirementIcons)
-                        ? new List<string>()
-                        : JsonSerializer.Deserialize<List<string>>(src.RequirementIcons, (JsonSerializerOptions?)null) ?? new List<string>()))
+                    opt => opt.MapFrom(src => src.LessonRequirementIcons
+                        .Select(lr => lr.RequirementIcon)
+                        .Where(r => r != null)))
                 .ForMember(dest => dest.CourseName,
                     opt => opt.MapFrom(src => src.Course != null ? src.Course.Name : null));
         }

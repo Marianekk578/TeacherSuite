@@ -38,8 +38,16 @@ internal sealed class ReorderLessonCommandHandler(IApplicationDbContext db) : IR
         }
 
         var swapLesson = courseLessons[swapIndex];
-        (lesson.Order, swapLesson.Order) = (swapLesson.Order, lesson.Order);
+        var orderA = lesson.Order;
+        var orderB = swapLesson.Order;
 
+        lesson.Order = -1;
+        await db.SaveChangesAsync(cancellationToken);
+
+        swapLesson.Order = orderA;
+        await db.SaveChangesAsync(cancellationToken);
+
+        lesson.Order = orderB;
         await db.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;

@@ -25,19 +25,48 @@ public class LessonConfiguration : IEntityTypeConfiguration<Lesson>
         builder.Property(l => l.Description)
                .HasMaxLength(2000);
 
-        builder.Property(l => l.MarkdownContent)
-               .HasColumnType("text");
-
-        builder.Property(l => l.MaterialFileName)
-               .HasMaxLength(500);
-
-        builder.Property(l => l.MaterialStorageKey)
-               .HasMaxLength(500);
-
         builder.Property(l => l.AlbumId)
                .HasMaxLength(500);
+    }
+}
 
-        builder.Property(l => l.RequirementIcons)
-               .HasColumnType("text");
+public class RequirementIconConfiguration : IEntityTypeConfiguration<RequirementIcon>
+{
+    public void Configure(EntityTypeBuilder<RequirementIcon> builder)
+    {
+        builder.HasKey(r => r.Id);
+
+        builder.Property(r => r.Key)
+               .IsRequired()
+               .HasMaxLength(50);
+
+        builder.HasIndex(r => r.Key)
+               .IsUnique();
+
+        builder.Property(r => r.Emoji)
+               .IsRequired()
+               .HasMaxLength(10);
+
+        builder.Property(r => r.Label)
+               .IsRequired()
+               .HasMaxLength(200);
+    }
+}
+
+public class LessonRequirementIconConfiguration : IEntityTypeConfiguration<LessonRequirementIcon>
+{
+    public void Configure(EntityTypeBuilder<LessonRequirementIcon> builder)
+    {
+        builder.HasKey(lr => new { lr.LessonId, lr.RequirementIconId });
+
+        builder.HasOne(lr => lr.Lesson)
+               .WithMany(l => l.LessonRequirementIcons)
+               .HasForeignKey(lr => lr.LessonId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(lr => lr.RequirementIcon)
+               .WithMany(r => r.LessonRequirementIcons)
+               .HasForeignKey(lr => lr.RequirementIconId)
+               .OnDelete(DeleteBehavior.Cascade);
     }
 }
