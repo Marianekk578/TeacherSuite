@@ -79,7 +79,7 @@ public class ChibiSafeFileStorageService : IFileStorageService
 
         var json = await response.Content.ReadAsStringAsync(cancellationToken);
         using var doc = JsonDocument.Parse(json);
-        var uuid = doc.RootElement.GetProperty("uuid").GetString()
+        var uuid = doc.RootElement.GetProperty("album").GetProperty("uuid").GetString()
                    ?? throw new InvalidOperationException("ChibiSafe album creation did not return a UUID.");
         return uuid;
     }
