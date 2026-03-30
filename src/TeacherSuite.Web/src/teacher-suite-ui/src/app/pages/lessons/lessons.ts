@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { LessonService, Lesson, CreateLessonDto, UpdateLessonDto } from '../../services/lesson.service';
+import { LessonService, Lesson, LessonFile, CreateLessonDto, UpdateLessonDto, RequirementIconDto } from '../../services/lesson.service';
 import { CourseService, Course } from '../../services/course.service';
 import { KeycloakService } from '../../auth/keycloak.service';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -20,15 +20,7 @@ import {
   heroArrowDown,
 } from '@ng-icons/heroicons/outline';
 
-/** Material type enum values matching the backend */
-const MaterialType = { None: 0, Markdown: 1, Word: 2 } as const;
-
-/** Requirement icon definitions with emoji fallbacks and tooltip labels */
-const REQUIREMENT_ICON_DEFS: { key: string; emoji: string; label: string }[] = [
-  { key: 'phone', emoji: '📱', label: 'Mobile phone needed' },
-  { key: 'laptop', emoji: '💻', label: 'Laptop/computer needed' },
-  { key: 'arduino', emoji: '🔌', label: 'Arduino board needed' },
-];
+const ALLOWED_EXTENSIONS = ['.md', '.docx', '.txt'];
 
 @Component({
   selector: 'app-lessons',
@@ -55,33 +47,30 @@ export class LessonsPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
-  // Course selector
   courses: Course[] = [];
   selectedCourseId: number | null = null;
   coursesLoading = false;
 
-  // Lessons list
   lessons: Lesson[] = [];
   loading = false;
   error: string | null = null;
 
-  // Add/Edit modal
   showModal = false;
   isEditMode = false;
   currentLessonId: number | null = null;
   modalError: string | null = null;
   selectedRequirementIcons: string[] = [];
   lessonForm: FormGroup;
+  pendingFiles: File[] = [];
+  fileError: string | null = null;
 
-  // Delete confirmation modal
   showDeleteConfirm = false;
   lessonToDelete: Lesson | null = null;
 
-  // File upload
   uploadingLessonId: number | null = null;
+  uploadSuccess: string | null = null;
 
-  // Requirement icon definitions (exposed to template)
-  readonly requirementIconDefs = REQUIREMENT_ICON_DEFS;
+  lessonFiles: Map<number, LessonFile[]> = new Map();
 
   constructor(
     private lessonService: LessonService,
@@ -93,9 +82,7 @@ export class LessonsPage implements OnInit {
     this.lessonForm = this.fb.group({
       title: ['', [Validators.required]],
       description: [''],
-      durationMinutes: [90, [Validators.required, Validators.min(1)]],
-      materialType: [MaterialType.None, [Validators.required]],
-      markdownContent: [''],
+      durationMinutes: [90, [Validators.required, Validators.min(1), Validators.max(180)]],
     });
   }
 
@@ -113,13 +100,9 @@ export class LessonsPage implements OnInit {
       });
   }
 
-  // --- Role helpers ---
-
   canManage(): boolean {
     return this.keycloakService.hasRole('Admin') || this.keycloakService.hasRole('Supervisor');
   }
-
-  // --- Course selector ---
 
   loadCourses() {
     this.coursesLoading = true;
@@ -143,7 +126,6 @@ export class LessonsPage implements OnInit {
     const courseId = value ? parseInt(value, 10) : null;
     this.selectedCourseId = courseId;
 
-    // Update URL query param
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: courseId ? { courseId: String(courseId) } : {},
@@ -156,8 +138,6 @@ export class LessonsPage implements OnInit {
     }
   }
 
-  // --- Lessons list ---
-
   loadLessons() {
     if (!this.selectedCourseId) return;
 
@@ -169,6 +149,7 @@ export class LessonsPage implements OnInit {
       next: (lessons) => {
         this.lessons = lessons.sort((a, b) => a.order - b.order);
         this.loading = false;
+        this.loadAllLessonFiles();
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -180,58 +161,61 @@ export class LessonsPage implements OnInit {
     });
   }
 
+  loadAllLessonFiles() {
+    for (const lesson of this.lessons) {
+      if (lesson.albumId) {
+        this.lessonService.getLessonFiles(lesson.id).subscribe({
+          next: (files) => {
+            this.lessonFiles.set(lesson.id, files);
+            this.cdr.detectChanges();
+          },
+          error: () => {},
+        });
+      }
+    }
+  }
+
   navigateToDetail(lesson: Lesson) {
     this.router.navigate(['/lessons', lesson.id]);
   }
 
-  // --- Display helpers ---
-
-  getMaterialTypeLabel(materialType: number): string {
-    switch (materialType) {
-      case MaterialType.Markdown: return 'Markdown';
-      case MaterialType.Word: return 'Word';
-      default: return 'None';
-    }
+  hasFiles(lesson: Lesson): boolean {
+    const files = this.lessonFiles.get(lesson.id);
+    return !!files && files.length > 0;
   }
 
-  getMaterialTypeIcon(materialType: number): string {
-    switch (materialType) {
-      case MaterialType.Markdown: return 'heroDocumentText';
-      case MaterialType.Word: return 'heroDocument';
-      default: return '';
-    }
+  hasMarkdownFile(lesson: Lesson): boolean {
+    const files = this.lessonFiles.get(lesson.id);
+    return !!files && files.some(f => f.name.toLowerCase().endsWith('.md'));
   }
 
-  getRequirementEmoji(key: string): string {
-    return REQUIREMENT_ICON_DEFS.find(d => d.key === key)?.emoji ?? key;
+  hasWordOrTextFile(lesson: Lesson): boolean {
+    const files = this.lessonFiles.get(lesson.id);
+    return !!files && files.some(f => {
+      const lower = f.name.toLowerCase();
+      return lower.endsWith('.docx') || lower.endsWith('.txt');
+    });
   }
 
-  getRequirementTooltip(key: string): string {
-    return REQUIREMENT_ICON_DEFS.find(d => d.key === key)?.label ?? key;
+  getMaterialLabels(lesson: Lesson): string[] {
+    const labels: string[] = [];
+    if (this.hasMarkdownFile(lesson)) labels.push('Markdown');
+    if (this.hasWordOrTextFile(lesson)) labels.push('Word/Text');
+    return labels;
   }
-
-  isMarkdownType(): boolean {
-    return this.lessonForm.get('materialType')?.value === MaterialType.Markdown;
-  }
-
-  isWordMaterial(lesson: Lesson): boolean {
-    return lesson.materialType === MaterialType.Word;
-  }
-
-  // --- Add / Edit modal ---
 
   openAddModal() {
     this.isEditMode = false;
     this.currentLessonId = null;
     this.modalError = null;
+    this.fileError = null;
     this.selectedRequirementIcons = [];
+    this.pendingFiles = [];
 
     this.lessonForm.reset({
       title: '',
       description: '',
       durationMinutes: 90,
-      materialType: MaterialType.None,
-      markdownContent: '',
     });
     this.showModal = true;
   }
@@ -240,17 +224,16 @@ export class LessonsPage implements OnInit {
     this.isEditMode = true;
     this.currentLessonId = lesson.id;
     this.modalError = null;
-    this.selectedRequirementIcons = [...(lesson.requirementIcons || [])];
+    this.fileError = null;
+    this.selectedRequirementIcons = (lesson.requirementIcons || []).map(r => r.key);
+    this.pendingFiles = [];
 
-    // Load full detail to get markdownContent
     this.lessonService.getLessonById(lesson.id).subscribe({
       next: (detail) => {
         this.lessonForm.reset({
           title: detail.title,
           description: detail.description || '',
           durationMinutes: detail.durationMinutes,
-          materialType: detail.materialType,
-          markdownContent: detail.markdownContent || '',
         });
         this.showModal = true;
         this.cdr.detectChanges();
@@ -268,7 +251,9 @@ export class LessonsPage implements OnInit {
     this.isEditMode = false;
     this.currentLessonId = null;
     this.modalError = null;
+    this.fileError = null;
     this.selectedRequirementIcons = [];
+    this.pendingFiles = [];
   }
 
   toggleRequirementIcon(key: string) {
@@ -282,6 +267,39 @@ export class LessonsPage implements OnInit {
 
   isRequirementSelected(key: string): boolean {
     return this.selectedRequirementIcons.includes(key);
+  }
+
+  onModalFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const files = input.files;
+    if (!files) return;
+
+    this.fileError = null;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      if (!ALLOWED_EXTENSIONS.includes(ext)) {
+        this.fileError = `File "${file.name}" has an unsupported extension. Only .md, .docx, and .txt files are accepted.`;
+        input.value = '';
+        this.cdr.detectChanges();
+        return;
+      }
+      if (this.pendingFiles.some(f => f.name === file.name)) {
+        this.fileError = `File "${file.name}" is already added.`;
+        input.value = '';
+        this.cdr.detectChanges();
+        return;
+      }
+      this.pendingFiles.push(file);
+    }
+    input.value = '';
+    this.cdr.detectChanges();
+  }
+
+  removePendingFile(index: number) {
+    this.pendingFiles.splice(index, 1);
+    this.fileError = null;
+    this.cdr.detectChanges();
   }
 
   saveLesson() {
@@ -301,18 +319,17 @@ export class LessonsPage implements OnInit {
         title: formValue.title,
         description: formValue.description || undefined,
         durationMinutes: formValue.durationMinutes,
-        materialType: formValue.materialType,
-        markdownContent: formValue.materialType === MaterialType.Markdown ? formValue.markdownContent : undefined,
-        requirementIcons: this.selectedRequirementIcons,
+        requirementIconKeys: this.selectedRequirementIcons,
       };
 
       this.lessonService.updateLesson(this.currentLessonId, payload).subscribe({
         next: () => {
+          this.uploadPendingFilesForLesson(this.currentLessonId!);
           this.loadLessons();
           this.closeModal();
         },
         error: (err) => {
-          this.modalError = 'Failed to update lesson. Please check your input and try again.';
+          this.modalError = err?.detail || 'Failed to update lesson. Please check your input and try again.';
           console.error('Error updating lesson:', err);
           this.cdr.detectChanges();
         },
@@ -323,18 +340,17 @@ export class LessonsPage implements OnInit {
         title: formValue.title,
         description: formValue.description || undefined,
         durationMinutes: formValue.durationMinutes,
-        materialType: formValue.materialType,
-        markdownContent: formValue.materialType === MaterialType.Markdown ? formValue.markdownContent : undefined,
-        requirementIcons: this.selectedRequirementIcons,
+        requirementIconKeys: this.selectedRequirementIcons,
       };
 
       this.lessonService.createLesson(payload).subscribe({
-        next: () => {
+        next: (newId) => {
+          this.uploadPendingFilesForLesson(newId);
           this.loadLessons();
           this.closeModal();
         },
         error: (err) => {
-          this.modalError = 'Failed to create lesson. Please check your input and try again.';
+          this.modalError = err?.detail || 'Failed to create lesson. Please check your input and try again.';
           console.error('Error creating lesson:', err);
           this.cdr.detectChanges();
         },
@@ -342,7 +358,17 @@ export class LessonsPage implements OnInit {
     }
   }
 
-  // --- Delete ---
+  private uploadPendingFilesForLesson(lessonId: number) {
+    for (const file of this.pendingFiles) {
+      this.lessonService.uploadMaterial(lessonId, file).subscribe({
+        error: (err) => {
+          console.error(`Error uploading file ${file.name}:`, err);
+          this.error = err?.detail || `Failed to upload file "${file.name}".`;
+          this.cdr.detectChanges();
+        },
+      });
+    }
+  }
 
   confirmDelete(lesson: Lesson) {
     this.lessonToDelete = lesson;
@@ -370,35 +396,44 @@ export class LessonsPage implements OnInit {
     }
   }
 
-  // --- File upload ---
-
   onFileSelected(event: Event, lesson: Lesson) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
 
+    const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      this.error = `File "${file.name}" has an unsupported extension. Only .md, .docx, and .txt files are accepted.`;
+      input.value = '';
+      this.cdr.detectChanges();
+      return;
+    }
+
     this.uploadingLessonId = lesson.id;
+    this.uploadSuccess = null;
     this.cdr.detectChanges();
 
     this.lessonService.uploadMaterial(lesson.id, file).subscribe({
       next: () => {
         this.uploadingLessonId = null;
+        this.uploadSuccess = `Material "${file.name}" uploaded successfully.`;
         this.loadLessons();
+        setTimeout(() => {
+          this.uploadSuccess = null;
+          this.cdr.detectChanges();
+        }, 4000);
         this.cdr.detectChanges();
       },
       error: (err) => {
         this.uploadingLessonId = null;
-        this.error = 'Failed to upload material file.';
+        this.error = err?.detail || `Failed to upload material file "${file.name}".`;
         console.error('Error uploading material:', err);
         this.cdr.detectChanges();
       },
     });
 
-    // Reset input so the same file can be re-selected
     input.value = '';
   }
-
-  // --- Keyboard ---
 
   @HostListener('document:keydown.escape', ['$event'])
   onEscapeKey(_event: Event) {
@@ -409,8 +444,6 @@ export class LessonsPage implements OnInit {
       this.cancelDelete();
     }
   }
-
-  // --- Reorder ---
 
   moveLessonUp(lesson: Lesson) {
     this.lessonService.reorderLesson(lesson.id, 'up').subscribe({
@@ -442,8 +475,6 @@ export class LessonsPage implements OnInit {
     return this.lessons.length > 0 && this.lessons[this.lessons.length - 1].id === lesson.id;
   }
 
-  // --- Form validation helper ---
-
   private getFormErrorMessage(): string | null {
     const controls = this.lessonForm.controls;
 
@@ -455,6 +486,9 @@ export class LessonsPage implements OnInit {
     }
     if (controls['durationMinutes']?.errors?.['min']) {
       return 'Duration must be at least 1 minute';
+    }
+    if (controls['durationMinutes']?.errors?.['max']) {
+      return 'Duration cannot exceed 3 hours (180 minutes)';
     }
 
     return 'Please fix the errors in the form.';

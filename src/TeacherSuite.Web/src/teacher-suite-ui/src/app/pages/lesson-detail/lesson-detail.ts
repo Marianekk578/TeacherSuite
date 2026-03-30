@@ -7,21 +7,13 @@ import {
   LessonService,
   LessonDetail,
   LessonSuggestion,
-  LessonAttendance,
+  LessonFile,
   CreateSuggestionDto,
   RecordAttendanceDto,
   VoteDto,
+  CourseGroup,
 } from '../../services/lesson.service';
-import { GroupService, Group } from '../../services/group.service';
 import { KeycloakService } from '../../auth/keycloak.service';
-
-const MaterialType = { None: 0, Markdown: 1, Word: 2 } as const;
-
-const REQUIREMENT_ICON_DEFS: { key: string; emoji: string; label: string }[] = [
-  { key: 'phone', emoji: '📱', label: 'Mobile phone needed' },
-  { key: 'laptop', emoji: '💻', label: 'Laptop/computer needed' },
-  { key: 'arduino', emoji: '🔌', label: 'Arduino board needed' },
-];
 
 @Component({
   selector: 'app-lesson-detail',
@@ -37,6 +29,10 @@ export class LessonDetailPage implements OnInit {
   lesson: LessonDetail | null = null;
   loading = false;
   error: string | null = null;
+
+  lessonFiles: LessonFile[] = [];
+  markdownContent: string | null = null;
+  downloadableFiles: LessonFile[] = [];
 
   showContextMenu = false;
   contextMenuX = 0;
@@ -55,12 +51,11 @@ export class LessonDetailPage implements OnInit {
   showAttendanceModal = false;
   attendanceForm: FormGroup;
   attendanceError: string | null = null;
-  groups: Group[] = [];
-  groupsLoaded = false;
+  courseGroups: CourseGroup[] = [];
+  courseGroupsLoaded = false;
 
   constructor(
     private lessonService: LessonService,
-    private groupService: GroupService,
     private cdr: ChangeDetectorRef,
     private fb: FormBuilder,
     private keycloakService: KeycloakService
@@ -92,6 +87,7 @@ export class LessonDetailPage implements OnInit {
         this.lesson = lesson;
         this.sortSuggestions();
         this.loading = false;
+        this.loadLessonFiles(id);
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -99,6 +95,36 @@ export class LessonDetailPage implements OnInit {
         this.loading = false;
         console.error('Error loading lesson:', err);
         this.cdr.detectChanges();
+      },
+    });
+  }
+
+  loadLessonFiles(lessonId: number) {
+    this.lessonService.getLessonFiles(lessonId).subscribe({
+      next: (files) => {
+        this.lessonFiles = files;
+        this.downloadableFiles = files.filter(f => {
+          const lower = f.name.toLowerCase();
+          return lower.endsWith('.docx') || lower.endsWith('.txt');
+        });
+
+        const mdFile = files.find(f => f.name.toLowerCase().endsWith('.md'));
+        if (mdFile && this.lesson) {
+          this.lessonService.downloadMaterialAsText(this.lesson.id, mdFile.uuid).then(text => {
+            this.markdownContent = text;
+            this.cdr.detectChanges();
+          }).catch(() => {
+            this.markdownContent = null;
+          });
+        } else {
+          this.markdownContent = null;
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.lessonFiles = [];
+        this.downloadableFiles = [];
+        this.markdownContent = null;
       },
     });
   }
@@ -149,24 +175,16 @@ export class LessonDetailPage implements OnInit {
     return this.keycloakService.hasRole('Admin') || this.keycloakService.hasRole('Supervisor');
   }
 
-  isMarkdown(): boolean {
-    return this.lesson?.materialType === MaterialType.Markdown;
+  hasMarkdown(): boolean {
+    return this.markdownContent !== null;
   }
 
-  isWord(): boolean {
-    return this.lesson?.materialType === MaterialType.Word;
+  hasDownloadableFiles(): boolean {
+    return this.downloadableFiles.length > 0;
   }
 
-  isNone(): boolean {
-    return this.lesson?.materialType === MaterialType.None;
-  }
-
-  getRequirementEmoji(key: string): string {
-    return REQUIREMENT_ICON_DEFS.find(d => d.key === key)?.emoji ?? key;
-  }
-
-  getRequirementTooltip(key: string): string {
-    return REQUIREMENT_ICON_DEFS.find(d => d.key === key)?.label ?? key;
+  hasAnyFiles(): boolean {
+    return this.lessonFiles.length > 0;
   }
 
   formatDate(dateStr: string): string {
@@ -182,9 +200,9 @@ export class LessonDetailPage implements OnInit {
     });
   }
 
-  downloadMaterial() {
+  downloadFile(file: LessonFile) {
     if (!this.lesson) return;
-    this.lessonService.downloadMaterial(this.lesson.id).subscribe({
+    this.lessonService.downloadMaterial(this.lesson.id, file.uuid).subscribe({
       error: (err) => {
         console.error('Error downloading material:', err);
         this.error = 'Failed to download material.';
@@ -199,9 +217,9 @@ export class LessonDetailPage implements OnInit {
     if (selection && selection.toString().trim().length > 0) {
       this.contextSelectedText = selection.toString().trim();
 
-      const markdownContent = this.lesson?.markdownContent ?? '';
+      const content = this.markdownContent ?? '';
       const selectedStr = this.contextSelectedText;
-      const startIdx = markdownContent.indexOf(selectedStr);
+      const startIdx = content.indexOf(selectedStr);
       if (startIdx >= 0) {
         this.contextSelectionStart = startIdx;
         this.contextSelectionEnd = startIdx + selectedStr.length;
@@ -320,17 +338,20 @@ export class LessonDetailPage implements OnInit {
     this.attendanceError = null;
     this.attendanceForm.reset({ groupId: '', attendedAt: '' });
     this.showAttendanceModal = true;
+    this.courseGroupsLoaded = false;
+    this.courseGroups = [];
 
-    if (!this.groupsLoaded) {
-      this.groupService.getAllGroups().subscribe({
+    if (this.lesson) {
+      this.lessonService.getCourseGroups(this.lesson.courseId).subscribe({
         next: (groups) => {
-          this.groups = groups;
-          this.groupsLoaded = true;
+          this.courseGroups = groups;
+          this.courseGroupsLoaded = true;
           this.cdr.detectChanges();
         },
         error: (err) => {
-          console.error('Error loading groups:', err);
-          this.attendanceError = 'Failed to load groups.';
+          console.error('Error loading course groups:', err);
+          this.attendanceError = 'Failed to load groups for this course.';
+          this.courseGroupsLoaded = true;
           this.cdr.detectChanges();
         },
       });
@@ -364,7 +385,7 @@ export class LessonDetailPage implements OnInit {
         this.refreshAttendances();
       },
       error: (err) => {
-        this.attendanceError = 'Failed to record attendance. Please try again.';
+        this.attendanceError = err?.detail || 'Failed to record attendance. Please try again.';
         console.error('Error recording attendance:', err);
         this.cdr.detectChanges();
       },

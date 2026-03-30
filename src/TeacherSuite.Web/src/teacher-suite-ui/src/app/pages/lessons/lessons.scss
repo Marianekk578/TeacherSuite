@@ -594,3 +594,77 @@
     }
   }
 }
+
+// Success alert
+.alert-success {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+// Lesson order column with reorder arrows
+.lesson-order-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.btn-reorder-up,
+.btn-reorder-down {
+  width: 28px;
+  height: 20px;
+  padding: 0;
+  font-size: 0.7rem;
+}
+
+// File upload in modal
+.file-upload-btn {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.file-alert {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.pending-files {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.pending-file {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.375rem 0.75rem;
+  background: #f3f4f6;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.pending-file-name {
+  color: #374151;
+  font-weight: 500;
+}
+
+.btn-remove-file {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0 4px;
+  border-radius: 4px;
+
+  &:hover {
+    background: #fee2e2;
+  }
+}

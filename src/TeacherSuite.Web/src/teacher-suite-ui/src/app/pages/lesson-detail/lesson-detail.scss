@@ -565,6 +565,17 @@
   }
 }
 
+.comment-btn {
+  margin-top: 1rem;
+}
+
+.no-groups-hint {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
 @media (max-width: 768px) {
   .lesson-detail-page {
     padding: 1rem;

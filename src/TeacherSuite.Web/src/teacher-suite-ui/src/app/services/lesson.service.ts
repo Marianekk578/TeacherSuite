@@ -3,6 +3,12 @@ import { Observable, from } from 'rxjs';
 import { ApiService, ApiError } from './api.service';
 import { KeycloakService } from '../auth/keycloak.service';
 
+export interface RequirementIconDto {
+  key: string;
+  emoji: string;
+  label: string;
+}
+
 export interface Lesson {
   id: number;
   courseId: number;
@@ -10,13 +16,11 @@ export interface Lesson {
   title: string;
   description?: string;
   durationMinutes: number;
-  materialType: number;
-  requirementIcons: string[];
+  albumId?: string;
+  requirementIcons: RequirementIconDto[];
 }
 
 export interface LessonDetail extends Lesson {
-  markdownContent?: string;
-  materialFileName?: string;
   courseName: string;
   suggestions: LessonSuggestion[];
   attendances: LessonAttendance[];
@@ -44,23 +48,25 @@ export interface LessonAttendance {
   attendedAt: string;
 }
 
+export interface LessonFile {
+  uuid: string;
+  name: string;
+  size: number;
+}
+
 export interface CreateLessonDto {
   courseId: number;
   title: string;
   description?: string;
   durationMinutes: number;
-  materialType: number;
-  markdownContent?: string;
-  requirementIcons?: string[];
+  requirementIconKeys?: string[];
 }
 
 export interface UpdateLessonDto {
   title: string;
   description?: string;
   durationMinutes: number;
-  materialType: number;
-  markdownContent?: string;
-  requirementIcons?: string[];
+  requirementIconKeys?: string[];
 }
 
 export interface CreateSuggestionDto {
@@ -76,7 +82,12 @@ export interface RecordAttendanceDto {
 }
 
 export interface VoteDto {
-  vote: number; // 1 for upvote, -1 for downvote
+  vote: number;
+}
+
+export interface CourseGroup {
+  id: string;
+  name: string;
 }
 
 @Injectable({
@@ -85,8 +96,6 @@ export interface VoteDto {
 export class LessonService extends ApiService {
   private readonly apiUrl = '/Lessons';
   private readonly keycloak = inject(KeycloakService);
-
-  // --- Lesson CRUD ---
 
   getLessonsByCourse(courseId: number): Observable<Lesson[]> {
     return this.get<Lesson[]>(`${this.apiUrl}?courseId=${courseId}`);
@@ -112,17 +121,37 @@ export class LessonService extends ApiService {
     return this.post<void>(`${this.apiUrl}/${id}/reorder`, { direction });
   }
 
-  // --- Material upload/download ---
-
   uploadMaterial(lessonId: number, file: File): Observable<void> {
     return from(this.uploadFile(`${this.apiUrl}/${lessonId}/material`, file));
   }
 
-  downloadMaterial(lessonId: number): Observable<void> {
-    return from(this.downloadFile(`${this.apiUrl}/${lessonId}/material/download`));
+  downloadMaterial(lessonId: number, fileUuid: string): Observable<void> {
+    return from(this.downloadFileByUrl(`${this.apiUrl}/${lessonId}/material/download?fileUuid=${fileUuid}`));
   }
 
-  // --- Suggestions ---
+  async downloadMaterialAsText(lessonId: number, fileUuid: string): Promise<string> {
+    const headers: Record<string, string> = {};
+    const token = await this.getAuthToken();
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${this.apiUrl}/${lessonId}/material/download?fileUuid=${fileUuid}`, { headers });
+
+    if (!response.ok) {
+      throw new ApiError(response.status, response.statusText);
+    }
+
+    return await response.text();
+  }
+
+  getLessonFiles(lessonId: number): Observable<LessonFile[]> {
+    return this.get<LessonFile[]>(`${this.apiUrl}/${lessonId}/files`);
+  }
+
+  getCourseGroups(courseId: number): Observable<CourseGroup[]> {
+    return this.get<CourseGroup[]>(`${this.apiUrl}/course/${courseId}/groups`);
+  }
 
   getSuggestions(lessonId: number): Observable<LessonSuggestion[]> {
     return this.get<LessonSuggestion[]>(`${this.apiUrl}/${lessonId}/suggestions`);
@@ -140,8 +169,6 @@ export class LessonService extends ApiService {
     return this.post<void>(`${this.apiUrl}/suggestions/${suggestionId}/vote`, vote);
   }
 
-  // --- Attendances ---
-
   getAttendances(lessonId: number): Observable<LessonAttendance[]> {
     return this.get<LessonAttendance[]>(`${this.apiUrl}/${lessonId}/attendances`);
   }
@@ -149,8 +176,6 @@ export class LessonService extends ApiService {
   recordAttendance(lessonId: number, attendance: RecordAttendanceDto): Observable<string> {
     return this.post<string>(`${this.apiUrl}/${lessonId}/attendances`, attendance);
   }
-
-  // --- File helpers (not in base ApiService) ---
 
   private async getAuthToken(): Promise<string | null> {
     try {
@@ -171,7 +196,6 @@ export class LessonService extends ApiService {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    // Do NOT set Content-Type — the browser sets it with the multipart boundary
     const response = await fetch(url, {
       method: 'POST',
       headers,
@@ -192,7 +216,7 @@ export class LessonService extends ApiService {
     }
   }
 
-  private async downloadFile(url: string): Promise<void> {
+  private async downloadFileByUrl(url: string): Promise<void> {
     const headers: Record<string, string> = {};
     const token = await this.getAuthToken();
     if (token) {
@@ -230,7 +254,6 @@ export class LessonService extends ApiService {
     if (!contentDisposition) {
       return null;
     }
-    // Try filename*=UTF-8''<encoded> first, then filename="<name>"
     const utf8Match = contentDisposition.match(/filename\*=UTF-8''(.+?)(?:;|$)/i);
     if (utf8Match) {
       return decodeURIComponent(utf8Match[1]);
