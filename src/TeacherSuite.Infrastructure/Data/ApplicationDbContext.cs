@@ -23,6 +23,8 @@ namespace TeacherSuite.Infrastructure.Data
         public DbSet<SuggestionVote> SuggestionVotes => Set<SuggestionVote>();
         public DbSet<RequirementIcon> RequirementIcons => Set<RequirementIcon>();
         public DbSet<LessonRequirementIcon> LessonRequirementIcons => Set<LessonRequirementIcon>();
+        public DbSet<ScheduledLesson> ScheduledLessons => Set<ScheduledLesson>();
+        public DbSet<StudentLessonAttendance> StudentLessonAttendances => Set<StudentLessonAttendance>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
