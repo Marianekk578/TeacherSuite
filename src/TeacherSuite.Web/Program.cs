@@ -69,6 +69,7 @@ builder.Services.AddScoped<Groups>();
 builder.Services.AddScoped<ProgrammingLanguages>();
 builder.Services.AddScoped<Students>();
 builder.Services.AddScoped<Lessons>();
+builder.Services.AddScoped<LessonPlanHandler>();
 
 var app = builder.Build();
 
@@ -90,6 +91,7 @@ app.MapGroupEndpoints();
 app.MapProgrammingLanguageEndpoints();
 app.MapStudentEndpoints();
 app.MapLessonEndpoints();
+app.MapLessonPlanEndpoints();
 
 if (app.Environment.IsDevelopment())
 {
