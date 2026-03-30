@@ -33,5 +33,10 @@
     "target": "https://localhost:7030",
     "secure": false,
     "changeOrigin": true
+  },
+  "/Lessons-plan": {
+    "target": "https://localhost:7030",
+    "secure": false,
+    "changeOrigin": true
   }
 }
