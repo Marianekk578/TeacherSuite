@@ -8,6 +8,7 @@ import { ProgrammingLanguages } from './pages/programming-languages/programming-
 import { Students } from './pages/students/students';
 import { LessonsPage } from './pages/lessons/lessons';
 import { LessonDetailPage } from './pages/lesson-detail/lesson-detail';
+import { LessonPlanPage } from './pages/lesson-plan/lesson-plan';
 import { authGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
@@ -16,6 +17,7 @@ export const routes: Routes = [
   { path: 'courses', component: Courses, canActivate: [authGuard] },
   { path: 'lessons', component: LessonsPage, canActivate: [authGuard] },
   { path: 'lessons/:id', component: LessonDetailPage, canActivate: [authGuard] },
+  { path: 'lesson-plan', component: LessonPlanPage, canActivate: [authGuard] },
   { path: 'groups', component: Groups, canActivate: [authGuard] },
   { path: 'students', component: Students, canActivate: [authGuard] },
   { path: 'age-groups', component: AgeGroups, canActivate: [authGuard] },

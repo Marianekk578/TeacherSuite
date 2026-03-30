@@ -1,0 +1,191 @@
+<div class="lesson-plan-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <ng-icon name="heroCalendarDays" size="32" />
+      <h1>Lesson Plan</h1>
+    </div>
+    <button class="btn-schedule" (click)="openScheduleModal()">
+      <ng-icon name="heroPlus" size="20" />
+      Schedule Lesson
+    </button>
+  </div>
+
+  <!-- Alerts -->
+  @if (error) {
+    <div class="alert alert-error">{{ error }}</div>
+  }
+  @if (success) {
+    <div class="alert alert-success">{{ success }}</div>
+  }
+
+  <!-- Loading -->
+  @if (loading) {
+    <div class="loading-grid">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <div class="skeleton-card">
+          <div class="skeleton-line wide"></div>
+          <div class="skeleton-line medium"></div>
+          <div class="skeleton-line narrow"></div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!loading && scheduledLessons.length === 0) {
+    <div class="empty-state">
+      <ng-icon name="heroCalendarDays" size="64" />
+      <h2>No scheduled lessons</h2>
+      <p>Schedule your first lesson to see it here.</p>
+    </div>
+  }
+
+  <!-- Lesson Plan Grid -->
+  @if (!loading && scheduledLessons.length > 0) {
+    <div class="lesson-plan-grid">
+      @for (lesson of scheduledLessons; track lesson.id) {
+        <div class="lesson-card" [class.status-active]="getLessonStatus(lesson) === 'active'"
+             [class.status-completed]="getLessonStatus(lesson) === 'completed'"
+             [class.status-upcoming]="getLessonStatus(lesson) === 'upcoming'">
+          <div class="card-header">
+            <span class="status-badge" [class.active]="getLessonStatus(lesson) === 'active'"
+                  [class.completed]="getLessonStatus(lesson) === 'completed'"
+                  [class.upcoming]="getLessonStatus(lesson) === 'upcoming'">
+              {{ getStatusLabel(lesson) }}
+            </span>
+            <span class="lesson-order">#{{ lesson.lessonOrder }}</span>
+          </div>
+
+          <h3 class="lesson-title">{{ lesson.lessonTitle }}</h3>
+
+          <div class="lesson-meta">
+            <div class="meta-item">
+              <ng-icon name="heroBookOpen" size="16" />
+              <span>{{ lesson.courseName }}</span>
+            </div>
+            <div class="meta-item">
+              <ng-icon name="heroUserGroup" size="16" />
+              <span>{{ lesson.groupName }}</span>
+            </div>
+            <div class="meta-item">
+              <ng-icon name="heroClock" size="16" />
+              <span>{{ formatDateTime(lesson.scheduledStart) }}</span>
+            </div>
+            <div class="meta-item time-range">
+              <span>{{ formatTime(lesson.scheduledStart) }} — {{ formatTime(lesson.scheduledEnd) }}</span>
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <button class="btn-action btn-details" (click)="navigateToLesson(lesson.lessonId)">
+              <ng-icon name="heroEye" size="16" />
+              Details
+            </button>
+            <button class="btn-action btn-attendance" (click)="openAttendanceModal(lesson)">
+              <ng-icon name="heroUserGroup" size="16" />
+              Attendance
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Schedule Modal -->
+@if (showScheduleModal) {
+  <div class="modal-overlay" (click)="closeScheduleModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>Schedule a Lesson</h2>
+
+      <form [formGroup]="scheduleForm" (ngSubmit)="scheduleLesson()">
+        <div class="form-group">
+          <label for="courseId">Course</label>
+          <select id="courseId" formControlName="courseId" (change)="onCourseChange()">
+            <option value="">Select a course</option>
+            @for (course of courses; track course.id) {
+              <option [value]="course.id">{{ course.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="lessonId">Lesson</label>
+          <select id="lessonId" formControlName="lessonId" [disabled]="!lessons.length">
+            <option value="">Select a lesson</option>
+            @for (l of lessons; track l.id) {
+              <option [value]="l.id">#{{ l.order }} — {{ l.title }} ({{ l.durationMinutes }}min)</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="groupId">Group</label>
+          <select id="groupId" formControlName="groupId" [disabled]="!groups.length">
+            <option value="">Select a group</option>
+            @for (g of groups; track g.id) {
+              <option [value]="g.id">{{ g.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="scheduledStart">Start Time</label>
+          <input type="datetime-local" id="scheduledStart" formControlName="scheduledStart" />
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="closeScheduleModal()">Cancel</button>
+          <button type="submit" class="btn-submit" [disabled]="scheduleForm.invalid">Schedule</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Attendance Modal -->
+@if (showAttendanceModal && selectedScheduledLesson) {
+  <div class="modal-overlay" (click)="closeAttendanceModal()">
+    <div class="modal-content attendance-modal" (click)="$event.stopPropagation()">
+      <h2>Student Attendance</h2>
+      <p class="attendance-subtitle">
+        {{ selectedScheduledLesson.lessonTitle }} — {{ selectedScheduledLesson.groupName }}
+      </p>
+
+      @if (loadingAttendance) {
+        <div class="loading-spinner"></div>
+      }
+
+      @if (!loadingAttendance && studentAttendances.length === 0) {
+        <p class="no-students">No students are assigned to this group.</p>
+      }
+
+      @if (!loadingAttendance && studentAttendances.length > 0) {
+        <div class="attendance-list">
+          @for (student of studentAttendances; track student.studentId) {
+            <div class="attendance-item" [class.present]="student.isPresent"
+                 (click)="toggleAttendance(student)">
+              <div class="student-info">
+                <span class="student-name">{{ student.studentFirstName }} {{ student.studentLastName }}</span>
+              </div>
+              <div class="attendance-toggle">
+                @if (student.isPresent) {
+                  <ng-icon name="heroCheck" size="20" class="icon-present" />
+                  <span class="present-label">Present</span>
+                } @else {
+                  <ng-icon name="heroXMark" size="20" class="icon-absent" />
+                  <span class="absent-label">Absent</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="closeAttendanceModal()">Close</button>
+      </div>
+    </div>
+  </div>
+}
