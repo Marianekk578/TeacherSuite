@@ -9,6 +9,10 @@ public static class RateLimitingServiceExtensions
 {
     public static IServiceCollection AddRateLimitingPolicy(this IServiceCollection services, IConfiguration configuration)
     {
+        var permitLimit = GetValidatedConfig(configuration, "RateLimiting:PermitLimit", defaultValue: 10);
+        var windowSeconds = GetValidatedConfig(configuration, "RateLimiting:WindowSeconds", defaultValue: 60);
+        var segmentsPerWindow = GetValidatedConfig(configuration, "RateLimiting:SegmentsPerWindow", defaultValue: 6);
+
         services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -19,9 +23,9 @@ public static class RateLimitingServiceExtensions
 
                 return RateLimitPartition.GetSlidingWindowLimiter(partitionKey, _ => new SlidingWindowRateLimiterOptions
                 {
-                    PermitLimit = int.TryParse(configuration["RateLimiting:PermitLimit"], out var permit) ? permit : 10,
-                    Window = TimeSpan.FromSeconds(int.TryParse(configuration["RateLimiting:WindowSeconds"], out var window) ? window : 60),
-                    SegmentsPerWindow = int.TryParse(configuration["RateLimiting:SegmentsPerWindow"], out var segments) ? segments : 6,
+                    PermitLimit = permitLimit,
+                    Window = TimeSpan.FromSeconds(windowSeconds),
+                    SegmentsPerWindow = segmentsPerWindow,
                     QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                     QueueLimit = 0,
                 });
@@ -65,5 +69,18 @@ public static class RateLimitingServiceExtensions
         }
 
         return httpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
+    }
+
+    private static int GetValidatedConfig(IConfiguration configuration, string key, int defaultValue)
+    {
+        var raw = configuration[key];
+        if (raw is null)
+            return defaultValue;
+
+        if (!int.TryParse(raw, out var value) || value < 1)
+            throw new InvalidOperationException(
+                $"Rate limiting configuration '{key}' has an invalid value '{raw}'. Value must be a positive integer.");
+
+        return value;
     }
 }

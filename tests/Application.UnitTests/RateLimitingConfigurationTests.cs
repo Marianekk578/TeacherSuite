@@ -84,6 +84,78 @@ public class RateLimitingConfigurationTests
 
     #endregion
 
+    #region Configuration Validation Tests
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-1")]
+    [InlineData("abc")]
+    public void AddRateLimitingPolicy_ThrowsInvalidOperationException_WhenPermitLimitIsInvalid(string invalidValue)
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["RateLimiting:PermitLimit"] = invalidValue })
+            .Build();
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => services.AddRateLimitingPolicy(config));
+        Assert.Contains("RateLimiting:PermitLimit", ex.Message);
+        Assert.Contains(invalidValue, ex.Message);
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-5")]
+    [InlineData("not-a-number")]
+    public void AddRateLimitingPolicy_ThrowsInvalidOperationException_WhenWindowSecondsIsInvalid(string invalidValue)
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["RateLimiting:WindowSeconds"] = invalidValue })
+            .Build();
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => services.AddRateLimitingPolicy(config));
+        Assert.Contains("RateLimiting:WindowSeconds", ex.Message);
+        Assert.Contains(invalidValue, ex.Message);
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-2")]
+    [InlineData("??")]
+    public void AddRateLimitingPolicy_ThrowsInvalidOperationException_WhenSegmentsPerWindowIsInvalid(string invalidValue)
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["RateLimiting:SegmentsPerWindow"] = invalidValue })
+            .Build();
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => services.AddRateLimitingPolicy(config));
+        Assert.Contains("RateLimiting:SegmentsPerWindow", ex.Message);
+        Assert.Contains(invalidValue, ex.Message);
+    }
+
+    [Fact]
+    public void AddRateLimitingPolicy_UsesDefaults_WhenConfigurationKeysAreAbsent()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var config = new ConfigurationBuilder().Build();
+
+        // Act — should not throw when configuration keys are missing
+        var exception = Record.Exception(() => services.AddRateLimitingPolicy(config));
+
+        // Assert
+        Assert.Null(exception);
+    }
+
+    #endregion
+
     #region Integration Tests (TestServer)
 
     [Fact]
@@ -123,14 +195,9 @@ public class RateLimitingConfigurationTests
     }
 
     [Fact]
-    public async Task RateLimiter_ResponseIncludesRetryAfterHeader_WhenRejected()
+    public async Task RateLimiter_RejectionResponse_HasRfc6585ProblemDetailsBody()
     {
-        // The SlidingWindowRateLimiter wrapped by PartitionedRateLimiter does not
-        // reliably expose RetryAfter metadata (TryGetMetadata returns false) in the
-        // current .NET runtime. The OnRejected callback correctly checks for metadata
-        // and only sets Retry-After when available.
-        // This test verifies the RFC-compliant rejection response structure — the
-        // Type URL and Instance path — which are unique to the OnRejected callback.
+        // Arrange
         await using var app = await CreateTestApp(permitLimit: 1);
         var client = app.GetTestClient();
 
