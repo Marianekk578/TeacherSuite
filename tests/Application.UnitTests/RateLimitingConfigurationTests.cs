@@ -217,6 +217,25 @@ public class RateLimitingConfigurationTests
     }
 
     [Fact]
+    public async Task RateLimiter_RejectionResponse_AlwaysIncludesRetryAfterHeader()
+    {
+        // Arrange – short window so the fallback value is predictable
+        await using var app = await CreateTestApp(permitLimit: 1, windowSeconds: 30);
+        var client = app.GetTestClient();
+
+        using var _ = await client.GetAsync("/test"); // exhaust the limit
+
+        // Act
+        using var rejected = await client.GetAsync("/test");
+
+        // Assert – Retry-After must be present and positive regardless of lease metadata
+        Assert.Equal(HttpStatusCode.TooManyRequests, rejected.StatusCode);
+        Assert.True(rejected.Headers.TryGetValues("Retry-After", out var values));
+        Assert.True(int.TryParse(values.First(), out var retryAfterSeconds));
+        Assert.True(retryAfterSeconds > 0);
+    }
+
+    [Fact]
     public async Task RateLimiter_ResponseBody_IsProblemDetailsJson()
     {
         // Arrange

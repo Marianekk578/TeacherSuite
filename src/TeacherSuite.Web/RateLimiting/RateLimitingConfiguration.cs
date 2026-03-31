@@ -35,11 +35,11 @@ public static class RateLimitingServiceExtensions
             {
                 context.HttpContext.Response.ContentType = "application/problem+json";
 
-                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
-                {
-                    context.HttpContext.Response.Headers.RetryAfter =
-                        ((int)Math.Ceiling(retryAfter.TotalSeconds)).ToString();
-                }
+                var retryAfterSeconds = context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter)
+                    ? (int)Math.Ceiling(retryAfter.TotalSeconds)
+                    : windowSeconds;
+
+                context.HttpContext.Response.Headers.RetryAfter = retryAfterSeconds.ToString();
 
                 var problemDetails = new ProblemDetails
                 {
