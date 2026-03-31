@@ -35,7 +35,6 @@ internal sealed class CreateLessonSuggestionCommandHandler(IApplicationDbContext
                 DateOfBirth = DateTimeOffset.UtcNow,
             };
             db.Teachers.Add(teacher);
-            await db.SaveChangesAsync(cancellationToken);
         }
 
         var entity = new LessonSuggestion

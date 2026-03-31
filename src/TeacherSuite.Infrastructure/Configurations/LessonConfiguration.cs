@@ -43,6 +43,12 @@ public class RequirementIconConfiguration : IEntityTypeConfiguration<Requirement
         builder.Property(r => r.Label)
                .IsRequired()
                .HasMaxLength(200);
+
+        builder.HasData(
+            new RequirementIcon { Id = 1, Emoji = "📱", Label = "Mobile phone needed" },
+            new RequirementIcon { Id = 2, Emoji = "💻", Label = "Laptop/computer needed" },
+            new RequirementIcon { Id = 3, Emoji = "🔌", Label = "Arduino board needed" }
+        );
     }
 }
 
