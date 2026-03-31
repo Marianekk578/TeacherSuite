@@ -6,12 +6,16 @@ import { AgeGroups } from './pages/age-groups/age-groups';
 import { Groups } from './pages/groups/groups';
 import { ProgrammingLanguages } from './pages/programming-languages/programming-languages';
 import { Students } from './pages/students/students';
+import { LessonsPage } from './pages/lessons/lessons';
+import { LessonDetailPage } from './pages/lesson-detail/lesson-detail';
 import { authGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'teachers', component: Teachers, canActivate: [authGuard] },
   { path: 'courses', component: Courses, canActivate: [authGuard] },
+  { path: 'lessons', component: LessonsPage, canActivate: [authGuard] },
+  { path: 'lessons/:id', component: LessonDetailPage, canActivate: [authGuard] },
   { path: 'groups', component: Groups, canActivate: [authGuard] },
   { path: 'students', component: Students, canActivate: [authGuard] },
   { path: 'age-groups', component: AgeGroups, canActivate: [authGuard] },

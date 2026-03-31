@@ -1,0 +1,178 @@
+<div class="lesson-detail-page">
+  <div class="page-header">
+    <button class="btn btn-secondary btn-back" (click)="goBackToLessons()">← Back to Lessons</button>
+  </div>
+
+  <div *ngIf="error" class="alert alert-error">
+    {{ error }}
+    <button class="alert-close" (click)="error = null">&times;</button>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading lesson details...</p>
+  </div>
+
+  <div *ngIf="!loading && lesson" class="lesson-content">
+    <div class="lesson-header-card">
+      <div class="lesson-order-badge">{{ lesson.order }}</div>
+      <div class="lesson-header-info">
+        <h1>{{ lesson.title }}</h1>
+        <div class="lesson-meta">
+          <span class="meta-item">
+            <a [routerLink]="['/lessons']" [queryParams]="{ courseId: lesson.courseId }" class="course-link">{{ lesson.courseName }}</a>
+          </span>
+          <span class="meta-item">⏱ {{ lesson.durationMinutes }} min</span>
+        </div>
+        <div class="requirement-icons" *ngIf="lesson.requirementIcons && lesson.requirementIcons.length > 0">
+          <span class="req-badge" *ngFor="let icon of lesson.requirementIcons" [title]="icon.label">
+            {{ icon.emoji }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" *ngIf="lesson.description">
+      <h2>Description</h2>
+      <p class="description-text">{{ lesson.description }}</p>
+    </div>
+
+    <div class="section material-section">
+      <h2>Material</h2>
+      <div *ngIf="hasMarkdown()" class="markdown-area" (contextmenu)="onMarkdownContextMenu($event)">
+        <p class="markdown-hint">💡 Right-click on the text to add a suggestion</p>
+        <div class="markdown-content" [innerHTML]="markdownContent"></div>
+      </div>
+      <div *ngIf="hasDownloadableFiles()" class="word-area">
+        <div class="file-card" *ngFor="let file of downloadableFiles">
+          <span class="file-icon">📄</span>
+          <span class="file-name">{{ file.name }}</span>
+          <button class="btn btn-primary btn-sm" (click)="downloadFile(file)">Download</button>
+        </div>
+      </div>
+      <div *ngIf="!hasAnyFiles()" class="no-material">
+        <p>No material attached to this lesson.</p>
+      </div>
+      <button *ngIf="hasAnyFiles()" class="btn btn-secondary btn-sm comment-btn" (click)="openCommentModal()">Add Comment</button>
+    </div>
+
+    <div class="context-menu" *ngIf="showContextMenu"
+         [style.left.px]="contextMenuX" [style.top.px]="contextMenuY"
+         (click)="$event.stopPropagation()">
+      <div class="context-menu-header">Add Suggestion</div>
+      <div *ngIf="contextSelectedText" class="context-selected-text">
+        Selected: "{{ contextSelectedText.length > 60 ? contextSelectedText.substring(0, 60) + '...' : contextSelectedText }}"
+      </div>
+      <textarea class="context-textarea" [(ngModel)]="contextSuggestionContent"
+                placeholder="Enter your suggestion..." rows="3"></textarea>
+      <div class="context-actions">
+        <button class="btn btn-secondary btn-sm" (click)="closeContextMenu()">Cancel</button>
+        <button class="btn btn-primary btn-sm" (click)="submitContextSuggestion()"
+                [disabled]="!contextSuggestionContent.trim()">Submit</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2>Suggestions ({{ sortedSuggestions.length }})</h2>
+      </div>
+      <div *ngIf="sortedSuggestions.length === 0" class="empty-state-small">
+        <p>No suggestions yet. Be the first to add one!</p>
+      </div>
+      <div class="suggestions-list">
+        <div class="suggestion-card" *ngFor="let s of sortedSuggestions">
+          <div class="vote-controls">
+            <button class="vote-btn" (click)="voteSuggestion(s, 1)" title="Upvote">▲</button>
+            <span class="vote-score" [class.positive]="getVoteScore(s) > 0" [class.negative]="getVoteScore(s) < 0">
+              {{ getVoteScore(s) }}
+            </span>
+            <button class="vote-btn" (click)="voteSuggestion(s, -1)" title="Downvote">▼</button>
+          </div>
+          <div class="suggestion-body">
+            <div class="suggestion-meta">
+              <strong>{{ s.teacherName }}</strong>
+              <span class="suggestion-date">{{ formatDate(s.created) }}</span>
+              <button *ngIf="canDeleteSuggestion(s)" class="btn-delete-sm" (click)="deleteSuggestion(s)" title="Delete">✕</button>
+            </div>
+            <div *ngIf="s.selectedText" class="suggestion-context">
+              Re: "{{ s.selectedText.length > 100 ? s.selectedText.substring(0, 100) + '...' : s.selectedText }}"
+            </div>
+            <p class="suggestion-content">{{ s.content }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" *ngIf="canManage()">
+      <div class="section-header">
+        <h2>Attendance ({{ lesson.attendances.length }})</h2>
+        <button class="btn btn-primary btn-sm" (click)="openAttendanceModal()">Record Attendance</button>
+      </div>
+      <div *ngIf="lesson.attendances.length === 0" class="empty-state-small">
+        <p>No attendance records yet.</p>
+      </div>
+      <div class="attendance-list" *ngIf="lesson.attendances.length > 0">
+        <div class="attendance-item" *ngFor="let a of lesson.attendances">
+          <span class="attendance-group">{{ a.groupName }}</span>
+          <span class="attendance-date">{{ formatDateTime(a.attendedAt) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showCommentModal" (click)="closeCommentModal()">
+  <div class="modal modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Add Comment</h2>
+      <button class="modal-close" (click)="closeCommentModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div *ngIf="commentError" class="alert alert-error modal-alert">
+        {{ commentError }}
+      </div>
+      <div class="form-group">
+        <label for="commentContent">Your Comment *</label>
+        <textarea id="commentContent" [(ngModel)]="commentContent" rows="4"
+                  placeholder="Enter your suggestion or comment..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeCommentModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="submitComment()"
+                [disabled]="!commentContent.trim()">Submit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showAttendanceModal" (click)="closeAttendanceModal()">
+  <div class="modal modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Record Attendance</h2>
+      <button class="modal-close" (click)="closeAttendanceModal()">&times;</button>
+    </div>
+    <form class="modal-body" [formGroup]="attendanceForm" (ngSubmit)="submitAttendance()">
+      <div *ngIf="attendanceError" class="alert alert-error modal-alert">
+        {{ attendanceError }}
+      </div>
+      <div class="form-group">
+        <label for="groupId">Group *</label>
+        <select id="groupId" formControlName="groupId" required>
+          <option value="">Select a group</option>
+          <option *ngFor="let g of courseGroups" [value]="g.id">{{ g.name }}</option>
+        </select>
+        <p *ngIf="courseGroupsLoaded && courseGroups.length === 0" class="no-groups-hint">
+          No groups are assigned to this course.
+        </p>
+      </div>
+      <div class="form-group">
+        <label for="attendedAt">Date &amp; Time *</label>
+        <input type="datetime-local" id="attendedAt" formControlName="attendedAt" required />
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeAttendanceModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="courseGroups.length === 0">Record</button>
+      </div>
+    </form>
+  </div>
+</div>
