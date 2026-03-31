@@ -243,8 +243,8 @@ export class Groups implements OnInit, OnDestroy {
 
   loadCourses() {
     this.groupService.getAllCourses().subscribe({
-      next: (courses) => {
-        this.courses = courses;
+      next: (courses: any) => {
+        this.courses = courses.items || courses;
         this.cdr.detectChanges();
       },
       error: (error) => {
