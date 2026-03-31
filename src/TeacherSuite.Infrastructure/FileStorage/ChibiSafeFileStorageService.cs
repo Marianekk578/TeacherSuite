@@ -49,9 +49,17 @@ public class ChibiSafeFileStorageService : IFileStorageService
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Add("x-api-key", _apiKey);
 
-        var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        var response = await _httpClient.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStreamAsync(cancellationToken);
+
+        var json = await response.Content.ReadAsStringAsync(cancellationToken);
+        using var doc = JsonDocument.Parse(json);
+        var fileUrl = doc.RootElement.GetProperty("file").GetProperty("url").GetString()
+                      ?? throw new InvalidOperationException("ChibiSafe did not return a file URL.");
+
+        var fileResponse = await _httpClient.GetAsync(fileUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        fileResponse.EnsureSuccessStatusCode();
+        return await fileResponse.Content.ReadAsStreamAsync(cancellationToken);
     }
 
     public async Task DeleteAsync(string storageKey, CancellationToken cancellationToken = default)
@@ -91,7 +99,7 @@ public class ChibiSafeFileStorageService : IFileStorageService
         using var request = new HttpRequestMessage(HttpMethod.Post, url);
         request.Headers.Add("x-api-key", _apiKey);
 
-        var response = await _httpClient.SendAsync(request, cancellationToken);
+        var response = await _httpClient.SendAsync(request, cancellationToken);  
         response.EnsureSuccessStatusCode();
     }
 
