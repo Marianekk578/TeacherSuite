@@ -23,19 +23,7 @@ internal sealed class CreateLessonSuggestionCommandHandler(IApplicationDbContext
         var teacher = await db.Teachers
             .FirstOrDefaultAsync(t => t.Email == currentUser.Email, cancellationToken);
 
-        if (teacher is null)
-        {
-            teacher = new Teacher
-            {
-                Id = Guid.NewGuid(),
-                FirstName = currentUser.UserName ?? "Unknown",
-                LastName = string.Empty,
-                Email = currentUser.Email ?? string.Empty,
-                PhoneNumber = string.Empty,
-                DateOfBirth = DateTimeOffset.UtcNow,
-            };
-            db.Teachers.Add(teacher);
-        }
+        Guard.Against.NotFound(currentUser.Email ?? "unknown", teacher);
 
         var entity = new LessonSuggestion
         {
