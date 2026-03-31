@@ -4,7 +4,7 @@ import { ApiService, ApiError } from './api.service';
 import { KeycloakService } from '../auth/keycloak.service';
 
 export interface RequirementIconDto {
-  key: string;
+  id: number;
   emoji: string;
   label: string;
 }
@@ -60,14 +60,14 @@ export interface CreateLessonDto {
   title: string;
   description?: string;
   durationMinutes: number;
-  requirementIconKeys?: string[];
+  requirementIconIds?: number[];
 }
 
 export interface UpdateLessonDto {
   title: string;
   description?: string;
   durationMinutes: number;
-  requirementIconKeys?: string[];
+  requirementIconIds?: number[];
 }
 
 export interface CreateSuggestionDto {

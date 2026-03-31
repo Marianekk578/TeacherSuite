@@ -10,7 +10,7 @@ public record UpdateLessonCommand(
     string? Title,
     string? Description,
     int DurationMinutes,
-    List<string>? RequirementIconKeys) : IRequest<Unit>, ICacheInvalidationCommand
+    List<int>? RequirementIconIds) : IRequest<Unit>, ICacheInvalidationCommand
 {
     public IReadOnlyCollection<string> TagsToInvalidate => ["lessons"];
 }
@@ -36,10 +36,10 @@ internal sealed class UpdateLessonCommandHandler(IApplicationDbContext db) : IRe
             db.LessonRequirementIcons.Remove(link);
         }
 
-        if (request.RequirementIconKeys is { Count: > 0 })
+        if (request.RequirementIconIds is { Count: > 0 })
         {
             var icons = await db.RequirementIcons
-                .Where(r => request.RequirementIconKeys.Contains(r.Key))
+                .Where(r => request.RequirementIconIds.Contains(r.Id))
                 .ToListAsync(cancellationToken);
 
             foreach (var icon in icons)

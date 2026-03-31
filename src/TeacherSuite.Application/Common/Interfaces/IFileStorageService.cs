@@ -9,5 +9,3 @@ public interface IFileStorageService
     Task AddFileToAlbumAsync(string fileUuid, string albumUuid, CancellationToken cancellationToken = default);
     Task<List<AlbumFile>> GetAlbumFilesAsync(string albumUuid, CancellationToken cancellationToken = default);
 }
-
-public record AlbumFile(string Uuid, string Name, long Size);

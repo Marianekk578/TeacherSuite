@@ -11,7 +11,7 @@ public record CreateLessonCommand(
     string? Title,
     string? Description,
     int DurationMinutes,
-    List<string>? RequirementIconKeys) : IRequest<int>, ICacheInvalidationCommand
+    List<int>? RequirementIconIds) : IRequest<int>, ICacheInvalidationCommand
 {
     public IReadOnlyCollection<string> TagsToInvalidate => ["lessons"];
 }
@@ -37,10 +37,10 @@ internal sealed class CreateLessonCommandHandler(IApplicationDbContext db, IPubl
         db.Lessons.Add(entity);
         await db.SaveChangesAsync(cancellationToken);
 
-        if (request.RequirementIconKeys is { Count: > 0 })
+        if (request.RequirementIconIds is { Count: > 0 })
         {
             var icons = await db.RequirementIcons
-                .Where(r => request.RequirementIconKeys.Contains(r.Key))
+                .Where(r => request.RequirementIconIds.Contains(r.Id))
                 .ToListAsync(cancellationToken);
 
             foreach (var icon in icons)

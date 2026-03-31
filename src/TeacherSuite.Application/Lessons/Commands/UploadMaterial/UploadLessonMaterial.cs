@@ -29,6 +29,7 @@ internal sealed class UploadLessonMaterialCommandHandler(IApplicationDbContext d
         if (string.IsNullOrEmpty(entity.AlbumId))
         {
             entity.AlbumId = await fileStorage.CreateAlbumAsync(entity.Title, cancellationToken);
+            await db.SaveChangesAsync(cancellationToken);
         }
 
         var existingFiles = await fileStorage.GetAlbumFilesAsync(entity.AlbumId, cancellationToken);
@@ -38,10 +39,17 @@ internal sealed class UploadLessonMaterialCommandHandler(IApplicationDbContext d
                 new[] { new ValidationFailure("FileName", $"A file named '{request.FileName}' already exists for this lesson.") });
         }
 
-        var storageKey = await fileStorage.UploadAsync(request.FileName, request.FileContent, cancellationToken);
-        await fileStorage.AddFileToAlbumAsync(storageKey, entity.AlbumId, cancellationToken);
+        var fileUuid = await fileStorage.UploadAsync(request.FileName, request.FileContent, cancellationToken);
 
-        await db.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await fileStorage.AddFileToAlbumAsync(fileUuid, entity.AlbumId, cancellationToken);
+        }
+        catch
+        {
+            try { await fileStorage.DeleteAsync(fileUuid, cancellationToken); } catch { }
+            throw;
+        }
 
         return Unit.Value;
     }

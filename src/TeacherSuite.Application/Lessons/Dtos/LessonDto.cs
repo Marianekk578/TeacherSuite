@@ -25,18 +25,3 @@ public class LessonDto
         }
     }
 }
-
-public class RequirementIconDto
-{
-    public string Key { get; init; } = string.Empty;
-    public string Emoji { get; init; } = string.Empty;
-    public string Label { get; init; } = string.Empty;
-
-    private class Mapping : Profile
-    {
-        public Mapping()
-        {
-            CreateMap<RequirementIcon, RequirementIconDto>();
-        }
-    }
-}

@@ -60,7 +60,7 @@ export class LessonsPage implements OnInit {
   isEditMode = false;
   currentLessonId: number | null = null;
   modalError: string | null = null;
-  selectedRequirementIcons: string[] = [];
+  selectedRequirementIcons: number[] = [];
   lessonForm: FormGroup;
   pendingFiles: File[] = [];
   fileError: string | null = null;
@@ -226,7 +226,7 @@ export class LessonsPage implements OnInit {
     this.currentLessonId = lesson.id;
     this.modalError = null;
     this.fileError = null;
-    this.selectedRequirementIcons = (lesson.requirementIcons || []).map(r => r.key);
+    this.selectedRequirementIcons = (lesson.requirementIcons || []).map(r => r.id);
     this.pendingFiles = [];
 
     this.lessonService.getLessonById(lesson.id).subscribe({
@@ -257,17 +257,17 @@ export class LessonsPage implements OnInit {
     this.pendingFiles = [];
   }
 
-  toggleRequirementIcon(key: string) {
-    const index = this.selectedRequirementIcons.indexOf(key);
+  toggleRequirementIcon(id: number) {
+    const index = this.selectedRequirementIcons.indexOf(id);
     if (index >= 0) {
       this.selectedRequirementIcons.splice(index, 1);
     } else {
-      this.selectedRequirementIcons.push(key);
+      this.selectedRequirementIcons.push(id);
     }
   }
 
-  isRequirementSelected(key: string): boolean {
-    return this.selectedRequirementIcons.includes(key);
+  isRequirementSelected(id: number): boolean {
+    return this.selectedRequirementIcons.includes(id);
   }
 
   onModalFileSelected(event: Event) {
@@ -320,7 +320,7 @@ export class LessonsPage implements OnInit {
         title: formValue.title,
         description: formValue.description || undefined,
         durationMinutes: formValue.durationMinutes,
-        requirementIconKeys: this.selectedRequirementIcons,
+        requirementIconIds: this.selectedRequirementIcons,
       };
 
       this.lessonService.updateLesson(this.currentLessonId, payload).subscribe({
@@ -341,7 +341,7 @@ export class LessonsPage implements OnInit {
         title: formValue.title,
         description: formValue.description || undefined,
         durationMinutes: formValue.durationMinutes,
-        requirementIconKeys: this.selectedRequirementIcons,
+        requirementIconIds: this.selectedRequirementIcons,
       };
 
       this.lessonService.createLesson(payload).subscribe({

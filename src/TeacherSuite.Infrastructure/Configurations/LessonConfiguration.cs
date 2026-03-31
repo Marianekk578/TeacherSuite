@@ -36,13 +36,6 @@ public class RequirementIconConfiguration : IEntityTypeConfiguration<Requirement
     {
         builder.HasKey(r => r.Id);
 
-        builder.Property(r => r.Key)
-               .IsRequired()
-               .HasMaxLength(50);
-
-        builder.HasIndex(r => r.Key)
-               .IsUnique();
-
         builder.Property(r => r.Emoji)
                .IsRequired()
                .HasMaxLength(10);

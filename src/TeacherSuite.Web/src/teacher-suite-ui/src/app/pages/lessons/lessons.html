@@ -128,13 +128,13 @@
       <div class="form-group">
         <label>Requirement Icons</label>
         <div class="requirement-chips">
-          <button type="button" class="requirement-chip" [class.selected]="isRequirementSelected('phone')" (click)="toggleRequirementIcon('phone')">
+          <button type="button" class="requirement-chip" [class.selected]="isRequirementSelected(1)" (click)="toggleRequirementIcon(1)">
             <span class="chip-emoji">📱</span> Mobile phone needed
           </button>
-          <button type="button" class="requirement-chip" [class.selected]="isRequirementSelected('laptop')" (click)="toggleRequirementIcon('laptop')">
+          <button type="button" class="requirement-chip" [class.selected]="isRequirementSelected(2)" (click)="toggleRequirementIcon(2)">
             <span class="chip-emoji">💻</span> Laptop/computer needed
           </button>
-          <button type="button" class="requirement-chip" [class.selected]="isRequirementSelected('arduino')" (click)="toggleRequirementIcon('arduino')">
+          <button type="button" class="requirement-chip" [class.selected]="isRequirementSelected(3)" (click)="toggleRequirementIcon(3)">
             <span class="chip-emoji">🔌</span> Arduino board needed
           </button>
         </div>
