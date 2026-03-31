@@ -41,7 +41,7 @@
       <h2>Material</h2>
       <div *ngIf="hasMarkdown()" class="markdown-area" (contextmenu)="onMarkdownContextMenu($event)">
         <p class="markdown-hint">💡 Right-click on the text to add a suggestion</p>
-        <pre class="markdown-content">{{ markdownContent }}</pre>
+        <div class="markdown-content" [innerHTML]="markdownContent"></div>
       </div>
       <div *ngIf="hasDownloadableFiles()" class="word-area">
         <div class="file-card" *ngFor="let file of downloadableFiles">

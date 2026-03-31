@@ -14,6 +14,8 @@ import {
   CourseGroup,
 } from '../../services/lesson.service';
 import { KeycloakService } from '../../auth/keycloak.service';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { marked } from 'marked';
 
 @Component({
   selector: 'app-lesson-detail',
@@ -31,7 +33,8 @@ export class LessonDetailPage implements OnInit {
   error: string | null = null;
 
   lessonFiles: LessonFile[] = [];
-  markdownContent: string | null = null;
+  rawMarkdownContent: string | null = null;
+  markdownContent: SafeHtml | null = null;
   downloadableFiles: LessonFile[] = [];
 
   showContextMenu = false;
@@ -58,7 +61,8 @@ export class LessonDetailPage implements OnInit {
     private lessonService: LessonService,
     private cdr: ChangeDetectorRef,
     private fb: FormBuilder,
-    private keycloakService: KeycloakService
+    private keycloakService: KeycloakService,
+    private sanitizer: DomSanitizer
   ) {
     this.attendanceForm = this.fb.group({
       groupId: ['', [Validators.required]],
@@ -111,12 +115,23 @@ export class LessonDetailPage implements OnInit {
         const mdFile = files.find(f => f.name.toLowerCase().endsWith('.md'));
         if (mdFile && this.lesson) {
           this.lessonService.downloadMaterialAsText(this.lesson.id, mdFile.uuid).then(text => {
-            this.markdownContent = text;
+            this.rawMarkdownContent = text;
+            const html = marked.parse(text);
+            if (typeof html === 'string') {
+              this.markdownContent = this.sanitizer.bypassSecurityTrustHtml(html);
+            } else {
+              (html as Promise<string>).then(h => {
+                this.markdownContent = this.sanitizer.bypassSecurityTrustHtml(h);
+                this.cdr.detectChanges();
+              });
+            }
             this.cdr.detectChanges();
           }).catch(() => {
+            this.rawMarkdownContent = null;
             this.markdownContent = null;
           });
         } else {
+          this.rawMarkdownContent = null;
           this.markdownContent = null;
         }
         this.cdr.detectChanges();
@@ -217,7 +232,7 @@ export class LessonDetailPage implements OnInit {
     if (selection && selection.toString().trim().length > 0) {
       this.contextSelectedText = selection.toString().trim();
 
-      const content = this.markdownContent ?? '';
+      const content = this.rawMarkdownContent ?? '';
       const selectedStr = this.contextSelectedText;
       const startIdx = content.indexOf(selectedStr);
       if (startIdx >= 0) {

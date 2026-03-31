@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, HostListener, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { concat } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -359,15 +360,22 @@ export class LessonsPage implements OnInit {
   }
 
   private uploadPendingFilesForLesson(lessonId: number) {
-    for (const file of this.pendingFiles) {
-      this.lessonService.uploadMaterial(lessonId, file).subscribe({
-        error: (err) => {
-          console.error(`Error uploading file ${file.name}:`, err);
-          this.error = err?.detail || `Failed to upload file "${file.name}".`;
-          this.cdr.detectChanges();
-        },
-      });
-    }
+    if (this.pendingFiles.length === 0) return;
+
+    const uploads = this.pendingFiles.map(file =>
+      this.lessonService.uploadMaterial(lessonId, file)
+    );
+
+    concat(...uploads).subscribe({
+      error: (err) => {
+        console.error('Error uploading file:', err);
+        this.error = err?.detail || 'Failed to upload material file.';
+        this.cdr.detectChanges();
+      },
+      complete: () => {
+        this.loadLessons();
+      },
+    });
   }
 
   confirmDelete(lesson: Lesson) {
