@@ -23,7 +23,7 @@ internal sealed class GetAllTeachersQueryHandler(IApplicationDbContext db, IMapp
 
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
-            var search = request.Search.Trim().ToLower();
+            var search = request.Search.Trim().ToLowerInvariant();
             query = query.Where(t =>
                 (t.FirstName != null && t.FirstName.ToLower().Contains(search)) ||
                 (t.LastName != null && t.LastName.ToLower().Contains(search)) ||
