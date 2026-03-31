@@ -5,11 +5,6 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace TeacherSuite.Web.RateLimiting;
 
-public static class RateLimitingPolicies
-{
-    public const string SlidingWindow = "SlidingWindow";
-}
-
 public static class RateLimitingServiceExtensions
 {
     public static IServiceCollection AddRateLimitingPolicy(this IServiceCollection services, IConfiguration configuration)
