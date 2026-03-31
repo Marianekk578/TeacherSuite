@@ -34,7 +34,7 @@
     "secure": false,
     "changeOrigin": true
   },
-  "/Lessons-plan": {
+  "/LessonPlan": {
     "target": "https://localhost:7030",
     "secure": false,
     "changeOrigin": true
