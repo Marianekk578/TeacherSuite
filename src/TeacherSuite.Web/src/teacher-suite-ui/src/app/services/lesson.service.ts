@@ -31,6 +31,7 @@ export interface LessonSuggestion {
   lessonId: number;
   teacherId: string;
   teacherName: string;
+  teacherEmail?: string;
   content: string;
   selectedText?: string;
   selectionStart?: number;

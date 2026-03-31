@@ -94,8 +94,13 @@ public class Lessons
         return TypedResults.NoContent();
     }
 
-    public async Task<NoContent> VoteSuggestion(ISender sender, Guid id, VoteSuggestionRequest request)
+    public async Task<IResult> VoteSuggestion(ISender sender, Guid id, VoteSuggestionRequest request)
     {
+        if (!Enum.IsDefined(typeof(VoteType), request.Vote))
+        {
+            return TypedResults.BadRequest($"Invalid vote value: {request.Vote}. Supported values are 1 (Upvote) and -1 (Downvote).");
+        }
+
         await sender.Send(new VoteLessonSuggestionCommand(id, (VoteType)request.Vote));
         return TypedResults.NoContent();
     }

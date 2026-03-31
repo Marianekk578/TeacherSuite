@@ -9,6 +9,7 @@ public class LessonSuggestionDto
     public int LessonId { get; init; }
     public Guid TeacherId { get; init; }
     public string? TeacherName { get; init; }
+    public string? TeacherEmail { get; init; }
     public string Content { get; init; } = string.Empty;
     public string? SelectedText { get; init; }
     public int? SelectionStart { get; init; }
@@ -25,6 +26,10 @@ public class LessonSuggestionDto
                 .ForMember(dest => dest.TeacherName,
                     opt => opt.MapFrom(src => src.Teacher != null
                         ? src.Teacher.FirstName + " " + src.Teacher.LastName
+                        : null))
+                .ForMember(dest => dest.TeacherEmail,
+                    opt => opt.MapFrom(src => src.Teacher != null
+                        ? src.Teacher.Email
                         : null))
                 .ForMember(dest => dest.UpvoteCount,
                     opt => opt.MapFrom(src => src.Votes.Count(v => v.Vote == VoteType.Upvote)))

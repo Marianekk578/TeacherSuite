@@ -229,15 +229,18 @@ export class LessonDetailPage implements OnInit {
   onMarkdownContextMenu(event: MouseEvent) {
     event.preventDefault();
     const selection = window.getSelection();
-    if (selection && selection.toString().trim().length > 0) {
+    if (selection && selection.rangeCount > 0 && selection.toString().trim().length > 0) {
       this.contextSelectedText = selection.toString().trim();
 
-      const content = this.rawMarkdownContent ?? '';
-      const selectedStr = this.contextSelectedText;
-      const startIdx = content.indexOf(selectedStr);
-      if (startIdx >= 0) {
-        this.contextSelectionStart = startIdx;
-        this.contextSelectionEnd = startIdx + selectedStr.length;
+      const range = selection.getRangeAt(0);
+      const container = (event.currentTarget as HTMLElement).querySelector('.markdown-content');
+      if (container && container.contains(range.startContainer)) {
+        const preRange = document.createRange();
+        preRange.selectNodeContents(container);
+        preRange.setEnd(range.startContainer, range.startOffset);
+        const startOffset = preRange.toString().length;
+        this.contextSelectionStart = startOffset;
+        this.contextSelectionEnd = startOffset + selection.toString().length;
       } else {
         this.contextSelectionStart = undefined;
         this.contextSelectionEnd = undefined;
@@ -341,8 +344,8 @@ export class LessonDetailPage implements OnInit {
 
   canDeleteSuggestion(suggestion: LessonSuggestion): boolean {
     if (this.canManage()) return true;
-    const currentUser = this.keycloakService.getUsername();
-    return suggestion.teacherId === currentUser;
+    const currentEmail = this.keycloakService.getEmail();
+    return !!currentEmail && suggestion.teacherEmail === currentEmail;
   }
 
   getVoteScore(suggestion: LessonSuggestion): number {
