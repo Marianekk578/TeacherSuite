@@ -123,7 +123,7 @@ public class GetLessonPlanQueryTests
 
         // Assert
         Assert.Single(result);
-        Assert.True(new DateTimeOffset(result[0].ScheduledEnd.DateTime, TimeSpan.Zero) >= now);
+        Assert.True(result[0].ScheduledEnd >= now);
     }
 
     [Fact]
