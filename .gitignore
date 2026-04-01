@@ -486,3 +486,8 @@ $RECYCLE.BIN/
 # Angular build output
 dist/
 plans/
+
+# Chibisafe
+database/
+uploads/
+

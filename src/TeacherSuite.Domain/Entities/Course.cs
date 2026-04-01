@@ -9,4 +9,5 @@ public class Course
     public AgeGroup? AgeGroup { get; set; }
     public ICollection<CourseProgrammingLanguage> CourseProgrammingLanguages { get; set; } = new List<CourseProgrammingLanguage>();
     public ICollection<GroupCourse> GroupCourses { get; set; } = new List<GroupCourse>();
+    public ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
 }

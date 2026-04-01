@@ -1,0 +1,173 @@
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+
+#nullable disable
+
+namespace TeacherSuite.Infrastructure.Migrations
+{
+    /// <inheritdoc />
+    public partial class RemoveRedundantFields : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "MarkdownContent",
+                table: "Lessons");
+
+            migrationBuilder.DropColumn(
+                name: "MaterialFileName",
+                table: "Lessons");
+
+            migrationBuilder.DropColumn(
+                name: "MaterialStorageKey",
+                table: "Lessons");
+
+            migrationBuilder.DropColumn(
+                name: "MaterialType",
+                table: "Lessons");
+
+            migrationBuilder.DropColumn(
+                name: "RequirementIcons",
+                table: "Lessons");
+
+            migrationBuilder.AddColumn<DateTimeOffset>(
+                name: "Created",
+                table: "Lessons",
+                type: "timestamp with time zone",
+                nullable: false,
+                defaultValue: new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)));
+
+            migrationBuilder.AddColumn<string>(
+                name: "CreatedBy",
+                table: "Lessons",
+                type: "text",
+                nullable: false,
+                defaultValue: "");
+
+            migrationBuilder.AddColumn<DateTimeOffset>(
+                name: "LastModified",
+                table: "Lessons",
+                type: "timestamp with time zone",
+                nullable: false,
+                defaultValue: new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)));
+
+            migrationBuilder.AddColumn<string>(
+                name: "LastModifiedBy",
+                table: "Lessons",
+                type: "text",
+                nullable: false,
+                defaultValue: "");
+
+            migrationBuilder.CreateTable(
+                name: "RequirementIcons",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Key = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Emoji = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
+                    Label = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RequirementIcons", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LessonRequirementIcons",
+                columns: table => new
+                {
+                    LessonId = table.Column<int>(type: "integer", nullable: false),
+                    RequirementIconId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LessonRequirementIcons", x => new { x.LessonId, x.RequirementIconId });
+                    table.ForeignKey(
+                        name: "FK_LessonRequirementIcons_Lessons_LessonId",
+                        column: x => x.LessonId,
+                        principalTable: "Lessons",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_LessonRequirementIcons_RequirementIcons_RequirementIconId",
+                        column: x => x.RequirementIconId,
+                        principalTable: "RequirementIcons",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LessonRequirementIcons_RequirementIconId",
+                table: "LessonRequirementIcons",
+                column: "RequirementIconId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RequirementIcons_Key",
+                table: "RequirementIcons",
+                column: "Key",
+                unique: true);
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "LessonRequirementIcons");
+
+            migrationBuilder.DropTable(
+                name: "RequirementIcons");
+
+            migrationBuilder.DropColumn(
+                name: "Created",
+                table: "Lessons");
+
+            migrationBuilder.DropColumn(
+                name: "CreatedBy",
+                table: "Lessons");
+
+            migrationBuilder.DropColumn(
+                name: "LastModified",
+                table: "Lessons");
+
+            migrationBuilder.DropColumn(
+                name: "LastModifiedBy",
+                table: "Lessons");
+
+            migrationBuilder.AddColumn<string>(
+                name: "MarkdownContent",
+                table: "Lessons",
+                type: "text",
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "MaterialFileName",
+                table: "Lessons",
+                type: "character varying(500)",
+                maxLength: 500,
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "MaterialStorageKey",
+                table: "Lessons",
+                type: "character varying(500)",
+                maxLength: 500,
+                nullable: true);
+
+            migrationBuilder.AddColumn<int>(
+                name: "MaterialType",
+                table: "Lessons",
+                type: "integer",
+                nullable: false,
+                defaultValue: 0);
+
+            migrationBuilder.AddColumn<string>(
+                name: "RequirementIcons",
+                table: "Lessons",
+                type: "text",
+                nullable: true);
+        }
+    }
+}
