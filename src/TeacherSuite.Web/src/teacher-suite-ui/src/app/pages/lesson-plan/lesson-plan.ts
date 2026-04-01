@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { LessonPlanService, ScheduledLesson, StudentAttendance } from '../../services/lesson-plan.service';
 import { LessonService, Lesson } from '../../services/lesson.service';
 import { CourseService, Course } from '../../services/course.service';
-import { GroupService, Group } from '../../services/group.service';
+import { GroupService } from '../../services/group.service';
 import { KeycloakService } from '../../auth/keycloak.service';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
@@ -292,7 +292,6 @@ export class LessonPlanPage implements OnInit {
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      timeZone: 'UTC',
     });
   }
 
@@ -303,7 +302,6 @@ export class LessonPlanPage implements OnInit {
     return date.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
-      timeZone: 'UTC',
     });
   }
 }
