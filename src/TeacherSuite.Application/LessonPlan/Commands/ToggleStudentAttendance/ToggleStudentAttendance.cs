@@ -1,3 +1,4 @@
+using TeacherSuite.Application.Common;
 using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Domain.Common;
 using TeacherSuite.Domain.Entities;
@@ -15,6 +16,14 @@ internal sealed class ToggleStudentAttendanceCommandHandler(IApplicationDbContex
             .FirstOrDefaultAsync(sl => sl.Id == request.ScheduledLessonId, cancellationToken);
 
         Guard.Against.NotFound(request.ScheduledLessonId, scheduledLesson);
+
+        var studentInGroup = await db.StudentGroups
+            .AnyAsync(sg => sg.StudentId == request.StudentId && sg.GroupId == scheduledLesson.GroupId, cancellationToken);
+
+        if (!studentInGroup)
+        {
+            throw new ConflictException($"Student '{request.StudentId}' does not belong to the group of scheduled lesson '{request.ScheduledLessonId}'.");
+        }
 
         var existing = await db.StudentLessonAttendances
             .FirstOrDefaultAsync(sa => sa.ScheduledLessonId == request.ScheduledLessonId
