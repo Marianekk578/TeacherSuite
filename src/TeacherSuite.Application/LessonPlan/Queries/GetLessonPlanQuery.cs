@@ -14,11 +14,7 @@ internal sealed class GetLessonPlanQueryHandler(
 {
     public async Task<List<ScheduledLessonDto>> Handle(GetLessonPlanQuery request, CancellationToken cancellationToken)
     {
-        var query = db.ScheduledLessons
-            .Include(sl => sl.Lesson)
-                .ThenInclude(l => l!.Course)
-            .Include(sl => sl.Group)
-            .AsQueryable();
+        var query = db.ScheduledLessons.AsQueryable();
 
         // Teacher-only users see only their own groups
         bool isTeacherOnly = currentUser.IsInRole(AppRoles.Teacher)
