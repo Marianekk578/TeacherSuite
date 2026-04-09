@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
@@ -95,7 +95,6 @@ export class Students implements OnInit, OnDestroy {
   constructor(
     private studentService: StudentService,
     private keycloakService: KeycloakService,
-    private cdr: ChangeDetectorRef,
     private fb: FormBuilder
   ) {
     this.isAdminOrSupervisor = this.keycloakService.hasRole('Admin') || this.keycloakService.hasRole('Supervisor');
@@ -186,7 +185,6 @@ export class Students implements OnInit, OnDestroy {
   loadStudents() {
     this.loading = true;
     this.error = null;
-    this.cdr.detectChanges();
 
     this.studentService.getAllStudents({
       search: this.search(),
@@ -203,14 +201,12 @@ export class Students implements OnInit, OnDestroy {
           return;
         }
 
-        this.cdr.detectChanges();
-      },
+          },
       error: (error) => {
         this.error = 'Failed to load students. Please try again.';
         this.loading = false;
         console.error('Error loading students:', error);
-        this.cdr.detectChanges();
-      }
+          }
     });
   }
 
@@ -278,8 +274,7 @@ export class Students implements OnInit, OnDestroy {
     if (this.studentForm.invalid) {
       this.studentForm.markAllAsTouched();
       this.modalError = this.getFormErrorMessage();
-      this.cdr.detectChanges();
-      return;
+        return;
     }
 
     const formValue = this.studentForm.getRawValue();
@@ -303,8 +298,7 @@ export class Students implements OnInit, OnDestroy {
         error: (error) => {
           this.modalError = 'Failed to update student. Please check your input and try again.';
           console.error('Error updating student:', error);
-          this.cdr.detectChanges();
-        }
+              }
       });
     } else {
       const payload: CreateStudentDto = {
@@ -326,8 +320,7 @@ export class Students implements OnInit, OnDestroy {
         error: (error) => {
           this.modalError = 'Failed to create student. Please check your input and try again.';
           console.error('Error creating student:', error);
-          this.cdr.detectChanges();
-        }
+              }
       });
     }
   }
@@ -362,21 +355,18 @@ export class Students implements OnInit, OnDestroy {
     this.detailsLoading = true;
     this.selectedStudentDetail = null;
     this.showDetailsModal = true;
-    this.cdr.detectChanges();
 
     this.studentService.getStudentById(student.id).subscribe({
       next: (detail) => {
         this.selectedStudentDetail = detail;
         this.detailsLoading = false;
-        this.cdr.detectChanges();
-      },
+          },
       error: (error) => {
         this.detailsLoading = false;
         this.error = 'Failed to load student details.';
         this.showDetailsModal = false;
         console.error('Error loading student details:', error);
-        this.cdr.detectChanges();
-      }
+          }
     });
   }
 
@@ -396,13 +386,11 @@ export class Students implements OnInit, OnDestroy {
           return studentAge >= g.ageGroup.minAge && studentAge <= g.ageGroup.maxAge;
         });
         this.showGroupModal = true;
-        this.cdr.detectChanges();
-      },
+          },
       error: (error) => {
         this.error = 'Failed to load groups. Please try again.';
         console.error('Error loading groups:', error);
-        this.cdr.detectChanges();
-      }
+          }
     });
   }
 
@@ -426,13 +414,11 @@ export class Students implements OnInit, OnDestroy {
             this.groupStudent.groups = this.groupStudent.groups.filter(g => g.groupId !== group.id);
           }
           this.loadStudents();
-          this.cdr.detectChanges();
-        },
+              },
         error: (error) => {
           this.error = 'Failed to unassign student from group. Please try again.';
           console.error('Error unassigning group:', error);
-          this.cdr.detectChanges();
-        }
+              }
       });
     } else {
       this.studentService.assignToGroup(this.groupStudent.id, group.id).subscribe({
@@ -444,8 +430,7 @@ export class Students implements OnInit, OnDestroy {
             ];
           }
           this.loadStudents();
-          this.cdr.detectChanges();
-        },
+              },
         error: (error) => {
           const status = error?.status as number | undefined;
           if (status === 409) {
@@ -461,8 +446,7 @@ export class Students implements OnInit, OnDestroy {
             this.error = 'Failed to assign student to group. Please try again.';
           }
           console.error('Error assigning group:', error);
-          this.cdr.detectChanges();
-        }
+              }
       });
     }
   }
@@ -608,8 +592,7 @@ export class Students implements OnInit, OnDestroy {
     this.studentService.getAllGroups().subscribe({
       next: (groups) => {
         this.allGroups = groups;
-        this.cdr.detectChanges();
-      },
+          },
       error: (error) => {
         console.error('Error loading groups:', error);
       }

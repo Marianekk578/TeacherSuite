@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -41,7 +41,6 @@ export class ProgrammingLanguages implements OnInit {
 
   constructor(
     private programmingLanguageService: ProgrammingLanguageService,
-    private cdr: ChangeDetectorRef,
     private fb: FormBuilder
   ) {
     this.languageForm = this.fb.group({
@@ -58,20 +57,17 @@ export class ProgrammingLanguages implements OnInit {
   loadProgrammingLanguages() {
     this.loading = true;
     this.error = null;
-    this.cdr.detectChanges();
 
     this.programmingLanguageService.getAllProgrammingLanguages().subscribe({
       next: (languages) => {
         this.programmingLanguages = languages;
         this.loading = false;
-        this.cdr.detectChanges();
-      },
+          },
       error: (error) => {
         this.error = 'Failed to load programming languages. Please try again.';
         this.loading = false;
         console.error('Error loading programming languages:', error);
-        this.cdr.detectChanges();
-      }
+          }
     });
   }
 
@@ -130,8 +126,7 @@ export class ProgrammingLanguages implements OnInit {
     if (this.languageForm.invalid) {
       this.languageForm.markAllAsTouched();
       this.modalError = this.getFormErrorMessage();
-      this.cdr.detectChanges();
-      return;
+        return;
     }
 
     const formValue = this.languageForm.getRawValue();
@@ -145,8 +140,7 @@ export class ProgrammingLanguages implements OnInit {
       }
       this.languageForm.markAllAsTouched();
       this.modalError = this.getFormErrorMessage();
-      this.cdr.detectChanges();
-      return;
+        return;
     }
 
     const trimmedLabel = formValue.label ? formValue.label.trim() : '';
@@ -166,8 +160,7 @@ export class ProgrammingLanguages implements OnInit {
         error: (error) => {
           this.modalError = 'Failed to update programming language. Please check your input and try again.';
           console.error('Error updating programming language:', error);
-          this.cdr.detectChanges();
-        }
+              }
       });
     } else {
       this.programmingLanguageService.createProgrammingLanguage(languagePayload).subscribe({
@@ -178,8 +171,7 @@ export class ProgrammingLanguages implements OnInit {
         error: (error) => {
           this.modalError = 'Failed to create programming language. Please check your input and try again.';
           console.error('Error creating programming language:', error);
-          this.cdr.detectChanges();
-        }
+              }
       });
     }
   }
@@ -210,8 +202,7 @@ export class ProgrammingLanguages implements OnInit {
           }
           console.error('Error deleting programming language:', error);
           this.cancelDelete();
-          this.cdr.detectChanges();
-        }
+              }
       });
     }
   }

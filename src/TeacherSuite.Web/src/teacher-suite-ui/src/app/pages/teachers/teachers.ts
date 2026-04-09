@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
@@ -73,7 +73,6 @@ export class Teachers implements OnInit, OnDestroy {
   constructor(
     private teacherService: TeacherService,
     private programmingLanguageService: ProgrammingLanguageService,
-    private cdr: ChangeDetectorRef,
     private fb: FormBuilder
   ) {
     this.teacherForm = this.fb.group({
@@ -147,7 +146,6 @@ export class Teachers implements OnInit, OnDestroy {
   loadTeachers() {
     this.loading = true;
     this.error = null;
-    this.cdr.detectChanges();
 
     this.teacherService.getAllTeachers({
       search: this.search(),
@@ -163,14 +161,11 @@ export class Teachers implements OnInit, OnDestroy {
           this.navigateWithParams({ page: this.totalPages() });
           return;
         }
-
-        this.cdr.detectChanges();
       },
       error: (error) => {
         this.error = 'Failed to load teachers. Please try again.';
         this.loading = false;
         console.error('Error loading teachers:', error);
-        this.cdr.detectChanges();
       }
     });
   }
@@ -229,7 +224,6 @@ export class Teachers implements OnInit, OnDestroy {
     if (this.teacherForm.invalid) {
       this.teacherForm.markAllAsTouched();
       this.modalError = this.getFormErrorMessage();
-      this.cdr.detectChanges();
       return;
     }
 
@@ -244,7 +238,6 @@ export class Teachers implements OnInit, OnDestroy {
         error: (error) => {
           this.modalError = 'Failed to update teacher. Please check your input and try again.';
           console.error('Error updating teacher:', error);
-          this.cdr.detectChanges();
         }
       });
     } else {
@@ -256,7 +249,6 @@ export class Teachers implements OnInit, OnDestroy {
         error: (error) => {
           this.modalError = 'Failed to create teacher. Please check your input and try again.';
           console.error('Error creating teacher:', error);
-          this.cdr.detectChanges();
         }
       });
     }
@@ -297,13 +289,11 @@ export class Teachers implements OnInit, OnDestroy {
   seedTestTeachers() {
     this.seedingInProgress = true;
     this.error = null;
-    this.cdr.detectChanges();
 
     this.teacherService.seedTestTeachers().subscribe({
       next: (count) => {
         this.seedingInProgress = false;
         this.loadTeachers();
-        this.cdr.detectChanges();
       },
       error: (error) => {
         this.error = 'Failed to seed test teachers. Please try again.';
@@ -319,12 +309,10 @@ export class Teachers implements OnInit, OnDestroy {
       next: (languages) => {
         this.allProgrammingLanguages = languages;
         this.showLanguageModal = true;
-        this.cdr.detectChanges();
       },
       error: (error) => {
         this.error = 'Failed to load programming languages. Please try again.';
         console.error('Error loading programming languages:', error);
-        this.cdr.detectChanges();
       }
     });
   }
@@ -333,19 +321,16 @@ export class Teachers implements OnInit, OnDestroy {
   deleteTestTeachers() {
     this.deletingTestInProgress = true;
     this.error = null;
-    this.cdr.detectChanges();
 
     this.teacherService.deleteTestTeachers().subscribe({
       next: (count) => {
         this.deletingTestInProgress = false;
         this.loadTeachers();
-        this.cdr.detectChanges();
       },
       error: (error) => {
         this.error = 'Failed to delete test teachers. Please try again.';
         this.deletingTestInProgress = false;
         console.error('Error deleting test teachers:', error);
-        this.cdr.detectChanges();
       }
     });
   }
@@ -370,12 +355,10 @@ export class Teachers implements OnInit, OnDestroy {
             this.languageTeacher.programmingLanguages = this.languageTeacher.programmingLanguages.filter(lang => lang.id !== language.id);
           }
           this.loadTeachers();
-          this.cdr.detectChanges();
         },
         error: (error) => {
           this.error = 'Failed to unassign programming language. Please try again.';
           console.error('Error unassigning language:', error);
-          this.cdr.detectChanges();
         }
       });
     } else {
@@ -388,12 +371,10 @@ export class Teachers implements OnInit, OnDestroy {
             ];
           }
           this.loadTeachers();
-          this.cdr.detectChanges();
         },
         error: (error) => {
           this.error = 'Failed to assign programming language. Please try again.';
           console.error('Error assigning language:', error);
-          this.cdr.detectChanges();
         }
       });
     }

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener, DestroyRef, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, HostListener, DestroyRef, inject, signal, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
@@ -63,7 +63,6 @@ export class Courses implements OnInit {
 
   constructor(
     private courseService: CourseService,
-    private cdr: ChangeDetectorRef,
     private fb: FormBuilder,
     private keycloakService: KeycloakService
   ) {
@@ -124,7 +123,6 @@ export class Courses implements OnInit {
   loadCourses() {
     this.loading = true;
     this.error = null;
-    this.cdr.detectChanges();
     
     this.courseService.getAllCourses({
       page: this.page(),
@@ -140,14 +138,12 @@ export class Courses implements OnInit {
           return;
         }
 
-        this.cdr.detectChanges();
-      },
+          },
       error: (error) => {
         this.error = 'Failed to load courses. Please try again.';
         this.loading = false;
         console.error('Error loading courses:', error);
-        this.cdr.detectChanges();
-      }
+          }
     });
   }
 
@@ -155,8 +151,7 @@ export class Courses implements OnInit {
     this.courseService.getAllAgeGroups().subscribe({
       next: (ageGroups) => {
         this.ageGroups = ageGroups;
-        this.cdr.detectChanges();
-      },
+          },
       error: (error) => {
         console.error('Error loading age groups:', error);
       }
@@ -167,8 +162,7 @@ export class Courses implements OnInit {
     this.courseService.getAllProgrammingLanguages().subscribe({
       next: (languages) => {
         this.allProgrammingLanguages = languages;
-        this.cdr.detectChanges();
-      },
+          },
       error: (error) => {
         console.error('Error loading programming languages:', error);
       }
@@ -239,19 +233,16 @@ export class Courses implements OnInit {
     this.detailsLoading = true;
     this.showDetailsModal = true;
     this.selectedCourse = course;
-    this.cdr.detectChanges();
 
     this.courseService.getCourseById(course.id).subscribe({
       next: (fullCourse) => {
         this.selectedCourse = fullCourse;
         this.detailsLoading = false;
-        this.cdr.detectChanges();
-      },
+          },
       error: (error) => {
         console.error('Error loading course details:', error);
         this.detailsLoading = false;
-        this.cdr.detectChanges();
-      }
+          }
     });
   }
 
@@ -259,21 +250,18 @@ export class Courses implements OnInit {
     this.detailsLoading = true;
     this.showDetailsModal = true;
     this.selectedCourse = null;
-    this.cdr.detectChanges();
 
     this.courseService.getCourseById(courseId).subscribe({
       next: (course) => {
         this.selectedCourse = course;
         this.detailsLoading = false;
-        this.cdr.detectChanges();
-      },
+          },
       error: (error) => {
         console.error('Error loading course details:', error);
         this.detailsLoading = false;
         this.showDetailsModal = false;
         this.error = 'Failed to load course details.';
-        this.cdr.detectChanges();
-      }
+          }
     });
   }
 
@@ -318,8 +306,7 @@ export class Courses implements OnInit {
     if (this.courseForm.invalid) {
       this.courseForm.markAllAsTouched();
       this.modalError = this.getFormErrorMessage();
-      this.cdr.detectChanges();
-      return;
+        return;
     }
 
     const formValue = this.courseForm.getRawValue();
@@ -339,8 +326,7 @@ export class Courses implements OnInit {
         error: (error) => {
           this.modalError = 'Failed to update course. Please check your input and try again.';
           console.error('Error updating course:', error);
-          this.cdr.detectChanges();
-        }
+              }
       });
     } else {
       this.courseService.createCourse(coursePayload).subscribe({
@@ -351,8 +337,7 @@ export class Courses implements OnInit {
         error: (error) => {
           this.modalError = 'Failed to create course. Please check your input and try again.';
           console.error('Error creating course:', error);
-          this.cdr.detectChanges();
-        }
+              }
       });
     }
   }

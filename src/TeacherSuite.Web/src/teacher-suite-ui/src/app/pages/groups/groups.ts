@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener, DestroyRef, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
@@ -87,7 +87,6 @@ export class Groups implements OnInit, OnDestroy {
 
   constructor(
     private groupService: GroupService,
-    private cdr: ChangeDetectorRef,
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute
@@ -116,22 +115,19 @@ export class Groups implements OnInit, OnDestroy {
         distinctUntilChanged(),
         tap(() => {
           this.teacherSearchLoading = true;
-          this.cdr.detectChanges();
-        }),
+              }),
         switchMap(search => this.groupService.searchTeachers(search))
       ).subscribe({
         next: (teachers) => {
           this.teacherSuggestions = teachers;
           this.showTeacherSuggestions = true;
           this.teacherSearchLoading = false;
-          this.cdr.detectChanges();
-        },
+              },
         error: () => {
           this.teacherSuggestions = [];
           this.showTeacherSuggestions = false;
           this.teacherSearchLoading = false;
-          this.cdr.detectChanges();
-        }
+              }
       })
     );
 
@@ -152,7 +148,6 @@ export class Groups implements OnInit, OnDestroy {
   loadGroups() {
     this.loading = true;
     this.error = null;
-    this.cdr.detectChanges();
 
     const source$ = this.courseNameFilter
       ? this.groupService.getGroupsByCourseName(this.courseNameFilter)
@@ -162,14 +157,12 @@ export class Groups implements OnInit, OnDestroy {
       next: (groups) => {
         this.groups = groups;
         this.loading = false;
-        this.cdr.detectChanges();
-      },
+          },
       error: (error) => {
         this.error = 'Failed to load groups. Please try again.';
         this.loading = false;
         console.error('Error loading groups:', error);
-        this.cdr.detectChanges();
-      }
+          }
     });
   }
 
@@ -186,8 +179,7 @@ export class Groups implements OnInit, OnDestroy {
       this.teacherSuggestions = [];
       this.showTeacherSuggestions = false;
       this.teacherSearchLoading = false;
-      this.cdr.detectChanges();
-    }
+      }
   }
 
   selectTeacher(teacher: Teacher) {
@@ -196,7 +188,6 @@ export class Groups implements OnInit, OnDestroy {
     this.groupForm.patchValue({ teacherId: teacher.id });
     this.showTeacherSuggestions = false;
     this.teacherSuggestions = [];
-    this.cdr.detectChanges();
   }
 
   clearTeacherSelection() {
@@ -205,21 +196,18 @@ export class Groups implements OnInit, OnDestroy {
     this.groupForm.patchValue({ teacherId: null });
     this.teacherSuggestions = [];
     this.showTeacherSuggestions = false;
-    this.cdr.detectChanges();
   }
 
   onTeacherSearchBlur() {
     setTimeout(() => {
       this.showTeacherSuggestions = false;
-      this.cdr.detectChanges();
-    }, 200);
+      }, 200);
   }
 
   onTeacherSearchFocus() {
     if (this.teacherSuggestions.length > 0 && !this.selectedTeacher) {
       this.showTeacherSuggestions = true;
-      this.cdr.detectChanges();
-    }
+      }
   }
 
   // Teacher tooltip on group cards
@@ -232,21 +220,18 @@ export class Groups implements OnInit, OnDestroy {
         top: `${rect.bottom + window.scrollY + 8}px`,
         left: `${rect.left + window.scrollX}px`
       };
-      this.cdr.detectChanges();
-    }
+      }
   }
 
   hideTeacherTooltip() {
     this.hoveredTeacher = null;
-    this.cdr.detectChanges();
   }
 
   loadCourses() {
     this.groupService.getAllCourses().subscribe({
       next: (courses) => {
         this.courses = courses;
-        this.cdr.detectChanges();
-      },
+          },
       error: (error) => {
         console.error('Error loading courses:', error);
       }
@@ -257,8 +242,7 @@ export class Groups implements OnInit, OnDestroy {
     this.groupService.getAllAgeGroups().subscribe({
       next: (ageGroups) => {
         this.ageGroups = ageGroups;
-        this.cdr.detectChanges();
-      },
+          },
       error: (error) => {
         console.error('Error loading age groups:', error);
       }
@@ -332,8 +316,7 @@ export class Groups implements OnInit, OnDestroy {
     if (this.groupForm.invalid) {
       this.groupForm.markAllAsTouched();
       this.modalError = this.getFormErrorMessage();
-      this.cdr.detectChanges();
-      return;
+        return;
     }
 
     const groupPayload = this.groupForm.getRawValue() as CreateGroupDto | UpdateGroupDto;
@@ -347,8 +330,7 @@ export class Groups implements OnInit, OnDestroy {
         error: (error) => {
           this.modalError = 'Failed to update group. Please check your input and try again.';
           console.error('Error updating group:', error);
-          this.cdr.detectChanges();
-        }
+              }
       });
     } else {
       this.groupService.createGroup(groupPayload).subscribe({
@@ -359,8 +341,7 @@ export class Groups implements OnInit, OnDestroy {
         error: (error) => {
           this.modalError = 'Failed to create group. Please check your input and try again.';
           console.error('Error creating group:', error);
-          this.cdr.detectChanges();
-        }
+              }
       });
     }
   }
@@ -457,8 +438,7 @@ export class Groups implements OnInit, OnDestroy {
     if (this.courseForm.invalid) {
       this.courseForm.markAllAsTouched();
       this.courseModalError = 'Please select a course and status.';
-      this.cdr.detectChanges();
-      return;
+        return;
     }
 
     const { courseId, status } = this.courseForm.getRawValue();
@@ -476,8 +456,7 @@ export class Groups implements OnInit, OnDestroy {
           this.courseModalError = 'Failed to assign course. Please try again.';
         }
         console.error('Error assigning course:', error);
-        this.cdr.detectChanges();
-      }
+          }
     });
   }
 
@@ -489,8 +468,7 @@ export class Groups implements OnInit, OnDestroy {
       error: (error) => {
         this.error = 'Failed to unassign course. Please try again.';
         console.error('Error unassigning course:', error);
-        this.cdr.detectChanges();
-      }
+          }
     });
   }
 
@@ -519,8 +497,7 @@ export class Groups implements OnInit, OnDestroy {
     if (this.statusForm.invalid) {
       this.statusForm.markAllAsTouched();
       this.statusModalError = 'Please select a status.';
-      this.cdr.detectChanges();
-      return;
+        return;
     }
 
     const { status } = this.statusForm.getRawValue();
@@ -533,8 +510,7 @@ export class Groups implements OnInit, OnDestroy {
       error: (error) => {
         this.statusModalError = 'Failed to update course status. Please try again.';
         console.error('Error updating course status:', error);
-        this.cdr.detectChanges();
-      }
+          }
     });
   }
 
