@@ -237,10 +237,7 @@ export class LessonPlanPage implements OnInit {
       courseSet.add(lesson.courseName);
       groupSet.add(lesson.groupName);
       const d = new Date(lesson.scheduledStart);
-      const dateStr = d.getFullYear() + '-' +
-        String(d.getMonth() + 1).padStart(2, '0') + '-' +
-        String(d.getDate()).padStart(2, '0');
-      this.lessonDateStrings.add(dateStr);
+      this.lessonDateStrings.add(this.toDateKey(d));
     }
 
     this.availableCourses = Array.from(courseSet).sort();
@@ -300,16 +297,12 @@ export class LessonPlanPage implements OnInit {
     for (let i = 0; i < 42; i++) {
       const d = new Date(current);
       d.setHours(0, 0, 0, 0);
-      const dateStr = d.getFullYear() + '-' +
-        String(d.getMonth() + 1).padStart(2, '0') + '-' +
-        String(d.getDate()).padStart(2, '0');
-
       this.calendarDays.push({
         date: new Date(d),
         day: d.getDate(),
         isCurrentMonth: d.getMonth() === month,
         isToday: d.getTime() === today.getTime(),
-        hasLesson: this.lessonDateStrings.has(dateStr),
+        hasLesson: this.lessonDateStrings.has(this.toDateKey(d)),
       });
       current.setDate(current.getDate() + 1);
     }
@@ -370,7 +363,13 @@ export class LessonPlanPage implements OnInit {
 
   // --- Format ---
 
-  formatDateStart(dateString: string): string {
+  private toDateKey(d: Date): string {
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+  }
+
+  formatScheduledDateTime(dateString: string): string {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return 'Invalid Date';
