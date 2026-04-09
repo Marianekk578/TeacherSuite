@@ -267,6 +267,7 @@ export class LessonPlanPage implements OnInit {
           this.cdr.detectChanges();
         },
         error: () => {
+          this.calendarLessonDates.clear();
           this.buildCalendar();
           this.cdr.detectChanges();
         },
@@ -387,6 +388,8 @@ export class LessonPlanPage implements OnInit {
 
   onCalendarDayClick(day: CalendarDay): void {
     this.currentDate = new Date(day.date);
+    this.calendarYear = day.date.getFullYear();
+    this.calendarMonth = day.date.getMonth();
     this.showCalendar = false;
     this.loadPeriodLessons();
   }
