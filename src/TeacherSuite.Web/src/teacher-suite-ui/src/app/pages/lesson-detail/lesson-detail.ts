@@ -31,6 +31,7 @@ export class LessonDetailPage implements OnInit {
   lesson: LessonDetail | null = null;
   loading = false;
   error: string | null = null;
+  cameFromLessonPlan = false;
 
   lessonFiles: LessonFile[] = [];
   rawMarkdownContent: string | null = null;
@@ -71,6 +72,8 @@ export class LessonDetailPage implements OnInit {
   }
 
   ngOnInit() {
+    this.cameFromLessonPlan = this.route.snapshot.queryParams['from'] === 'lesson-plan';
+
     this.route.params
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
@@ -179,6 +182,10 @@ export class LessonDetailPage implements OnInit {
   }
 
   goBackToLessons() {
+    if (this.cameFromLessonPlan) {
+      this.router.navigate(['/lesson-plan']);
+      return;
+    }
     if (this.lesson) {
       this.router.navigate(['/lessons'], { queryParams: { courseId: this.lesson.courseId } });
     } else {

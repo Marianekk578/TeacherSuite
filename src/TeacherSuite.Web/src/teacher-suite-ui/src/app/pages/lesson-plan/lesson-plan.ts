@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LessonPlanService, ScheduledLesson, StudentAttendance } from '../../services/lesson-plan.service';
 import { LessonService, Lesson } from '../../services/lesson.service';
@@ -19,11 +19,25 @@ import {
   heroCheck,
   heroXMark,
   heroChevronRight,
+  heroChevronLeft,
 } from '@ng-icons/heroicons/outline';
+
+export interface CalendarDay {
+  date: Date;
+  day: number;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  hasLesson: boolean;
+}
+
+export interface LessonGroup {
+  label: string;
+  lessons: ScheduledLesson[];
+}
 
 @Component({
   selector: 'app-lesson-plan',
-  imports: [CommonModule, ReactiveFormsModule, NgIconComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgIconComponent],
   providers: [
     provideIcons({
       heroCalendarDays,
@@ -35,6 +49,7 @@ import {
       heroCheck,
       heroXMark,
       heroChevronRight,
+      heroChevronLeft,
     }),
   ],
   templateUrl: './lesson-plan.html',
@@ -47,6 +62,24 @@ export class LessonPlanPage implements OnInit {
   loading = true;
   error = '';
   success = '';
+
+  // View mode & period
+  viewMode: 'weekly' | 'monthly' = 'weekly';
+  currentDate = new Date();
+
+  // Mini calendar state
+  calendarYear = new Date().getFullYear();
+  calendarMonth = new Date().getMonth();
+  calendarDays: CalendarDay[] = [];
+  lessonDateStrings = new Set<string>();
+  readonly weekDayLabels = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+
+  // Filters
+  groupByMode: 'none' | 'course' | 'group' = 'none';
+  filterCourse = '';
+  filterGroup = '';
+  availableCourses: string[] = [];
+  availableGroups: string[] = [];
 
   // Schedule modal
   showScheduleModal = false;
@@ -87,18 +120,103 @@ export class LessonPlanPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadLessonPlan();
+    this.buildCalendar();
+    this.loadPeriodLessons();
   }
 
-  loadLessonPlan(): void {
+  // --- Period calculation ---
+
+  get periodStart(): Date {
+    if (this.viewMode === 'weekly') {
+      return this.getMonday(this.currentDate);
+    }
+    const d = new Date(this.currentDate);
+    return new Date(d.getFullYear(), d.getMonth(), 1);
+  }
+
+  get periodEnd(): Date {
+    if (this.viewMode === 'weekly') {
+      const monday = this.getMonday(this.currentDate);
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      sunday.setHours(23, 59, 59, 999);
+      return sunday;
+    }
+    const d = new Date(this.currentDate);
+    return new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
+  }
+
+  get periodLabel(): string {
+    if (this.viewMode === 'weekly') {
+      const start = this.periodStart;
+      const end = this.periodEnd;
+      const startStr = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const endStr = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      return startStr + ' \u2013 ' + endStr;
+    }
+    return this.currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+
+  private getMonday(d: Date): Date {
+    const date = new Date(d);
+    const day = date.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    date.setDate(date.getDate() + diff);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+
+  // --- Period navigation ---
+
+  prevPeriod(): void {
+    if (this.viewMode === 'weekly') {
+      const d = new Date(this.currentDate);
+      d.setDate(d.getDate() - 7);
+      this.currentDate = d;
+    } else {
+      this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() - 1, 1);
+    }
+    this.loadPeriodLessons();
+  }
+
+  nextPeriod(): void {
+    if (this.viewMode === 'weekly') {
+      const d = new Date(this.currentDate);
+      d.setDate(d.getDate() + 7);
+      this.currentDate = d;
+    } else {
+      this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 1);
+    }
+    this.loadPeriodLessons();
+  }
+
+  onViewModeChange(): void {
+    this.loadPeriodLessons();
+  }
+
+  goToToday(): void {
+    this.currentDate = new Date();
+    this.calendarYear = this.currentDate.getFullYear();
+    this.calendarMonth = this.currentDate.getMonth();
+    this.buildCalendar();
+    this.loadPeriodLessons();
+  }
+
+  // --- Data loading ---
+
+  loadPeriodLessons(): void {
     this.loading = true;
     this.error = '';
 
-    this.lessonPlanService.getLessonPlan()
+    const from = this.periodStart.toISOString();
+    const to = this.periodEnd.toISOString();
+
+    this.lessonPlanService.getLessonPlan(from, to)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
           this.scheduledLessons = data;
+          this.updateDerivedData();
           this.loading = false;
           this.cdr.detectChanges();
         },
@@ -109,6 +227,127 @@ export class LessonPlanPage implements OnInit {
         },
       });
   }
+
+  private updateDerivedData(): void {
+    const courseSet = new Set<string>();
+    const groupSet = new Set<string>();
+    this.lessonDateStrings.clear();
+
+    for (const lesson of this.scheduledLessons) {
+      courseSet.add(lesson.courseName);
+      groupSet.add(lesson.groupName);
+      const d = new Date(lesson.scheduledStart);
+      const dateStr = d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0');
+      this.lessonDateStrings.add(dateStr);
+    }
+
+    this.availableCourses = Array.from(courseSet).sort();
+    this.availableGroups = Array.from(groupSet).sort();
+    this.buildCalendar();
+  }
+
+  // --- Filtering & Grouping ---
+
+  get filteredLessons(): ScheduledLesson[] {
+    let result = this.scheduledLessons;
+    if (this.filterCourse) {
+      result = result.filter(l => l.courseName === this.filterCourse);
+    }
+    if (this.filterGroup) {
+      result = result.filter(l => l.groupName === this.filterGroup);
+    }
+    return result.sort((a, b) =>
+      new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime()
+    );
+  }
+
+  get groupedLessons(): LessonGroup[] {
+    const lessons = this.filteredLessons;
+    if (this.groupByMode === 'none') {
+      return [{ label: '', lessons }];
+    }
+
+    const map = new Map<string, ScheduledLesson[]>();
+    for (const l of lessons) {
+      const key = this.groupByMode === 'course' ? l.courseName : l.groupName;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(l);
+    }
+
+    return Array.from(map.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([label, items]) => ({ label, lessons: items }));
+  }
+
+  // --- Mini calendar ---
+
+  buildCalendar(): void {
+    const year = this.calendarYear;
+    const month = this.calendarMonth;
+    const firstOfMonth = new Date(year, month, 1);
+    const dow = firstOfMonth.getDay();
+    const offset = dow === 0 ? -6 : 1 - dow;
+    const startDay = new Date(year, month, 1 + offset);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    this.calendarDays = [];
+    const current = new Date(startDay);
+
+    for (let i = 0; i < 42; i++) {
+      const d = new Date(current);
+      d.setHours(0, 0, 0, 0);
+      const dateStr = d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0');
+
+      this.calendarDays.push({
+        date: new Date(d),
+        day: d.getDate(),
+        isCurrentMonth: d.getMonth() === month,
+        isToday: d.getTime() === today.getTime(),
+        hasLesson: this.lessonDateStrings.has(dateStr),
+      });
+      current.setDate(current.getDate() + 1);
+    }
+  }
+
+  prevCalendarMonth(): void {
+    if (this.calendarMonth === 0) {
+      this.calendarMonth = 11;
+      this.calendarYear--;
+    } else {
+      this.calendarMonth--;
+    }
+    this.buildCalendar();
+  }
+
+  nextCalendarMonth(): void {
+    if (this.calendarMonth === 11) {
+      this.calendarMonth = 0;
+      this.calendarYear++;
+    } else {
+      this.calendarMonth++;
+    }
+    this.buildCalendar();
+  }
+
+  get calendarMonthLabel(): string {
+    return new Date(this.calendarYear, this.calendarMonth, 1)
+      .toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  }
+
+  onCalendarDayClick(day: CalendarDay): void {
+    this.currentDate = new Date(day.date);
+    this.calendarYear = day.date.getFullYear();
+    this.calendarMonth = day.date.getMonth();
+    this.loadPeriodLessons();
+  }
+
+  // --- Status helpers ---
 
   getLessonStatus(lesson: ScheduledLesson): 'upcoming' | 'active' | 'completed' {
     const now = new Date();
@@ -129,11 +368,30 @@ export class LessonPlanPage implements OnInit {
     }
   }
 
-  navigateToLesson(lessonId: number): void {
-    this.router.navigate(['/lessons', lessonId]);
+  // --- Format ---
+
+  formatDateStart(dateString: string): string {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Invalid Date';
+    const datePart = date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return datePart + ' ' + hours + ':' + minutes;
   }
 
-  // Schedule modal
+  // --- Navigation ---
+
+  navigateToLesson(lessonId: number): void {
+    this.router.navigate(['/lessons', lessonId], { queryParams: { from: 'lesson-plan' } });
+  }
+
+  // --- Schedule modal ---
+
   openScheduleModal(): void {
     this.showScheduleModal = true;
     this.scheduleForm.reset();
@@ -220,7 +478,7 @@ export class LessonPlanPage implements OnInit {
         next: () => {
           this.success = 'Lesson scheduled successfully';
           this.closeScheduleModal();
-          this.loadLessonPlan();
+          this.loadPeriodLessons();
           setTimeout(() => { this.success = ''; this.cdr.detectChanges(); }, 3000);
         },
         error: (err) => {
@@ -231,7 +489,8 @@ export class LessonPlanPage implements OnInit {
       });
   }
 
-  // Attendance modal
+  // --- Attendance modal ---
+
   openAttendanceModal(lesson: ScheduledLesson): void {
     this.selectedScheduledLesson = lesson;
     this.showAttendanceModal = true;
@@ -280,28 +539,5 @@ export class LessonPlanPage implements OnInit {
           setTimeout(() => { this.error = ''; this.cdr.detectChanges(); }, 5000);
         },
       });
-  }
-
-  formatDateTime(dateString: string): string {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return 'Invalid Date';
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }
-
-  formatTime(dateString: string): string {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return 'Invalid';
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
   }
 }
