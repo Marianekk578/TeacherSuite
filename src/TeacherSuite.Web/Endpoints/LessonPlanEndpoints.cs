@@ -1,5 +1,6 @@
 using MediatR;
 using TeacherSuite.Application.LessonPlan.Commands.CreateScheduledLesson;
+using TeacherSuite.Application.LessonPlan.Commands.SaveAttendance;
 using TeacherSuite.Application.LessonPlan.Commands.ToggleStudentAttendance;
 using TeacherSuite.Application.LessonPlan.Queries;
 
@@ -23,5 +24,9 @@ public static class LessonPlanEndpoints
         app.MapPost("/LessonPlan/{id:guid}/attendance", async (LessonPlanHandler handler, ISender sender,
                 Guid id, ToggleAttendanceRequest request) =>
             await handler.ToggleStudentAttendance(sender, id, request));
+
+        app.MapPost("/LessonPlan/{id:guid}/attendance/save", async (LessonPlanHandler handler, ISender sender,
+                Guid id, SaveAttendanceRequest request) =>
+            await handler.SaveAttendance(sender, id, request));
     }
 }

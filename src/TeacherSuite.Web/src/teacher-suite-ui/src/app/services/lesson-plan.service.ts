@@ -13,6 +13,7 @@ export interface ScheduledLesson {
   lessonOrder: number;
   scheduledStart: string;
   scheduledEnd: string;
+  hasAttendance: boolean;
 }
 
 export interface StudentAttendance {
@@ -32,6 +33,10 @@ export interface CreateScheduledLessonDto {
 export interface ToggleAttendanceDto {
   studentId: string;
   isPresent: boolean;
+}
+
+export interface SaveAttendanceDto {
+  attendances: { studentId: string; isPresent: boolean }[];
 }
 
 @Injectable({
@@ -58,5 +63,9 @@ export class LessonPlanService extends ApiService {
 
   toggleStudentAttendance(scheduledLessonId: string, dto: ToggleAttendanceDto): Observable<string> {
     return this.post<string>(`${this.apiUrl}/${scheduledLessonId}/attendance`, dto);
+  }
+
+  saveAttendance(scheduledLessonId: string, dto: SaveAttendanceDto): Observable<void> {
+    return this.post<void>(`${this.apiUrl}/${scheduledLessonId}/attendance/save`, dto);
   }
 }

@@ -1,45 +1,53 @@
 <div class="lesson-plan-page">
-  <!-- Header area: title on left, mini calendar on right -->
+  <!-- Header area -->
   <div class="page-header">
     <div class="header-left">
       <div class="header-title">
         <ng-icon name="heroCalendarDays" size="28" />
         <h1>Lesson Plan</h1>
       </div>
-      <button class="btn-schedule" (click)="openScheduleModal()">
-        <ng-icon name="heroPlus" size="18" />
-        Schedule Lesson
-      </button>
+      <div class="header-actions">
+        <button class="btn-schedule" (click)="openScheduleModal()">
+          <ng-icon name="heroPlus" size="18" />
+          Schedule Lesson
+        </button>
+        <button class="btn-select-date" (click)="toggleCalendar()">
+          <ng-icon name="heroCalendarDays" size="18" />
+          {{ showCalendar ? 'Hide Calendar' : 'Select Date' }}
+        </button>
+      </div>
     </div>
 
-    <div class="mini-calendar">
-      <div class="calendar-nav">
-        <button class="cal-nav-btn" (click)="prevCalendarMonth()" aria-label="Previous month">
-          <ng-icon name="heroChevronLeft" size="14" />
-        </button>
-        <span class="cal-month-label">{{ calendarMonthLabel }}</span>
-        <button class="cal-nav-btn" (click)="nextCalendarMonth()" aria-label="Next month">
-          <ng-icon name="heroChevronRight" size="14" />
-        </button>
+    @if (showCalendar) {
+      <div class="mini-calendar">
+        <div class="calendar-nav">
+          <button class="cal-nav-btn" (click)="prevCalendarMonth()" aria-label="Previous month">
+            <ng-icon name="heroChevronLeft" size="14" />
+          </button>
+          <span class="cal-month-label">{{ calendarMonthLabel }}</span>
+          <button class="cal-nav-btn" (click)="nextCalendarMonth()" aria-label="Next month">
+            <ng-icon name="heroChevronRight" size="14" />
+          </button>
+        </div>
+        <div class="calendar-grid">
+          @for (label of weekDayLabels; track label) {
+            <div class="cal-weekday">{{ label }}</div>
+          }
+          @for (day of calendarDays; track day.date.getTime()) {
+            <div class="cal-day"
+                 [class.other-month]="!day.isCurrentMonth"
+                 [class.today]="day.isToday"
+                 [class.has-lesson]="day.hasLesson"
+                 (click)="onCalendarDayClick(day)">
+              <span class="cal-day-num">{{ day.day }}</span>
+              @if (day.hasLesson) {
+                <span class="cal-dot"></span>
+              }
+            </div>
+          }
+        </div>
       </div>
-      <div class="calendar-grid">
-        @for (label of weekDayLabels; track label) {
-          <div class="cal-weekday">{{ label }}</div>
-        }
-        @for (day of calendarDays; track $index) {
-          <div class="cal-day"
-               [class.other-month]="!day.isCurrentMonth"
-               [class.today]="day.isToday"
-               [class.has-lesson]="day.hasLesson"
-               (click)="onCalendarDayClick(day)">
-            <span class="cal-day-num">{{ day.day }}</span>
-            @if (day.hasLesson) {
-              <span class="cal-dot"></span>
-            }
-          </div>
-        }
-      </div>
-    </div>
+    }
   </div>
 
   <!-- Toolbar: period navigation + filters -->
@@ -141,7 +149,7 @@
               </tr>
             }
             @for (lesson of group.lessons; track lesson.id) {
-              <tr class="lesson-row">
+              <tr class="lesson-row" [class.warning-row]="isPastWithoutAttendance(lesson)">
                 <td class="col-status">
                   <span class="status-badge"
                         [class.active]="getLessonStatus(lesson) === 'active'"
@@ -149,6 +157,11 @@
                         [class.upcoming]="getLessonStatus(lesson) === 'upcoming'">
                     {{ getStatusLabel(lesson) }}
                   </span>
+                  @if (isPastWithoutAttendance(lesson)) {
+                    <span class="warning-badge" title="Attendance not recorded">
+                      <ng-icon name="heroExclamationTriangle" size="14" />
+                    </span>
+                  }
                 </td>
                 <td class="col-title">{{ lesson.lessonTitle }}</td>
                 <td class="col-course">{{ lesson.courseName }}</td>
@@ -255,10 +268,10 @@
           @for (student of studentAttendances; track student.studentId) {
             <div
               class="attendance-item"
-              [class.present]="student.isPresent"
+              [class.present]="isStudentPresent(student)"
               role="button"
               tabindex="0"
-              [attr.aria-pressed]="student.isPresent"
+              [attr.aria-pressed]="isStudentPresent(student)"
               (click)="toggleAttendance(student)"
               (keydown.enter)="toggleAttendance(student)"
               (keydown.space)="toggleAttendance(student); $event.preventDefault()">
@@ -266,7 +279,7 @@
                 <span class="student-name">{{ student.studentFirstName }} {{ student.studentLastName }}</span>
               </div>
               <div class="attendance-toggle">
-                @if (student.isPresent) {
+                @if (isStudentPresent(student)) {
                   <ng-icon name="heroCheck" size="20" class="icon-present" />
                   <span class="present-label">Present</span>
                 } @else {
@@ -280,7 +293,10 @@
       }
 
       <div class="modal-actions">
-        <button type="button" class="btn-cancel" (click)="closeAttendanceModal()">Close</button>
+        <button type="button" class="btn-cancel" (click)="closeAttendanceModal()">Cancel</button>
+        <button type="button" class="btn-submit" [disabled]="!attendanceDirty || savingAttendance" (click)="saveAttendance()">
+          {{ savingAttendance ? 'Saving...' : 'Save' }}
+        </button>
       </div>
     </div>
   </div>

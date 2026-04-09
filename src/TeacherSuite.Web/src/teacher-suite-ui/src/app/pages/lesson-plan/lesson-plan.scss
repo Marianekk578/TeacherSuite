@@ -20,6 +20,31 @@
   gap: 1rem;
 }
 
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn-select-date {
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  background: white;
+  color: #667eea;
+  border: 1px solid #667eea;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #eef2ff;
+  }
+}
+
 .header-title {
   display: flex;
   align-items: center;
@@ -462,6 +487,22 @@
     background: #dbeafe;
     color: #1e40af;
   }
+}
+
+.warning-row {
+  background: #fef2f2 !important;
+
+  &:hover {
+    background: #fee2e2 !important;
+  }
+}
+
+.warning-badge {
+  display: inline-flex;
+  align-items: center;
+  color: #dc2626;
+  margin-left: 0.35rem;
+  vertical-align: middle;
 }
 
 // ---- Action buttons ----

@@ -20,6 +20,7 @@ import {
   heroXMark,
   heroChevronRight,
   heroChevronLeft,
+  heroExclamationTriangle,
 } from '@ng-icons/heroicons/outline';
 
 export interface CalendarDay {
@@ -50,6 +51,7 @@ export interface LessonGroup {
       heroXMark,
       heroChevronRight,
       heroChevronLeft,
+      heroExclamationTriangle,
     }),
   ],
   templateUrl: './lesson-plan.html',
@@ -68,10 +70,11 @@ export class LessonPlanPage implements OnInit {
   currentDate = new Date();
 
   // Mini calendar state
+  showCalendar = false;
   calendarYear = new Date().getFullYear();
   calendarMonth = new Date().getMonth();
   calendarDays: CalendarDay[] = [];
-  lessonDateStrings = new Set<string>();
+  calendarLessonDates = new Set<string>();
   readonly weekDayLabels = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
   // Filters
@@ -95,7 +98,10 @@ export class LessonPlanPage implements OnInit {
   showAttendanceModal = false;
   selectedScheduledLesson: ScheduledLesson | null = null;
   studentAttendances: StudentAttendance[] = [];
+  localAttendanceState: Map<string, boolean> = new Map();
   loadingAttendance = false;
+  savingAttendance = false;
+  attendanceDirty = false;
 
   isAdminOrSupervisor = false;
 
@@ -120,7 +126,6 @@ export class LessonPlanPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.buildCalendar();
     this.loadPeriodLessons();
   }
 
@@ -198,8 +203,10 @@ export class LessonPlanPage implements OnInit {
     this.currentDate = new Date();
     this.calendarYear = this.currentDate.getFullYear();
     this.calendarMonth = this.currentDate.getMonth();
-    this.buildCalendar();
     this.loadPeriodLessons();
+    if (this.showCalendar) {
+      this.loadCalendarDots();
+    }
   }
 
   // --- Data loading ---
@@ -216,7 +223,7 @@ export class LessonPlanPage implements OnInit {
       .subscribe({
         next: (data) => {
           this.scheduledLessons = data;
-          this.updateDerivedData();
+          this.updateFilters();
           this.loading = false;
           this.cdr.detectChanges();
         },
@@ -228,21 +235,57 @@ export class LessonPlanPage implements OnInit {
       });
   }
 
-  private updateDerivedData(): void {
+  private updateFilters(): void {
     const courseSet = new Set<string>();
     const groupSet = new Set<string>();
-    this.lessonDateStrings.clear();
 
     for (const lesson of this.scheduledLessons) {
       courseSet.add(lesson.courseName);
       groupSet.add(lesson.groupName);
-      const d = new Date(lesson.scheduledStart);
-      this.lessonDateStrings.add(this.toDateKey(d));
     }
 
     this.availableCourses = Array.from(courseSet).sort();
     this.availableGroups = Array.from(groupSet).sort();
-    this.buildCalendar();
+  }
+
+  // --- Calendar dots: separate data load for the displayed calendar month ---
+
+  loadCalendarDots(): void {
+    const calStart = this.getCalendarRangeStart();
+    const calEnd = this.getCalendarRangeEnd();
+
+    this.lessonPlanService.getLessonPlan(calStart.toISOString(), calEnd.toISOString())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          this.calendarLessonDates.clear();
+          for (const lesson of data) {
+            const d = new Date(lesson.scheduledStart);
+            this.calendarLessonDates.add(this.toDateKey(d));
+          }
+          this.buildCalendar();
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.buildCalendar();
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  private getCalendarRangeStart(): Date {
+    const firstOfMonth = new Date(this.calendarYear, this.calendarMonth, 1);
+    const dow = firstOfMonth.getDay();
+    const offset = dow === 0 ? -6 : 1 - dow;
+    return new Date(this.calendarYear, this.calendarMonth, 1 + offset);
+  }
+
+  private getCalendarRangeEnd(): Date {
+    const start = this.getCalendarRangeStart();
+    const end = new Date(start);
+    end.setDate(start.getDate() + 41);
+    end.setHours(23, 59, 59, 999);
+    return end;
   }
 
   // --- Filtering & Grouping ---
@@ -280,6 +323,15 @@ export class LessonPlanPage implements OnInit {
 
   // --- Mini calendar ---
 
+  toggleCalendar(): void {
+    this.showCalendar = !this.showCalendar;
+    if (this.showCalendar) {
+      this.calendarYear = this.currentDate.getFullYear();
+      this.calendarMonth = this.currentDate.getMonth();
+      this.loadCalendarDots();
+    }
+  }
+
   buildCalendar(): void {
     const year = this.calendarYear;
     const month = this.calendarMonth;
@@ -302,7 +354,7 @@ export class LessonPlanPage implements OnInit {
         day: d.getDate(),
         isCurrentMonth: d.getMonth() === month,
         isToday: d.getTime() === today.getTime(),
-        hasLesson: this.lessonDateStrings.has(this.toDateKey(d)),
+        hasLesson: this.calendarLessonDates.has(this.toDateKey(d)),
       });
       current.setDate(current.getDate() + 1);
     }
@@ -315,7 +367,7 @@ export class LessonPlanPage implements OnInit {
     } else {
       this.calendarMonth--;
     }
-    this.buildCalendar();
+    this.loadCalendarDots();
   }
 
   nextCalendarMonth(): void {
@@ -325,7 +377,7 @@ export class LessonPlanPage implements OnInit {
     } else {
       this.calendarMonth++;
     }
-    this.buildCalendar();
+    this.loadCalendarDots();
   }
 
   get calendarMonthLabel(): string {
@@ -335,8 +387,7 @@ export class LessonPlanPage implements OnInit {
 
   onCalendarDayClick(day: CalendarDay): void {
     this.currentDate = new Date(day.date);
-    this.calendarYear = day.date.getFullYear();
-    this.calendarMonth = day.date.getMonth();
+    this.showCalendar = false;
     this.loadPeriodLessons();
   }
 
@@ -359,6 +410,10 @@ export class LessonPlanPage implements OnInit {
       case 'active': return 'In Progress';
       case 'completed': return 'Completed';
     }
+  }
+
+  isPastWithoutAttendance(lesson: ScheduledLesson): boolean {
+    return this.getLessonStatus(lesson) === 'completed' && !lesson.hasAttendance;
   }
 
   // --- Format ---
@@ -494,13 +549,19 @@ export class LessonPlanPage implements OnInit {
     this.selectedScheduledLesson = lesson;
     this.showAttendanceModal = true;
     this.loadingAttendance = true;
+    this.savingAttendance = false;
+    this.attendanceDirty = false;
     this.studentAttendances = [];
+    this.localAttendanceState.clear();
 
     this.lessonPlanService.getScheduledLessonStudents(lesson.id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
           this.studentAttendances = data;
+          for (const s of data) {
+            this.localAttendanceState.set(s.studentId, s.isPresent);
+          }
           this.loadingAttendance = false;
           this.cdr.detectChanges();
         },
@@ -515,25 +576,44 @@ export class LessonPlanPage implements OnInit {
   closeAttendanceModal(): void {
     this.showAttendanceModal = false;
     this.selectedScheduledLesson = null;
+    this.localAttendanceState.clear();
+    this.attendanceDirty = false;
     this.cdr.detectChanges();
   }
 
   toggleAttendance(student: StudentAttendance): void {
+    const current = this.localAttendanceState.get(student.studentId) ?? false;
+    this.localAttendanceState.set(student.studentId, !current);
+    this.attendanceDirty = true;
+  }
+
+  isStudentPresent(student: StudentAttendance): boolean {
+    return this.localAttendanceState.get(student.studentId) ?? false;
+  }
+
+  saveAttendance(): void {
     if (!this.selectedScheduledLesson) return;
 
-    const newValue = !student.isPresent;
-    this.lessonPlanService.toggleStudentAttendance(this.selectedScheduledLesson.id, {
-      studentId: student.studentId,
-      isPresent: newValue,
-    })
+    this.savingAttendance = true;
+    const attendances = this.studentAttendances.map(s => ({
+      studentId: s.studentId,
+      isPresent: this.localAttendanceState.get(s.studentId) ?? false,
+    }));
+
+    this.lessonPlanService.saveAttendance(this.selectedScheduledLesson.id, { attendances })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          student.isPresent = newValue;
-          this.cdr.detectChanges();
+          this.savingAttendance = false;
+          this.attendanceDirty = false;
+          this.success = 'Attendance saved successfully';
+          this.closeAttendanceModal();
+          this.loadPeriodLessons();
+          setTimeout(() => { this.success = ''; this.cdr.detectChanges(); }, 3000);
         },
         error: (err) => {
-          this.error = err.detail || 'Failed to update attendance';
+          this.savingAttendance = false;
+          this.error = err.detail || 'Failed to save attendance';
           this.cdr.detectChanges();
           setTimeout(() => { this.error = ''; this.cdr.detectChanges(); }, 5000);
         },

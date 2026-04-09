@@ -14,6 +14,7 @@ public class ScheduledLessonDto
     public int LessonOrder { get; init; }
     public DateTimeOffset ScheduledStart { get; init; }
     public DateTimeOffset ScheduledEnd { get; init; }
+    public bool HasAttendance { get; init; }
 
     private class Mapping : Profile
     {
@@ -29,7 +30,9 @@ public class ScheduledLessonDto
                 .ForMember(dest => dest.CourseId,
                     opt => opt.MapFrom(src => src.Lesson != null ? src.Lesson.CourseId : 0))
                 .ForMember(dest => dest.LessonOrder,
-                    opt => opt.MapFrom(src => src.Lesson != null ? src.Lesson.Order : 0));
+                    opt => opt.MapFrom(src => src.Lesson != null ? src.Lesson.Order : 0))
+                .ForMember(dest => dest.HasAttendance,
+                    opt => opt.MapFrom(src => src.StudentAttendances != null && src.StudentAttendances.Count > 0));
         }
     }
 }
