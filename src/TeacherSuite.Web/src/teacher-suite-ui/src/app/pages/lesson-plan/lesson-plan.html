@@ -152,9 +152,9 @@
 <!-- Attendance Modal -->
 @if (showAttendanceModal && selectedScheduledLesson) {
   <div class="modal-overlay" (click)="closeAttendanceModal()">
-    <div class="modal-content attendance-modal" (click)="$event.stopPropagation()">
-      <h2>Student Attendance</h2>
-      <p class="attendance-subtitle">
+    <div class="modal-content attendance-modal" role="dialog" aria-modal="true" aria-labelledby="attendanceModalTitle" aria-describedby="attendanceModalSubtitle" (click)="$event.stopPropagation()">
+      <h2 id="attendanceModalTitle">Student Attendance</h2>
+      <p class="attendance-subtitle" id="attendanceModalSubtitle">
         {{ selectedScheduledLesson.lessonTitle }} — {{ selectedScheduledLesson.groupName }}
       </p>
 
