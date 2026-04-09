@@ -96,8 +96,13 @@
 <!-- Schedule Modal -->
 @if (showScheduleModal) {
   <div class="modal-overlay" (click)="closeScheduleModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <h2>Schedule a Lesson</h2>
+    <div
+      class="modal-content"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="schedule-modal-title"
+      (click)="$event.stopPropagation()">
+      <h2 id="schedule-modal-title">Schedule a Lesson</h2>
 
       <form [formGroup]="scheduleForm" (ngSubmit)="scheduleLesson()">
         <div class="form-group">
