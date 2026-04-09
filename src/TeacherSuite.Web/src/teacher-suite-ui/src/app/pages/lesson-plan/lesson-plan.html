@@ -169,8 +169,15 @@
       @if (!loadingAttendance && studentAttendances.length > 0) {
         <div class="attendance-list">
           @for (student of studentAttendances; track student.studentId) {
-            <div class="attendance-item" [class.present]="student.isPresent"
-                 (click)="toggleAttendance(student)">
+            <div
+              class="attendance-item"
+              [class.present]="student.isPresent"
+              role="button"
+              tabindex="0"
+              [attr.aria-pressed]="student.isPresent"
+              (click)="toggleAttendance(student)"
+              (keydown.enter)="toggleAttendance(student)"
+              (keydown.space)="toggleAttendance(student); $event.preventDefault()">
               <div class="student-info">
                 <span class="student-name">{{ student.studentFirstName }} {{ student.studentLastName }}</span>
               </div>
