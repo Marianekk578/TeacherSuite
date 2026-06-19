@@ -1,6 +1,6 @@
 <div class="lesson-detail-page">
   <div class="page-header">
-    <button class="btn btn-secondary btn-back" (click)="goBackToLessons()">← Back to Lessons</button>
+    <button class="btn btn-secondary btn-back" (click)="goBackToLessons()">← {{ cameFromLessonPlan ? 'Back to Lesson Plan' : 'Back to Lessons' }}</button>
   </div>
 
   <div *ngIf="error" class="alert alert-error">

@@ -1,0 +1,303 @@
+<div class="lesson-plan-page">
+  <!-- Header area -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-title">
+        <ng-icon name="heroCalendarDays" size="28" />
+        <h1>Lesson Plan</h1>
+      </div>
+      <div class="header-actions">
+        <button class="btn-schedule" (click)="openScheduleModal()">
+          <ng-icon name="heroPlus" size="18" />
+          Schedule Lesson
+        </button>
+        <button class="btn-select-date" (click)="toggleCalendar()">
+          <ng-icon name="heroCalendarDays" size="18" />
+          {{ showCalendar ? 'Hide Calendar' : 'Select Date' }}
+        </button>
+      </div>
+    </div>
+
+    @if (showCalendar) {
+      <div class="mini-calendar">
+        <div class="calendar-nav">
+          <button class="cal-nav-btn" (click)="prevCalendarMonth()" aria-label="Previous month">
+            <ng-icon name="heroChevronLeft" size="14" />
+          </button>
+          <span class="cal-month-label">{{ calendarMonthLabel }}</span>
+          <button class="cal-nav-btn" (click)="nextCalendarMonth()" aria-label="Next month">
+            <ng-icon name="heroChevronRight" size="14" />
+          </button>
+        </div>
+        <div class="calendar-grid">
+          @for (label of weekDayLabels; track label) {
+            <div class="cal-weekday">{{ label }}</div>
+          }
+          @for (day of calendarDays; track day.date.getTime()) {
+            <div class="cal-day"
+                 [class.other-month]="!day.isCurrentMonth"
+                 [class.today]="day.isToday"
+                 [class.has-lesson]="day.hasLesson"
+                 (click)="onCalendarDayClick(day)">
+              <span class="cal-day-num">{{ day.day }}</span>
+              @if (day.hasLesson) {
+                <span class="cal-dot"></span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Toolbar: period navigation + filters -->
+  <div class="toolbar">
+    <div class="period-nav">
+      <div class="view-toggle">
+        <button class="toggle-btn" [class.active]="viewMode === 'weekly'"
+                (click)="viewMode = 'weekly'; onViewModeChange()">Weekly</button>
+        <button class="toggle-btn" [class.active]="viewMode === 'monthly'"
+                (click)="viewMode = 'monthly'; onViewModeChange()">Monthly</button>
+      </div>
+      <button class="nav-arrow" (click)="prevPeriod()" aria-label="Previous period">
+        <ng-icon name="heroChevronLeft" size="18" />
+      </button>
+      <span class="period-label">{{ periodLabel }}</span>
+      <button class="nav-arrow" (click)="nextPeriod()" aria-label="Next period">
+        <ng-icon name="heroChevronRight" size="18" />
+      </button>
+      <button class="today-btn" (click)="goToToday()">Today</button>
+    </div>
+
+    <div class="filters">
+      <div class="filter-item">
+        <label for="groupBy">Group by</label>
+        <select id="groupBy" [(ngModel)]="groupByMode">
+          <option value="none">None</option>
+          <option value="course">Course</option>
+          <option value="group">Group</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label for="filterCourse">Course</label>
+        <select id="filterCourse" [(ngModel)]="filterCourse">
+          <option value="">All Courses</option>
+          @for (c of availableCourses; track c) {
+            <option [value]="c">{{ c }}</option>
+          }
+        </select>
+      </div>
+      <div class="filter-item">
+        <label for="filterGroup">Group</label>
+        <select id="filterGroup" [(ngModel)]="filterGroup">
+          <option value="">All Groups</option>
+          @for (g of availableGroups; track g) {
+            <option [value]="g">{{ g }}</option>
+          }
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  @if (error) {
+    <div class="alert alert-error">{{ error }}</div>
+  }
+  @if (success) {
+    <div class="alert alert-success">{{ success }}</div>
+  }
+
+  <!-- Loading -->
+  @if (loading) {
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Loading lessons...</p>
+    </div>
+  }
+
+  <!-- Empty state -->
+  @if (!loading && filteredLessons.length === 0) {
+    <div class="empty-state">
+      <ng-icon name="heroCalendarDays" size="56" />
+      <h2>No scheduled lessons</h2>
+      <p>No lessons found for this period.</p>
+    </div>
+  }
+
+  <!-- Lesson table -->
+  @if (!loading && filteredLessons.length > 0) {
+    <div class="table-container">
+      <table class="lesson-table">
+        <thead>
+          <tr>
+            <th class="col-status">Status</th>
+            <th class="col-title">Lesson Title</th>
+            <th class="col-course">Course</th>
+            <th class="col-group">Group</th>
+            <th class="col-date">Date &amp; Time</th>
+            <th class="col-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (group of groupedLessons; track group.label) {
+            @if (groupByMode !== 'none') {
+              <tr class="group-header-row">
+                <td colspan="6">
+                  <span class="group-label">{{ group.label }}</span>
+                  <span class="group-count">({{ group.lessons.length }})</span>
+                </td>
+              </tr>
+            }
+            @for (lesson of group.lessons; track lesson.id) {
+              <tr class="lesson-row" [class.warning-row]="isPastWithoutAttendance(lesson)">
+                <td class="col-status">
+                  <span class="status-badge"
+                        [class.active]="getLessonStatus(lesson) === 'active'"
+                        [class.completed]="getLessonStatus(lesson) === 'completed'"
+                        [class.upcoming]="getLessonStatus(lesson) === 'upcoming'">
+                    {{ getStatusLabel(lesson) }}
+                  </span>
+                  @if (isPastWithoutAttendance(lesson)) {
+                    <span class="warning-badge" title="Attendance not recorded">
+                      <ng-icon name="heroExclamationTriangle" size="14" />
+                    </span>
+                  }
+                </td>
+                <td class="col-title">{{ lesson.lessonTitle }}</td>
+                <td class="col-course">{{ lesson.courseName }}</td>
+                <td class="col-group">{{ lesson.groupName }}</td>
+                <td class="col-date">{{ formatScheduledDateTime(lesson.scheduledStart) }}</td>
+                <td class="col-actions">
+                  <div class="action-buttons">
+                    <button class="btn-action btn-details" (click)="navigateToLesson(lesson.lessonId)">
+                      <ng-icon name="heroEye" size="14" />
+                      Details
+                    </button>
+                    <button class="btn-action btn-attendance" (click)="openAttendanceModal(lesson)">
+                      <ng-icon name="heroUserGroup" size="14" />
+                      Attendance
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<!-- Schedule Modal -->
+@if (showScheduleModal) {
+  <div class="modal-overlay" (click)="closeScheduleModal()">
+    <div
+      class="modal-content"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="schedule-modal-title"
+      (click)="$event.stopPropagation()">
+      <h2 id="schedule-modal-title">Schedule a Lesson</h2>
+
+      <form [formGroup]="scheduleForm" (ngSubmit)="scheduleLesson()">
+        <div class="form-group">
+          <label for="courseId">Course</label>
+          <select id="courseId" formControlName="courseId" (change)="onCourseChange()">
+            <option value="">Select a course</option>
+            @for (course of courses; track course.id) {
+              <option [value]="course.id">{{ course.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="lessonId">Lesson</label>
+          <select id="lessonId" formControlName="lessonId" [disabled]="!lessons.length">
+            <option value="">Select a lesson</option>
+            @for (l of lessons; track l.id) {
+              <option [value]="l.id">#{{ l.order }} &mdash; {{ l.title }} ({{ l.durationMinutes }}min)</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="groupId">Group</label>
+          <select id="groupId" formControlName="groupId" [disabled]="!groups.length">
+            <option value="">Select a group</option>
+            @for (g of groups; track g.id) {
+              <option [value]="g.id">{{ g.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="scheduledStart">Start Time</label>
+          <input type="datetime-local" id="scheduledStart" formControlName="scheduledStart" />
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" (click)="closeScheduleModal()">Cancel</button>
+          <button type="submit" class="btn-submit" [disabled]="scheduleForm.invalid">Schedule</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Attendance Modal -->
+@if (showAttendanceModal && selectedScheduledLesson) {
+  <div class="modal-overlay" (click)="closeAttendanceModal()">
+    <div class="modal-content attendance-modal" role="dialog" aria-modal="true"
+         aria-labelledby="attendanceModalTitle" aria-describedby="attendanceModalSubtitle"
+         (click)="$event.stopPropagation()">
+      <h2 id="attendanceModalTitle">Student Attendance</h2>
+      <p class="attendance-subtitle" id="attendanceModalSubtitle">
+        {{ selectedScheduledLesson.lessonTitle }} &mdash; {{ selectedScheduledLesson.groupName }}
+      </p>
+
+      @if (loadingAttendance) {
+        <div class="loading-spinner"></div>
+      }
+
+      @if (!loadingAttendance && studentAttendances.length === 0) {
+        <p class="no-students">No students are assigned to this group.</p>
+      }
+
+      @if (!loadingAttendance && studentAttendances.length > 0) {
+        <div class="attendance-list">
+          @for (student of studentAttendances; track student.studentId) {
+            <div
+              class="attendance-item"
+              [class.present]="isStudentPresent(student)"
+              role="button"
+              tabindex="0"
+              [attr.aria-pressed]="isStudentPresent(student)"
+              (click)="toggleAttendance(student)"
+              (keydown.enter)="toggleAttendance(student)"
+              (keydown.space)="toggleAttendance(student); $event.preventDefault()">
+              <div class="student-info">
+                <span class="student-name">{{ student.studentFirstName }} {{ student.studentLastName }}</span>
+              </div>
+              <div class="attendance-toggle">
+                @if (isStudentPresent(student)) {
+                  <ng-icon name="heroCheck" size="20" class="icon-present" />
+                  <span class="present-label">Present</span>
+                } @else {
+                  <ng-icon name="heroXMark" size="20" class="icon-absent" />
+                  <span class="absent-label">Absent</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="closeAttendanceModal()">Cancel</button>
+        <button type="button" class="btn-submit" [disabled]="!attendanceDirty || savingAttendance" (click)="saveAttendance()">
+          {{ savingAttendance ? 'Saving...' : 'Save' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -9,12 +9,13 @@ import {
   heroUsers,
   heroCodeBracket,
   heroUserCircle,
+  heroCalendarDays,
 } from '@ng-icons/heroicons/outline';
 
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, RouterLink, RouterLinkActive, NgIconComponent],
-  providers: [provideIcons({ heroAcademicCap, heroBookOpen, heroClipboardDocumentList, heroUserGroup, heroUsers, heroCodeBracket, heroUserCircle })],
+  providers: [provideIcons({ heroAcademicCap, heroBookOpen, heroClipboardDocumentList, heroUserGroup, heroUsers, heroCodeBracket, heroUserCircle, heroCalendarDays })],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

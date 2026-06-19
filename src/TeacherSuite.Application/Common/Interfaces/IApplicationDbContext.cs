@@ -19,6 +19,8 @@ public interface IApplicationDbContext
     DbSet<SuggestionVote> SuggestionVotes { get; }
     DbSet<RequirementIcon> RequirementIcons { get; }
     DbSet<LessonRequirementIcon> LessonRequirementIcons { get; }
+    DbSet<ScheduledLesson> ScheduledLessons { get; }
+    DbSet<StudentLessonAttendance> StudentLessonAttendances { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
