@@ -14,7 +14,6 @@ import {
   CourseGroup,
 } from '../../services/lesson.service';
 import { KeycloakService } from '../../auth/keycloak.service';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
 
 @Component({
@@ -34,7 +33,7 @@ export class LessonDetailPage implements OnInit {
 
   lessonFiles: LessonFile[] = [];
   rawMarkdownContent: string | null = null;
-  markdownContent: SafeHtml | null = null;
+  markdownContent: string | null = null;
   downloadableFiles: LessonFile[] = [];
 
   showContextMenu = false;
@@ -61,8 +60,7 @@ export class LessonDetailPage implements OnInit {
     private lessonService: LessonService,
     private cdr: ChangeDetectorRef,
     private fb: FormBuilder,
-    private keycloakService: KeycloakService,
-    private sanitizer: DomSanitizer
+    private keycloakService: KeycloakService
   ) {
     this.attendanceForm = this.fb.group({
       groupId: ['', [Validators.required]],
@@ -118,14 +116,14 @@ export class LessonDetailPage implements OnInit {
             this.rawMarkdownContent = text;
             const html = marked.parse(text);
             if (typeof html === 'string') {
-              this.markdownContent = this.sanitizer.bypassSecurityTrustHtml(html);
+              this.markdownContent = html;
+              this.cdr.detectChanges();
             } else {
               (html as Promise<string>).then(h => {
-                this.markdownContent = this.sanitizer.bypassSecurityTrustHtml(h);
+                this.markdownContent = h;
                 this.cdr.detectChanges();
               });
             }
-            this.cdr.detectChanges();
           }).catch(() => {
             this.rawMarkdownContent = null;
             this.markdownContent = null;
