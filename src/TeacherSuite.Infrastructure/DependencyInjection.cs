@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Infrastructure.Caching;
 using TeacherSuite.Infrastructure.Data;
+using TeacherSuite.Infrastructure.FileStorage;
 
 namespace TeacherSuite.Infrastructure;
 
@@ -45,5 +46,7 @@ public static class DependencyInjection
         });
 
         services.AddSingleton<ICacheService, CacheService>();
+
+        services.AddHttpClient<IFileStorageService, ChibiSafeFileStorageService>();
     }
 }

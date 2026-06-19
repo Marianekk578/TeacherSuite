@@ -33,10 +33,11 @@ internal sealed class GetAllStudentsQueryHandler(IApplicationDbContext db, IMapp
 
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
-            var search = request.Search.Trim().ToLower();
+            var search = request.Search.Trim().ToLowerInvariant();
             query = query.Where(s =>
                 (s.FirstName != null && s.FirstName.ToLower().Contains(search)) ||
                 (s.LastName != null && s.LastName.ToLower().Contains(search)) ||
+                (s.FirstName != null && s.LastName != null && (s.FirstName + " " + s.LastName).ToLower().Contains(search)) ||
                 s.ContactEmail.ToLower().Contains(search));
         }
 

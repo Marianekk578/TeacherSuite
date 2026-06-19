@@ -1,0 +1,181 @@
+<div class="lessons-page">
+  <div class="page-header">
+    <h1>
+      <ng-icon name="heroClipboardDocumentList" size="35" />
+      Lessons
+    </h1>
+    <button *ngIf="canManage() && selectedCourseId" aria-label="AddLesson" class="btn btn-primary" (click)="openAddModal()">
+      <ng-icon name="heroPlus" size="20" />
+      Add Lesson
+    </button>
+  </div>
+
+  <div class="course-selector">
+    <label for="courseSelect">Select Course</label>
+    <select id="courseSelect" [value]="selectedCourseId ?? ''" (change)="onCourseChange($event)" [disabled]="coursesLoading">
+      <option value="">-- Choose a course --</option>
+      <option *ngFor="let course of courses" [value]="course.id">
+        {{ course.name }}
+      </option>
+    </select>
+  </div>
+
+  <div *ngIf="error" class="alert alert-error">
+    {{ error }}
+    <button class="alert-close" (click)="error = null">&times;</button>
+  </div>
+
+  <div *ngIf="uploadSuccess" class="alert alert-success">
+    {{ uploadSuccess }}
+    <button class="alert-close" (click)="uploadSuccess = null">&times;</button>
+  </div>
+
+  <div *ngIf="!selectedCourseId && !loading" class="empty-state">
+    <ng-icon name="heroClipboardDocumentList" size="64" />
+    <h2>Select a Course</h2>
+    <p>Choose a course from the dropdown above to view its lessons.</p>
+  </div>
+
+  <div *ngIf="loading" class="lessons-list">
+    <div class="lesson-card skeleton-card" *ngFor="let i of [1,2,3,4,5]">
+      <div class="skeleton-order skeleton-pulse"></div>
+      <div class="skeleton-info">
+        <div class="skeleton-line skeleton-line-name skeleton-pulse"></div>
+        <div class="skeleton-line skeleton-line-detail skeleton-pulse"></div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && selectedCourseId && lessons.length === 0" class="empty-state">
+    <ng-icon name="heroClipboardDocumentList" size="64" />
+    <h2>No Lessons Yet</h2>
+    <p>This course doesn't have any lessons.</p>
+    <button *ngIf="canManage()" class="btn btn-primary" (click)="openAddModal()">Add First Lesson</button>
+  </div>
+
+  <div *ngIf="!loading && lessons.length > 0" class="lessons-list">
+    <div class="lesson-card" *ngFor="let lesson of lessons">
+      <div class="lesson-order-column" *ngIf="canManage()">
+        <button *ngIf="!isFirstLesson(lesson)" class="btn-icon btn-icon-reorder btn-reorder-up" (click)="moveLessonUp(lesson)" title="Move Up">
+          <ng-icon name="heroArrowUp" size="14" />
+        </button>
+        <div class="lesson-order">{{ lesson.order }}</div>
+        <button *ngIf="!isLastLesson(lesson)" class="btn-icon btn-icon-reorder btn-reorder-down" (click)="moveLessonDown(lesson)" title="Move Down">
+          <ng-icon name="heroArrowDown" size="14" />
+        </button>
+      </div>
+      <div class="lesson-order" *ngIf="!canManage()">{{ lesson.order }}</div>
+      <div class="lesson-info">
+        <h3 class="lesson-title-link" (click)="navigateToDetail(lesson)">{{ lesson.title }}</h3>
+        <div class="lesson-meta">
+          <span class="lesson-duration">
+            <ng-icon name="heroClock" size="14" />
+            {{ lesson.durationMinutes }} min
+          </span>
+          <span *ngFor="let label of getMaterialLabels(lesson)" class="lesson-material" [title]="label">
+            <ng-icon [name]="label === 'Markdown' ? 'heroDocumentText' : 'heroDocument'" size="14" />
+            {{ label }}
+          </span>
+        </div>
+        <div class="requirement-icons" *ngIf="lesson.requirementIcons && lesson.requirementIcons.length > 0">
+          <span
+            class="requirement-badge"
+            *ngFor="let icon of lesson.requirementIcons"
+            [title]="icon.label"
+          >{{ icon.emoji }}</span>
+        </div>
+      </div>
+      <div class="lesson-actions">
+        <label *ngIf="canManage()" class="btn-icon btn-icon-upload" [title]="'Upload Material'" [class.uploading]="uploadingLessonId === lesson.id">
+          <ng-icon name="heroArrowUpTray" size="18" />
+          <input type="file" class="file-input-hidden" (change)="onFileSelected($event, lesson)" accept=".md,.docx,.txt" />
+        </label>
+        <button *ngIf="canManage()" class="btn-icon btn-icon-edit" (click)="openEditModal(lesson)" title="Edit">
+          <ng-icon name="heroPencil" size="18" />
+        </button>
+        <button *ngIf="canManage()" class="btn-icon btn-icon-delete" type="button" (click)="confirmDelete(lesson)" title="Delete">
+          <ng-icon name="heroTrash" size="18" />
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" *ngIf="showModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="modalTitle">{{ isEditMode ? 'Edit Lesson' : 'Add New Lesson' }}</h2>
+      <button class="modal-close" (click)="closeModal()">&times;</button>
+    </div>
+    <form class="modal-body" [formGroup]="lessonForm" (ngSubmit)="saveLesson()">
+      <div *ngIf="modalError" class="alert alert-error modal-alert">
+        {{ modalError }}
+        <button type="button" class="alert-close" (click)="modalError = null">&times;</button>
+      </div>
+      <div class="form-group">
+        <label for="title">Title *</label>
+        <input type="text" id="title" formControlName="title" required placeholder="Enter lesson title" />
+      </div>
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" formControlName="description" placeholder="Enter lesson description" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="durationMinutes">Duration (minutes, max 180) *</label>
+        <input type="number" id="durationMinutes" formControlName="durationMinutes" required min="1" max="180" />
+      </div>
+      <div class="form-group">
+        <label>Requirement Icons</label>
+        <div class="requirement-chips">
+          <button type="button" class="requirement-chip" [class.selected]="isRequirementSelected(1)" (click)="toggleRequirementIcon(1)">
+            <span class="chip-emoji">📱</span> Mobile phone needed
+          </button>
+          <button type="button" class="requirement-chip" [class.selected]="isRequirementSelected(2)" (click)="toggleRequirementIcon(2)">
+            <span class="chip-emoji">💻</span> Laptop/computer needed
+          </button>
+          <button type="button" class="requirement-chip" [class.selected]="isRequirementSelected(3)" (click)="toggleRequirementIcon(3)">
+            <span class="chip-emoji">🔌</span> Arduino board needed
+          </button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Attach Files (.md, .docx, .txt)</label>
+        <label class="file-upload-btn btn btn-secondary">
+          Choose Files
+          <input type="file" class="file-input-hidden" (change)="onModalFileSelected($event)" accept=".md,.docx,.txt" multiple />
+        </label>
+        <div *ngIf="fileError" class="alert alert-error file-alert">
+          {{ fileError }}
+        </div>
+        <div *ngIf="pendingFiles.length > 0" class="pending-files">
+          <div class="pending-file" *ngFor="let file of pendingFiles; let i = index">
+            <span class="pending-file-name">{{ file.name }}</span>
+            <button type="button" class="btn-remove-file" (click)="removePendingFile(i)">&times;</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Create' }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+  <div class="modal modal-small" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="deleteConfirmTitle">Confirm Delete</h2>
+      <button class="modal-close" (click)="cancelDelete()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to delete <strong>{{ lessonToDelete?.title }}</strong>? This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="cancelDelete()">Cancel</button>
+        <button type="button" class="btn btn-danger" (click)="deleteLesson()">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -169,6 +169,162 @@ namespace TeacherSuite.Infrastructure.Migrations
                     b.ToTable("GroupCourses");
                 });
 
+            modelBuilder.Entity("TeacherSuite.Domain.Entities.Lesson", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AlbumId")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("CourseId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastModifiedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId", "Order")
+                        .IsUnique();
+
+                    b.ToTable("Lessons");
+                });
+
+            modelBuilder.Entity("TeacherSuite.Domain.Entities.LessonAttendance", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("AttendedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastModifiedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("LessonId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("LessonId", "GroupId")
+                        .IsUnique();
+
+                    b.ToTable("LessonAttendances");
+                });
+
+            modelBuilder.Entity("TeacherSuite.Domain.Entities.LessonRequirementIcon", b =>
+                {
+                    b.Property<int>("LessonId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RequirementIconId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("LessonId", "RequirementIconId");
+
+                    b.HasIndex("RequirementIconId");
+
+                    b.ToTable("LessonRequirementIcons");
+                });
+
+            modelBuilder.Entity("TeacherSuite.Domain.Entities.LessonSuggestion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastModifiedBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("LessonId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SelectedText")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int?>("SelectionEnd")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("SelectionStart")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TeacherId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LessonId");
+
+                    b.HasIndex("TeacherId");
+
+                    b.ToTable("LessonSuggestions");
+                });
+
             modelBuilder.Entity("TeacherSuite.Domain.Entities.ProgrammingLanguage", b =>
                 {
                     b.Property<int>("Id")
@@ -190,6 +346,37 @@ namespace TeacherSuite.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ProgrammingLanguages");
+                });
+
+            modelBuilder.Entity("TeacherSuite.Domain.Entities.RequirementIcon", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Emoji")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
+
+                    b.ToTable("RequirementIcons");
                 });
 
             modelBuilder.Entity("TeacherSuite.Domain.Entities.Student", b =>
@@ -241,10 +428,10 @@ namespace TeacherSuite.Infrastructure.Migrations
 
                     b.HasIndex("ContactEmail");
 
+                    b.HasIndex("LastName", "FirstName");
+
                     b.HasIndex("FirstName", "LastName", "DateOfBirth")
                         .IsUnique();
-
-                    b.HasIndex("LastName", "FirstName");
 
                     b.ToTable("Students");
                 });
@@ -283,6 +470,24 @@ namespace TeacherSuite.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("StudentGroups");
+                });
+
+            modelBuilder.Entity("TeacherSuite.Domain.Entities.SuggestionVote", b =>
+                {
+                    b.Property<Guid>("SuggestionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TeacherId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Vote")
+                        .HasColumnType("integer");
+
+                    b.HasKey("SuggestionId", "TeacherId");
+
+                    b.HasIndex("TeacherId");
+
+                    b.ToTable("SuggestionVotes");
                 });
 
             modelBuilder.Entity("TeacherSuite.Domain.Entities.Teacher", b =>
@@ -419,6 +624,74 @@ namespace TeacherSuite.Infrastructure.Migrations
                     b.Navigation("Group");
                 });
 
+            modelBuilder.Entity("TeacherSuite.Domain.Entities.Lesson", b =>
+                {
+                    b.HasOne("TeacherSuite.Domain.Entities.Course", "Course")
+                        .WithMany("Lessons")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("TeacherSuite.Domain.Entities.LessonAttendance", b =>
+                {
+                    b.HasOne("TeacherSuite.Domain.Entities.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TeacherSuite.Domain.Entities.Lesson", "Lesson")
+                        .WithMany("Attendances")
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Lesson");
+                });
+
+            modelBuilder.Entity("TeacherSuite.Domain.Entities.LessonRequirementIcon", b =>
+                {
+                    b.HasOne("TeacherSuite.Domain.Entities.Lesson", "Lesson")
+                        .WithMany("LessonRequirementIcons")
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TeacherSuite.Domain.Entities.RequirementIcon", "RequirementIcon")
+                        .WithMany("LessonRequirementIcons")
+                        .HasForeignKey("RequirementIconId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lesson");
+
+                    b.Navigation("RequirementIcon");
+                });
+
+            modelBuilder.Entity("TeacherSuite.Domain.Entities.LessonSuggestion", b =>
+                {
+                    b.HasOne("TeacherSuite.Domain.Entities.Lesson", "Lesson")
+                        .WithMany("Suggestions")
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TeacherSuite.Domain.Entities.Teacher", "Teacher")
+                        .WithMany()
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lesson");
+
+                    b.Navigation("Teacher");
+                });
+
             modelBuilder.Entity("TeacherSuite.Domain.Entities.StudentGroup", b =>
                 {
                     b.HasOne("TeacherSuite.Domain.Entities.Group", "Group")
@@ -436,6 +709,25 @@ namespace TeacherSuite.Infrastructure.Migrations
                     b.Navigation("Group");
 
                     b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("TeacherSuite.Domain.Entities.SuggestionVote", b =>
+                {
+                    b.HasOne("TeacherSuite.Domain.Entities.LessonSuggestion", "Suggestion")
+                        .WithMany("Votes")
+                        .HasForeignKey("SuggestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TeacherSuite.Domain.Entities.Teacher", "Teacher")
+                        .WithMany()
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Suggestion");
+
+                    b.Navigation("Teacher");
                 });
 
             modelBuilder.Entity("TeacherSuite.Domain.Entities.TeacherProgrammingLanguage", b =>
@@ -462,6 +754,8 @@ namespace TeacherSuite.Infrastructure.Migrations
                     b.Navigation("CourseProgrammingLanguages");
 
                     b.Navigation("GroupCourses");
+
+                    b.Navigation("Lessons");
                 });
 
             modelBuilder.Entity("TeacherSuite.Domain.Entities.Group", b =>
@@ -471,11 +765,30 @@ namespace TeacherSuite.Infrastructure.Migrations
                     b.Navigation("StudentGroups");
                 });
 
+            modelBuilder.Entity("TeacherSuite.Domain.Entities.Lesson", b =>
+                {
+                    b.Navigation("Attendances");
+
+                    b.Navigation("LessonRequirementIcons");
+
+                    b.Navigation("Suggestions");
+                });
+
+            modelBuilder.Entity("TeacherSuite.Domain.Entities.LessonSuggestion", b =>
+                {
+                    b.Navigation("Votes");
+                });
+
             modelBuilder.Entity("TeacherSuite.Domain.Entities.ProgrammingLanguage", b =>
                 {
                     b.Navigation("CourseProgrammingLanguages");
 
                     b.Navigation("TeacherProgrammingLanguages");
+                });
+
+            modelBuilder.Entity("TeacherSuite.Domain.Entities.RequirementIcon", b =>
+                {
+                    b.Navigation("LessonRequirementIcons");
                 });
 
             modelBuilder.Entity("TeacherSuite.Domain.Entities.Student", b =>

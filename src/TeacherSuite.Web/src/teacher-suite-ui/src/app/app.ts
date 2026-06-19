@@ -4,6 +4,7 @@ import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   heroAcademicCap,
   heroBookOpen,
+  heroClipboardDocumentList,
   heroUserGroup,
   heroUsers,
   heroCodeBracket,
@@ -13,7 +14,7 @@ import {
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, RouterLink, RouterLinkActive, NgIconComponent],
-  providers: [provideIcons({ heroAcademicCap, heroBookOpen, heroUserGroup, heroUsers, heroCodeBracket, heroUserCircle })],
+  providers: [provideIcons({ heroAcademicCap, heroBookOpen, heroClipboardDocumentList, heroUserGroup, heroUsers, heroCodeBracket, heroUserCircle })],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
