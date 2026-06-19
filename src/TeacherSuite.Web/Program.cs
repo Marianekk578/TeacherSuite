@@ -20,6 +20,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
 
+builder.Services.AddWebApiRateLimiting();
 var spaOrigin = builder.Configuration["Cors:SpaOrigin"]
     ?? (builder.Environment.IsDevelopment()
         ? "http://localhost:4200"
@@ -77,6 +78,7 @@ app.UseGlobalExceptionHandler();
 
 app.UseCors();
 app.UseAuthentication();
+app.UseWebApiRateLimiting();
 app.UseAuthorization();
 
 if (app.Environment.IsDevelopment()) {
