@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
-using System.Threading.RateLimiting;
 using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Domain.Common;
 using TeacherSuite.Infrastructure;
@@ -21,52 +20,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddTransient<IClaimsTransformation, KeycloakClaimsTransformation>();
 
-builder.Services.AddRateLimiter(options =>
-{
-    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
-    {
-        var partitionKey = httpContext.User.Identity?.Name;
-        if (string.IsNullOrWhiteSpace(partitionKey))
-        {
-            partitionKey = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip";
-        }
-
-        return RateLimitPartition.GetSlidingWindowLimiter(
-            partitionKey,
-            _ => new SlidingWindowRateLimiterOptions
-            {
-                PermitLimit = 10,
-                Window = TimeSpan.FromSeconds(60),
-                SegmentsPerWindow = 6,
-                QueueLimit = 0,
-                AutoReplenishment = true,
-            });
-    });
-
-    options.OnRejected = async (context, cancellationToken) =>
-    {
-        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-        context.HttpContext.Response.ContentType = "application/json";
-
-        var retryAfter = TimeSpan.FromSeconds(10);
-        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfterMetadata))
-        {
-            retryAfter = retryAfterMetadata;
-        }
-
-        context.HttpContext.Response.Headers.RetryAfter = Math.Ceiling(retryAfter.TotalSeconds).ToString();
-
-        await context.HttpContext.Response.WriteAsJsonAsync(
-            new
-            {
-                status = StatusCodes.Status429TooManyRequests,
-                title = "Too many requests",
-                detail = "Rate limit exceeded. Please retry after the number of seconds specified in the Retry-After header.",
-            },
-            cancellationToken);
-    };
-});
-
+builder.Services.AddWebApiRateLimiting();
 var spaOrigin = builder.Configuration["Cors:SpaOrigin"]
     ?? (builder.Environment.IsDevelopment()
         ? "http://localhost:4200"
@@ -123,7 +77,7 @@ app.UseGlobalExceptionHandler();
 
 app.UseCors();
 app.UseAuthentication();
-app.UseRateLimiter();
+app.UseWebApiRateLimiting();
 app.UseAuthorization();
 
 if (app.Environment.IsDevelopment()) {
