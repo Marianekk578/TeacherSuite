@@ -195,6 +195,33 @@ public class GetAllStudentsQueryTests
         Assert.Equal("Alice", result.Items[0].FirstName);
     }
 
+    [Fact]
+    public async Task Handle_FiltersStudentsByCaseInsensitiveSearch()
+    {
+        // Arrange
+        var students = new List<Student>
+        {
+            new() { Id = Guid.NewGuid(), FirstName = "Alice", LastName = "Smith", DateOfBirth = DateTimeOffset.UtcNow.AddYears(-12), ContactEmail = "alice@example.com", ContactPhone = "+48 111", StudentGroups = new List<StudentGroup>() },
+            new() { Id = Guid.NewGuid(), FirstName = "Bob", LastName = "Jones", DateOfBirth = DateTimeOffset.UtcNow.AddYears(-14), ContactEmail = "bob@example.com", ContactPhone = "+48 222", StudentGroups = new List<StudentGroup>() },
+            new() { Id = Guid.NewGuid(), FirstName = "Charlie", LastName = "Brown", DateOfBirth = DateTimeOffset.UtcNow.AddYears(-10), ContactEmail = "charlie@example.com", ContactPhone = "+48 333", StudentGroups = new List<StudentGroup>() },
+        }.AsQueryable();
+
+        var mockDbSet = CreateMockDbSet(students);
+
+        var mockDb = new Mock<IApplicationDbContext>();
+        mockDb.Setup(x => x.Students).Returns(mockDbSet.Object);
+
+        var handler = new GetAllStudentsQueryHandler(mockDb.Object, _mapper, _mockCurrentUser.Object);
+
+        // Act - search with uppercase
+        var result = await handler.Handle(new GetAllStudentsQuery { Search = "ALICE" }, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(1, result.TotalCount);
+        Assert.Single(result.Items);
+        Assert.Equal("Alice", result.Items[0].FirstName);
+    }
+
     private static Mock<DbSet<T>> CreateMockDbSet<T>(IQueryable<T> data) where T : class
     {
         var mockSet = new Mock<DbSet<T>>();

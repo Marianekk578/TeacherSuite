@@ -13,11 +13,10 @@ internal sealed class GetAllGroupsQueryHandler(IApplicationDbContext db, IMapper
 
         if (!string.IsNullOrWhiteSpace(request.CourseName))
         {
-            var courseNameLower = request.CourseName.ToLowerInvariant();
             query = query.Where(g => g.GroupCourses
-                .Any(gc => gc.Course != null && 
-                           gc.Course.Name != null && 
-                           gc.Course.Name.ToLower() == courseNameLower));
+                .Any(gc => gc.Course != null &&
+                           gc.Course.Name != null &&
+                           gc.Course.Name.Equals(request.CourseName, StringComparison.OrdinalIgnoreCase)));
         }
 
         return await query

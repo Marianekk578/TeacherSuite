@@ -33,12 +33,12 @@ internal sealed class GetAllStudentsQueryHandler(IApplicationDbContext db, IMapp
 
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
-            var search = request.Search.Trim().ToLowerInvariant();
+            var search = request.Search.Trim();
             query = query.Where(s =>
-                (s.FirstName != null && s.FirstName.ToLower().Contains(search)) ||
-                (s.LastName != null && s.LastName.ToLower().Contains(search)) ||
-                (s.FirstName != null && s.LastName != null && (s.FirstName + " " + s.LastName).ToLower().Contains(search)) ||
-                s.ContactEmail.ToLower().Contains(search));
+                (s.FirstName != null && s.FirstName.Contains(search, StringComparison.OrdinalIgnoreCase)) ||
+                (s.LastName != null && s.LastName.Contains(search, StringComparison.OrdinalIgnoreCase)) ||
+                (s.FirstName != null && s.LastName != null && (s.FirstName + " " + s.LastName).Contains(search, StringComparison.OrdinalIgnoreCase)) ||
+                s.ContactEmail.Contains(search, StringComparison.OrdinalIgnoreCase));
         }
 
         var totalCount = await query.CountAsync(cancellationToken);

@@ -147,6 +147,56 @@ public class GetAllGroupsQueryTests
         Assert.Empty(result);
     }
 
+    [Fact]
+    public async Task Handle_WithDifferentCasingCourseName_ReturnsFilteredGroups()
+    {
+        // Arrange
+        var course = new Course { Id = 1, Name = "Intro to C#", Description = "Basics", AgeGroupID = 1 };
+        var otherCourse = new Course { Id = 2, Name = "Advanced Python", Description = "Advanced", AgeGroupID = 1 };
+
+        var matchingGroupId = Guid.NewGuid();
+        var nonMatchingGroupId = Guid.NewGuid();
+
+        var matchingGroup = new Group
+        {
+            Id = matchingGroupId,
+            Name = "Group A",
+            TeacherId = Guid.NewGuid(),
+            AgeGroupID = 1,
+            GroupCourses = new List<GroupCourse>
+            {
+                new() { Id = Guid.NewGuid(), GroupId = matchingGroupId, CourseId = 1, Course = course, Status = CourseAssignmentStatus.Active, StartDate = DateTimeOffset.UtcNow }
+            }
+        };
+
+        var nonMatchingGroup = new Group
+        {
+            Id = nonMatchingGroupId,
+            Name = "Group B",
+            TeacherId = Guid.NewGuid(),
+            AgeGroupID = 1,
+            GroupCourses = new List<GroupCourse>
+            {
+                new() { Id = Guid.NewGuid(), GroupId = nonMatchingGroupId, CourseId = 2, Course = otherCourse, Status = CourseAssignmentStatus.Planned, StartDate = DateTimeOffset.UtcNow }
+            }
+        };
+
+        var groups = new List<Group> { matchingGroup, nonMatchingGroup }.AsQueryable();
+        var mockDbSet = CreateMockDbSet(groups);
+
+        var mockDb = new Mock<IApplicationDbContext>();
+        mockDb.Setup(x => x.Groups).Returns(mockDbSet.Object);
+
+        var handler = new GetAllGroupsQueryHandler(mockDb.Object, _mapper);
+
+        // Act - search with different casing
+        var result = await handler.Handle(new GetAllGroupsQuery(CourseName: "INTRO TO C#"), CancellationToken.None);
+
+        // Assert
+        Assert.Single(result);
+        Assert.Equal("Group A", result[0].Name);
+    }
+
     private static Mock<DbSet<T>> CreateMockDbSet<T>(IQueryable<T> data) where T : class
     {
         var mockSet = new Mock<DbSet<T>>();
