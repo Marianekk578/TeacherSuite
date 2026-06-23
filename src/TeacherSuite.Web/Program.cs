@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 using TeacherSuite.Application.Common.Interfaces;
 using TeacherSuite.Domain.Common;
@@ -8,6 +9,7 @@ using TeacherSuite.Infrastructure;
 using TeacherSuite.Web.Auth;
 using TeacherSuite.Web.Endpoints;
 using TeacherSuite.Web.Middleware;
+using TeacherSuite.Web.RateLimiting;
 using TeacherSuite.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -62,6 +64,18 @@ builder.Services.AddAuthorizationBuilder()
         .RequireAuthenticatedUser()
         .Build());
 
+builder.Services.AddRateLimitingPolicy(builder.Configuration);
+
+// Trust X-Forwarded-For / X-Forwarded-Proto from the reverse proxy so that
+// RemoteIpAddress reflects the real client IP for rate-limit partitioning.
+// Restrict KnownProxies/KnownNetworks in production to match your proxy setup.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 builder.Services.AddScoped<AgeGroups>();
 builder.Services.AddScoped<Teachers>();
 builder.Services.AddScoped<Courses>();
@@ -73,10 +87,12 @@ builder.Services.AddScoped<Lessons>();
 var app = builder.Build();
 
 app.UseHttpsRedirection();
+app.UseForwardedHeaders();
 app.UseGlobalExceptionHandler();
 
 app.UseCors();
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 if (app.Environment.IsDevelopment()) {

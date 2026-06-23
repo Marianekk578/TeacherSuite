@@ -18,6 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Application.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TeacherSuite.Application\TeacherSuite.Application.csproj" />
     <ProjectReference Include="..\TeacherSuite.Infrastructure\TeacherSuite.Infrastructure.csproj" />
   </ItemGroup>
