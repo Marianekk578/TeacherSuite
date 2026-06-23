@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener, DestroyRef, inject } from '@angular/core';
+import { Component, OnInit, HostListener, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -59,7 +59,6 @@ export class LessonDetailPage implements OnInit {
 
   constructor(
     private lessonService: LessonService,
-    private cdr: ChangeDetectorRef,
     private fb: FormBuilder,
     private keycloakService: KeycloakService,
     private sanitizer: DomSanitizer
@@ -84,7 +83,6 @@ export class LessonDetailPage implements OnInit {
   loadLesson(id: number) {
     this.loading = true;
     this.error = null;
-    this.cdr.detectChanges();
 
     this.lessonService.getLessonById(id).subscribe({
       next: (lesson) => {
@@ -92,14 +90,12 @@ export class LessonDetailPage implements OnInit {
         this.sortSuggestions();
         this.loading = false;
         this.loadLessonFiles(id);
-        this.cdr.detectChanges();
-      },
+          },
       error: (err) => {
         this.error = 'Failed to load lesson details. Please try again.';
         this.loading = false;
         console.error('Error loading lesson:', err);
-        this.cdr.detectChanges();
-      },
+          },
     });
   }
 
@@ -122,11 +118,9 @@ export class LessonDetailPage implements OnInit {
             } else {
               (html as Promise<string>).then(h => {
                 this.markdownContent = this.sanitizer.bypassSecurityTrustHtml(h);
-                this.cdr.detectChanges();
-              });
+                          });
             }
-            this.cdr.detectChanges();
-          }).catch(() => {
+                  }).catch(() => {
             this.rawMarkdownContent = null;
             this.markdownContent = null;
           });
@@ -134,8 +128,7 @@ export class LessonDetailPage implements OnInit {
           this.rawMarkdownContent = null;
           this.markdownContent = null;
         }
-        this.cdr.detectChanges();
-      },
+          },
       error: () => {
         this.lessonFiles = [];
         this.downloadableFiles = [];
@@ -150,8 +143,7 @@ export class LessonDetailPage implements OnInit {
       next: (suggestions) => {
         this.lesson!.suggestions = suggestions;
         this.sortSuggestions();
-        this.cdr.detectChanges();
-      },
+          },
       error: (err) => {
         console.error('Error refreshing suggestions:', err);
       },
@@ -163,8 +155,7 @@ export class LessonDetailPage implements OnInit {
     this.lessonService.getAttendances(this.lesson.id).subscribe({
       next: (attendances) => {
         this.lesson!.attendances = attendances;
-        this.cdr.detectChanges();
-      },
+          },
       error: (err) => {
         console.error('Error refreshing attendances:', err);
       },
@@ -221,8 +212,7 @@ export class LessonDetailPage implements OnInit {
       error: (err) => {
         console.error('Error downloading material:', err);
         this.error = 'Failed to download material.';
-        this.cdr.detectChanges();
-      },
+          },
     });
   }
 
@@ -255,7 +245,6 @@ export class LessonDetailPage implements OnInit {
     this.contextMenuX = event.clientX;
     this.contextMenuY = event.clientY;
     this.showContextMenu = true;
-    this.cdr.detectChanges();
   }
 
   closeContextMenu() {
@@ -314,8 +303,7 @@ export class LessonDetailPage implements OnInit {
       error: (err) => {
         this.commentError = 'Failed to submit comment. Please try again.';
         console.error('Error creating comment:', err);
-        this.cdr.detectChanges();
-      },
+          },
     });
   }
 
@@ -364,14 +352,12 @@ export class LessonDetailPage implements OnInit {
         next: (groups) => {
           this.courseGroups = groups;
           this.courseGroupsLoaded = true;
-          this.cdr.detectChanges();
-        },
+              },
         error: (err) => {
           console.error('Error loading course groups:', err);
           this.attendanceError = 'Failed to load groups for this course.';
           this.courseGroupsLoaded = true;
-          this.cdr.detectChanges();
-        },
+              },
       });
     }
   }
@@ -405,8 +391,7 @@ export class LessonDetailPage implements OnInit {
       error: (err) => {
         this.attendanceError = err?.detail || 'Failed to record attendance. Please try again.';
         console.error('Error recording attendance:', err);
-        this.cdr.detectChanges();
-      },
+          },
     });
   }
 

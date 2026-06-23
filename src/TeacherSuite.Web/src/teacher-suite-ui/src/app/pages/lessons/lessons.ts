@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener, DestroyRef, inject } from '@angular/core';
+import { Component, OnInit, HostListener, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { concat } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -76,7 +76,6 @@ export class LessonsPage implements OnInit {
   constructor(
     private lessonService: LessonService,
     private courseService: CourseService,
-    private cdr: ChangeDetectorRef,
     private fb: FormBuilder,
     private keycloakService: KeycloakService
   ) {
@@ -111,14 +110,12 @@ export class LessonsPage implements OnInit {
       next: (result) => {
         this.courses = result.items;
         this.coursesLoading = false;
-        this.cdr.detectChanges();
-      },
+          },
       error: (err) => {
         console.error('Error loading courses:', err);
         this.error = 'Failed to load courses.';
         this.coursesLoading = false;
-        this.cdr.detectChanges();
-      },
+          },
     });
   }
 
@@ -144,21 +141,18 @@ export class LessonsPage implements OnInit {
 
     this.loading = true;
     this.error = null;
-    this.cdr.detectChanges();
 
     this.lessonService.getLessonsByCourse(this.selectedCourseId).subscribe({
       next: (lessons) => {
         this.lessons = lessons.sort((a, b) => a.order - b.order);
         this.loading = false;
         this.loadAllLessonFiles();
-        this.cdr.detectChanges();
-      },
+          },
       error: (err) => {
         this.error = 'Failed to load lessons. Please try again.';
         this.loading = false;
         console.error('Error loading lessons:', err);
-        this.cdr.detectChanges();
-      },
+          },
     });
   }
 
@@ -168,8 +162,7 @@ export class LessonsPage implements OnInit {
         this.lessonService.getLessonFiles(lesson.id).subscribe({
           next: (files) => {
             this.lessonFiles.set(lesson.id, files);
-            this.cdr.detectChanges();
-          },
+                  },
           error: () => {},
         });
       }
@@ -237,13 +230,11 @@ export class LessonsPage implements OnInit {
           durationMinutes: detail.durationMinutes,
         });
         this.showModal = true;
-        this.cdr.detectChanges();
-      },
+          },
       error: (err) => {
         console.error('Error loading lesson detail:', err);
         this.error = 'Failed to load lesson details for editing.';
-        this.cdr.detectChanges();
-      },
+          },
     });
   }
 
@@ -282,25 +273,21 @@ export class LessonsPage implements OnInit {
       if (!ALLOWED_EXTENSIONS.includes(ext)) {
         this.fileError = `File "${file.name}" has an unsupported extension. Only .md, .docx, and .txt files are accepted.`;
         input.value = '';
-        this.cdr.detectChanges();
-        return;
+            return;
       }
       if (this.pendingFiles.some(f => f.name === file.name)) {
         this.fileError = `File "${file.name}" is already added.`;
         input.value = '';
-        this.cdr.detectChanges();
-        return;
+            return;
       }
       this.pendingFiles.push(file);
     }
     input.value = '';
-    this.cdr.detectChanges();
   }
 
   removePendingFile(index: number) {
     this.pendingFiles.splice(index, 1);
     this.fileError = null;
-    this.cdr.detectChanges();
   }
 
   saveLesson() {
@@ -309,8 +296,7 @@ export class LessonsPage implements OnInit {
     if (this.lessonForm.invalid) {
       this.lessonForm.markAllAsTouched();
       this.modalError = this.getFormErrorMessage();
-      this.cdr.detectChanges();
-      return;
+        return;
     }
 
     const formValue = this.lessonForm.getRawValue();
@@ -332,8 +318,7 @@ export class LessonsPage implements OnInit {
         error: (err) => {
           this.modalError = err?.detail || 'Failed to update lesson. Please check your input and try again.';
           console.error('Error updating lesson:', err);
-          this.cdr.detectChanges();
-        },
+              },
       });
     } else {
       const payload: CreateLessonDto = {
@@ -353,8 +338,7 @@ export class LessonsPage implements OnInit {
         error: (err) => {
           this.modalError = err?.detail || 'Failed to create lesson. Please check your input and try again.';
           console.error('Error creating lesson:', err);
-          this.cdr.detectChanges();
-        },
+              },
       });
     }
   }
@@ -370,8 +354,7 @@ export class LessonsPage implements OnInit {
       error: (err) => {
         console.error('Error uploading file:', err);
         this.error = err?.detail || 'Failed to upload material file.';
-        this.cdr.detectChanges();
-      },
+          },
       complete: () => {
         this.loadLessons();
       },
@@ -413,13 +396,11 @@ export class LessonsPage implements OnInit {
     if (!ALLOWED_EXTENSIONS.includes(ext)) {
       this.error = `File "${file.name}" has an unsupported extension. Only .md, .docx, and .txt files are accepted.`;
       input.value = '';
-      this.cdr.detectChanges();
-      return;
+        return;
     }
 
     this.uploadingLessonId = lesson.id;
     this.uploadSuccess = null;
-    this.cdr.detectChanges();
 
     this.lessonService.uploadMaterial(lesson.id, file).subscribe({
       next: () => {
@@ -428,16 +409,13 @@ export class LessonsPage implements OnInit {
         this.loadLessons();
         setTimeout(() => {
           this.uploadSuccess = null;
-          this.cdr.detectChanges();
-        }, 4000);
-        this.cdr.detectChanges();
-      },
+              }, 4000);
+          },
       error: (err) => {
         this.uploadingLessonId = null;
         this.error = err?.detail || `Failed to upload material file "${file.name}".`;
         console.error('Error uploading material:', err);
-        this.cdr.detectChanges();
-      },
+          },
     });
 
     input.value = '';
@@ -459,8 +437,7 @@ export class LessonsPage implements OnInit {
       error: (err) => {
         this.error = 'Failed to reorder lesson.';
         console.error('Error reordering lesson:', err);
-        this.cdr.detectChanges();
-      },
+          },
     });
   }
 
@@ -470,8 +447,7 @@ export class LessonsPage implements OnInit {
       error: (err) => {
         this.error = 'Failed to reorder lesson.';
         console.error('Error reordering lesson:', err);
-        this.cdr.detectChanges();
-      },
+          },
     });
   }
 
